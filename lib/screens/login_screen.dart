@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import '../constants/route_names.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -9,6 +10,28 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  // 1. Declare the recognizer here
+  late TapGestureRecognizer _signInRecognizer;
+
+  @override
+  void initState() {
+    super.initState();
+    // 2. Initialize it
+    _signInRecognizer = TapGestureRecognizer()..onTap = _handleSignIn;
+  }
+
+  @override
+  void dispose() {
+    // 3. Clean it up to prevent memory leaks
+    _signInRecognizer.dispose();
+    super.dispose();
+  }
+
+  void _handleSignIn() {
+    // Navigate to sign in or perform logic
+    print("Navigating to Sign In...");
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
@@ -58,8 +81,9 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             SizedBox(height: 50),
             FilledButton(
-              onPressed: () {},
-
+              onPressed: () {
+                Navigator.pushNamed(context, RouteNames.signup);
+              },
               style: FilledButton.styleFrom(
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadiusGeometry.all(Radius.circular(10)),
@@ -92,11 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: Color(0xFF2563EB),
                       fontWeight: FontWeight.bold,
                     ),
-                    recognizer: TapGestureRecognizer()
-                      ..onTap = () {
-                        print("Sign in button clicked.");
-                        // Trigger your action here (e.g., navigation or opening a URL)
-                      },
+                    recognizer: _signInRecognizer,
                   ),
                 ],
               ),
