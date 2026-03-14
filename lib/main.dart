@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:signmirror_flutter/routes/routes.dart';
 import './screens/login_screen.dart';
 import './theme/app_theme.dart';
 
@@ -15,8 +16,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'SignMirror',
       theme: AppTheme.lightTheme,
-      home: SafeArea(child: LoginScreen()),
       debugShowCheckedModeBanner: false,
+      initialRoute: AppRoutes.login,
+      routes: AppRoutes.getRoutes(),
+      onUnknownRoute: (settings) =>
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
     );
   }
 }
