@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:signmirror_flutter/utils/snackbar_utils.dart';
 import '../constants/route_names.dart';
+import 'package:signmirror_flutter/widgets/loading_screen.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -13,6 +15,20 @@ class _SignupScreenState extends State<SignupScreen> {
   // 1. Declare the recognizer here
   late TapGestureRecognizer _signUpRecognizer;
 
+  // Controllers to get text from fields
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  // State for password visibility
+  bool _isObscured = true;
+  bool _isLoading = false;
+
+  // Tracks the error message for each specific field
+  String? _nameError;
+  String? _emailError;
+  String? _passwordError;
+
   @override
   void initState() {
     super.initState();
@@ -22,269 +38,416 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   void dispose() {
-    // 3. Clean it up to prevent memory leaks
+    // Always dispose controllers to save memory!
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     _signUpRecognizer.dispose();
     super.dispose();
   }
 
+  // 3. The Validation Logic
+  bool _validateAndSubmit() {
+    bool isValid = true;
+
+    setState(() {
+      // Reset errors first
+      _nameError = null;
+      _emailError = null;
+      _passwordError = null;
+
+      String name = _nameController.text.trim();
+      String email = _emailController.text.trim();
+      String password = _passwordController.text.trim();
+
+      if (name.isEmpty) {
+        _nameError = "Name is required";
+        isValid = false;
+      }
+
+      // Basic Email Regex check
+      final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+      if (email.isEmpty) {
+        _emailError = "Email is required";
+        isValid = false;
+      } else if (!emailRegex.hasMatch(email)) {
+        _emailError = "Enter a valid email address";
+        isValid = false;
+      }
+
+      // This Regex checks: 1 uppercase, 1 lowercase, 1 digit, and length 6+
+      final passwordRegex = RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$');
+
+      if (password.isEmpty) {
+        _passwordError = "Password is required";
+        isValid = false;
+      } else if (!passwordRegex.hasMatch(password)) {
+        _passwordError = "Password does not meet requirements";
+        isValid = false;
+      }
+    });
+
+    return isValid;
+  }
+
+  void _handleCreateAccount() async {
+    if (_validateAndSubmit()) {
+      setState(() {
+        _isLoading = true; // Start loading
+      });
+
+      // Simulate a network delay (e.g., 2 seconds)
+      await Future.delayed(const Duration(seconds: 2));
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false; // Stop loading
+        });
+
+        // Show success message
+        SnackBarUtils.show(
+          context,
+          message: "Account created successfully!",
+          isError: false,
+          position: SnackBarPosition.top,
+        );
+
+        // Wait a tiny bit so they can read the success message
+        await Future.delayed(const Duration(milliseconds: 1500));
+
+        // Redirect to Login
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, RouteNames.login);
+        }
+      }
+    }
+  }
+
   void _handleSignIn() {
     // Navigate to sign in or perform logic
-    Navigator.pushNamed(context, RouteNames.login);
+    Navigator.pushNamed(context, RouteNames.signin);
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     return Scaffold(
-      body: SafeArea(
-        child: SizedBox(
-          width: double.infinity,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                Stack(
-                  clipBehavior: Clip.hardEdge,
-                  children: [
-                    SizedBox(height: 250, width: double.infinity),
-                    Positioned(
-                      left: -150,
-                      right: -90,
-                      top: -200,
-                      child: Container(
-                        width: 400,
-                        height: 400,
-                        decoration: BoxDecoration(
-                          color: colors.primary,
-                          borderRadius: BorderRadius.all(
-                            Radius.elliptical(400, 175),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(height: 70),
-                        Padding(
-                          padding: EdgeInsetsGeometry.directional(start: 30),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Create Account',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontFamily: 'Inter',
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 32,
+      body: Stack(
+        children: [
+          SafeArea(
+            child: SizedBox(
+              width: double.infinity,
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+                  child: Column(
+                    children: [
+                      Stack(
+                        clipBehavior: Clip.hardEdge,
+                        children: [
+                          SizedBox(height: 250, width: double.infinity),
+                          Positioned(
+                            left: -150,
+                            right: -90,
+                            top: -200,
+                            child: Container(
+                              width: 400,
+                              height: 400,
+                              decoration: BoxDecoration(
+                                color: colors.primary,
+                                borderRadius: BorderRadius.all(
+                                  Radius.elliptical(400, 175),
                                 ),
                               ),
-                              Text(
-                                "Start your Journey",
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                  fontFamily: 'Inter',
-                                  fontSize: 16,
+                            ),
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(height: 70),
+                              Padding(
+                                padding: EdgeInsetsGeometry.directional(
+                                  start: 30,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Create Account',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontFamily: 'Inter',
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 32,
+                                      ),
+                                    ),
+                                    Text(
+                                      "Start your Journey",
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.6,
+                                        ),
+                                        fontFamily: 'Inter',
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25),
-                  child: Column(
-                    children: [
-                      TextField(
-                        decoration: InputDecoration(
-                          labelText: 'Name',
-                          floatingLabelBehavior: FloatingLabelBehavior.always,
-                          hintText: 'Enter name',
-                          hintStyle: TextStyle(color: Color(0xffB3B3B3)),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                              color: Colors.grey,
-                              width: 1.0,
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: colors.primary,
-                              width: 1.5,
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      TextField(
-                        decoration: InputDecoration(
-                          labelText: 'Email Address',
-                          floatingLabelBehavior: FloatingLabelBehavior.always,
-                          hintText: 'Enter email address',
-                          hintStyle: TextStyle(color: Color(0xffB3B3B3)),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                              color: Colors.grey,
-                              width: 1.0,
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: colors.primary,
-                              width: 1.5,
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      TextField(
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                          floatingLabelBehavior: FloatingLabelBehavior.always,
-                          hintText: 'Enter password',
-                          hintStyle: TextStyle(color: Color(0xffB3B3B3)),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                              color: Colors.grey,
-                              width: 1.0,
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: colors.primary,
-                              width: 1.5,
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 30),
-                      FilledButton(
-                        onPressed: () {},
-
-                        style: FilledButton.styleFrom(
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadiusGeometry.all(
-                              Radius.circular(10),
-                            ),
-                          ),
-                          minimumSize: const Size(double.infinity, 60),
-                        ),
-                        child: const Text(
-                          "Create Account",
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1.0,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            width: 100,
-                            height: 1,
-                            decoration: BoxDecoration(
-                              color: Colors.grey,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          const Text(
-                            "or sign up with",
-                            style: TextStyle(fontFamily: 'Inter'),
-                          ),
-                          Container(
-                            width: 100,
-                            height: 1,
-                            decoration: BoxDecoration(
-                              color: Colors.grey,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
                         ],
                       ),
-                      const SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadiusGeometry.all(
-                                  Radius.circular(10),
-                                ),
-                              ),
-                              minimumSize: const Size(130, 50),
-                            ),
-                            child: Row(
-                              children: [
-                                SizedBox(
-                                  height: 30,
-                                  width: 30,
-                                  child: Image.asset(
-                                    "assets/images/google.png",
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                const Text("Google"),
-                              ],
-                            ),
-                          ),
-                          ElevatedButton(
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadiusGeometry.all(
-                                  Radius.circular(10),
-                                ),
-                              ),
-                              minimumSize: const Size(130, 50),
-                            ),
-                            child: Row(
-                              children: [
-                                SizedBox(
-                                  height: 30,
-                                  width: 30,
-                                  child: Image.asset(
-                                    "assets/images/facebook.png",
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                const Text("Facebook"),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 30),
-                      RichText(
-                        text: TextSpan(
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 14,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w300,
-                          ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 25),
+                        child: Column(
                           children: [
-                            const TextSpan(text: "Already have an account? "),
-                            TextSpan(
-                              text: "Sign In",
-                              style: const TextStyle(
-                                color: Color(0xFF2563EB),
-                                fontWeight: FontWeight.bold,
+                            // NAME FIELD
+                            TextField(
+                              controller: _nameController,
+                              onChanged: (value) {
+                                if (_nameError != null) {
+                                  setState(() {
+                                    _nameError =
+                                        null; // Clear red color when user types
+                                  });
+                                }
+                              },
+                              decoration: _inputStyle(
+                                'Name',
+                                'Enter name',
+                                colors,
+                                _nameError,
                               ),
-                              recognizer: _signUpRecognizer,
+                            ),
+                            const SizedBox(height: 20),
+
+                            // EMAIL FIELD
+                            TextField(
+                              controller: _emailController,
+                              onChanged: (value) {
+                                if (_emailError != null) {
+                                  setState(() {
+                                    _emailError =
+                                        null; // Clear red color when user types
+                                  });
+                                }
+                              },
+                              keyboardType: TextInputType.emailAddress,
+                              decoration: _inputStyle(
+                                'Email Address',
+                                'Enter email',
+                                colors,
+                                _emailError,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+
+                            // PASSWORD FIELD
+                            TextField(
+                              controller: _passwordController,
+                              obscureText: _isObscured,
+                              onChanged: (value) {
+                                if (_passwordError != null) {
+                                  setState(() {
+                                    _passwordError =
+                                        null; // Clear red color when user types
+                                  });
+                                }
+                              },
+                              decoration:
+                                  _inputStyle(
+                                    'Password',
+                                    'Enter password',
+                                    colors,
+                                    _passwordError,
+                                  ).copyWith(
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                        _isObscured
+                                            ? Icons.visibility_off
+                                            : Icons.visibility,
+                                      ),
+                                      onPressed: () => setState(
+                                        () => _isObscured = !_isObscured,
+                                      ),
+                                    ),
+                                  ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8, left: 2),
+                              child: Column(
+                                children: [
+                                  // First Bullet
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.info_outline,
+                                        size: 14,
+                                        color: Colors.grey[600],
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        "Must be at least 6 characters",
+                                        style: TextStyle(
+                                          color: Colors.grey[600],
+                                          fontSize: 12,
+                                          fontFamily: 'Inter',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 4,
+                                  ), // Small gap between bullets
+                                  // Second Bullet
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.info_outline,
+                                        size: 14,
+                                        color: Colors.grey[600],
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        "Include uppercase, lowercase, and number",
+                                        style: TextStyle(
+                                          color: Colors.grey[600],
+                                          fontSize: 12,
+                                          fontFamily: 'Inter',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+
+                            // CREATE ACCOUNT BUTTON
+                            FilledButton(
+                              onPressed: _handleCreateAccount,
+
+                              style: FilledButton.styleFrom(
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadiusGeometry.all(
+                                    Radius.circular(10),
+                                  ),
+                                ),
+                                minimumSize: const Size(double.infinity, 50),
+                              ),
+                              child: const Text(
+                                "Create Account",
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1.0,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(
+                                  width: 100,
+                                  height: 1,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                const Text(
+                                  "or sign up with",
+                                  style: TextStyle(fontFamily: 'Inter'),
+                                ),
+                                Container(
+                                  width: 100,
+                                  height: 1,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () {},
+                                  style: ElevatedButton.styleFrom(
+                                    shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadiusGeometry.all(
+                                        Radius.circular(10),
+                                      ),
+                                    ),
+                                    minimumSize: const Size(130, 50),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      SizedBox(
+                                        height: 30,
+                                        width: 30,
+                                        child: Image.asset(
+                                          "assets/images/google.png",
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      const Text("Google"),
+                                    ],
+                                  ),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {},
+                                  style: ElevatedButton.styleFrom(
+                                    shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadiusGeometry.all(
+                                        Radius.circular(10),
+                                      ),
+                                    ),
+                                    minimumSize: const Size(130, 50),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      SizedBox(
+                                        height: 30,
+                                        width: 30,
+                                        child: Image.asset(
+                                          "assets/images/facebook.png",
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      const Text("Facebook"),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 30),
+                            RichText(
+                              text: TextSpan(
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 14,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w300,
+                                ),
+                                children: [
+                                  const TextSpan(
+                                    text: "Already have an account? ",
+                                  ),
+                                  TextSpan(
+                                    text: "Sign in",
+                                    style: const TextStyle(
+                                      color: Color(0xFF2563EB),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    recognizer: _signUpRecognizer,
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
@@ -292,10 +455,44 @@ class _SignupScreenState extends State<SignupScreen> {
                     ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
+          ), // 2. The Loading Overlay
+          if (_isLoading) LoadingScreenWidget(label: "Creating account..."),
+        ],
+      ),
+    );
+  }
+
+  // Helper to keep code clean
+  InputDecoration _inputStyle(
+    String label,
+    String hint,
+    ColorScheme colors,
+    String? errorText,
+  ) {
+    return InputDecoration(
+      labelText: label,
+      hintText: hint,
+      errorText: errorText, // Add this line here!
+      floatingLabelBehavior: FloatingLabelBehavior.always,
+      hintStyle: const TextStyle(color: Color(0xffB3B3B3)),
+      enabledBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: Colors.grey, width: 1.0),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: colors.primary, width: 1.5),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      // Add these two for the red error borders
+      errorBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: Colors.red, width: 1.0),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: Colors.red, width: 1.5),
+        borderRadius: BorderRadius.circular(10),
       ),
     );
   }
