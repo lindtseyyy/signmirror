@@ -1,130 +1,124 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:signmirror_flutter/models/lesson.dart';
+import 'package:signmirror_flutter/state/providers.dart';
 
-class LessonsScreen extends StatefulWidget {
+class LessonsScreen extends ConsumerStatefulWidget {
   const LessonsScreen({super.key});
 
   @override
-  State<LessonsScreen> createState() => _LessonsScreenState();
+  ConsumerState<LessonsScreen> createState() => _LessonsScreenState();
 }
 
-class _LessonsScreenState extends State<LessonsScreen> {
-  String selectedCategory = "All Categories";
+class _LessonsScreenState extends ConsumerState<LessonsScreen> {
+  String selectedDifficulty = "Difficulty Level";
   bool isListView = true;
 
   String searchQuery = "";
 
   final List<String> categories = [
-    'All Categories',
+    'Difficulty Level',
     'Beginner',
     'Intermediate',
     'Difficult',
   ];
 
-  final List<Map<String, dynamic>> allLessons = [
-    {
-      'title': 'Alphabet',
-      'count': 26,
-      'level': 'Beginner',
-      'progress': 0.75, // 75% completed
-    },
-    {
-      'title': 'Numbers',
-      'count': 10,
-      'level': 'Beginner',
-      'progress': 1.0, // 100% completed
-    },
-    {
-      'title': 'Greetings',
-      'count': 15,
-      'level': 'Beginner',
-      'progress': 0.4, // 40% completed
-    },
-    {
-      'title': 'Basic Gestures',
-      'count': 20,
-      'level': 'Intermediate',
-      'progress': 0.0, // 0% completed
-    },
-    {
-      'title': 'Daily Conversations',
-      'count': 18,
-      'level': 'Intermediate',
-      'progress': 0.1, // 10% completed
-    },
-    {
-      'title': 'Emergency Signs',
-      'count': 26,
-      'level': 'Difficult',
-      'progress': 0.0, // 0% completed
-    },
-  ];
-
   @override
   Widget build(BuildContext context) {
-    List<Map<String, dynamic>> filteredLessons = allLessons.where((lesson) {
-      // 1. Filter by Category Dropdown
-      bool matchesCategory =
-          selectedCategory == 'All Categories' ||
-          lesson['level'] == selectedCategory;
+    final lessonState = ref.watch(lessonsProvider);
 
-      // 2. Filter by Search Bar (assuming you have a 'searchQuery' variable)
-      bool matchesSearch = lesson['title'].toLowerCase().contains(
-        searchQuery.toLowerCase(),
-      );
-
-      return matchesCategory && matchesSearch;
-    }).toList();
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          "FSL Lessons",
-          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 24),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(120.0),
+        child: AppBar(
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Text(
+                "Lessons",
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22),
+              ),
+              Text(
+                "Learn new signs and improve your skills",
+                style: TextStyle(fontSize: 12, color: Colors.white70),
+              ),
+            ],
+          ),
+          // Move the IconButton HERE
+          actions: [
+            IconButton(
+              iconSize: 30,
+              icon: Icon(
+                isListView
+                    ? Icons.grid_view_rounded
+                    : Icons.format_list_bulleted_rounded,
+                color: Colors
+                    .white, // Changed to white to see it against the dark blue
+              ),
+              onPressed: () => setState(() => isListView = !isListView),
+            ),
+            SizedBox(width: 5), // Add some spacing to the right of the icon
+          ],
+          bottom: PreferredSize(
+            preferredSize: Size.fromHeight(50.0),
+            child: Padding(
+              padding: const EdgeInsetsGeometry.fromLTRB(15, 10, 15, 15),
+              child: SearchBar(
+                onChanged: (value) => {
+                  ref.read(lessonsProvider.notifier).updateSearch(value),
+                },
+                constraints: const BoxConstraints(
+                  minHeight: 45.0, // Minimum height
+                  maxHeight: 45.0, // Maximum height
+                ),
+                hintText: "Search Lessons",
+
+                backgroundColor: WidgetStateProperty.all(Colors.white),
+
+                elevation: WidgetStateProperty.all(0),
+
+                padding: WidgetStateProperty.all(
+                  const EdgeInsets.symmetric(horizontal: 16),
+                ),
+
+                leading: const Icon(Icons.search, color: Colors.black),
+
+                textStyle: WidgetStateProperty.all(
+                  const TextStyle(color: Colors.black),
+                ),
+
+                hintStyle: WidgetStateProperty.all(
+                  TextStyle(color: Colors.black.withValues(alpha: 0.5)),
+                ),
+
+                shape: WidgetStateProperty.all(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+
+                    side: BorderSide(width: 0.5, color: Color(0xff304166)),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          backgroundColor: Color(0xff304166),
+          foregroundColor: Colors.white, // Sets color for icons and text
+          elevation: 4,
         ),
-        backgroundColor: Color(0xff304166),
-        foregroundColor: Colors.white, // Sets color for icons and text
-        elevation: 4,
       ),
       backgroundColor: Color(0xffF4F4F8),
       body: SafeArea(
         child: SizedBox(
           child: Container(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
             child: Column(
               children: [
-                SearchBar(
-                  onChanged: (value) => {
-                    setState(() {
-                      searchQuery = value;
-                    }),
-                  },
-                  hintText: "Search Lessons",
-                  backgroundColor: WidgetStateProperty.all(Colors.white),
-                  elevation: WidgetStateProperty.all(0),
-                  padding: WidgetStateProperty.all(
-                    const EdgeInsets.symmetric(horizontal: 16),
-                  ),
-                  leading: const Icon(Icons.search, color: Colors.black),
-                  textStyle: WidgetStateProperty.all(
-                    const TextStyle(color: Colors.black),
-                  ),
-                  hintStyle: WidgetStateProperty.all(
-                    TextStyle(color: Colors.black.withValues(alpha: 0.5)),
-                  ),
-                  shape: WidgetStateProperty.all(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(width: 0.5, color: Color(0xff304166)),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    // --- LEFT: DROPDOWN FILTER ---
                     DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
-                        value: selectedCategory,
+                        value: selectedDifficulty,
                         dropdownColor: Colors.white, // Background of the list
                         icon: const Icon(
                           Icons.arrow_drop_down,
@@ -136,8 +130,13 @@ class _LessonsScreenState extends State<LessonsScreen> {
                         ),
                         onChanged: (String? newValue) {
                           setState(() {
-                            selectedCategory = newValue!;
+                            selectedDifficulty = newValue!;
                           });
+                          ref
+                              .read(lessonsProvider.notifier)
+                              .updateDifficulty(
+                                newValue!,
+                              ); // Update the provider with the new category
                         },
                         items: categories.map<DropdownMenuItem<String>>((
                           String value,
@@ -147,31 +146,6 @@ class _LessonsScreenState extends State<LessonsScreen> {
                             child: Text(value),
                           );
                         }).toList(),
-                      ),
-                    ),
-
-                    // --- RIGHT: VIEW TOGGLE ICON ---
-                    Container(
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: const Color(0xff304166).withValues(alpha: 0.1),
-                        ),
-                      ),
-                      child: IconButton(
-                        icon: Icon(
-                          isListView
-                              ? Icons.grid_view_rounded
-                              : Icons.format_list_bulleted_rounded,
-                          color: const Color(0xff304166),
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            isListView = !isListView; // Toggles the view mode
-                          });
-                        },
                       ),
                     ),
                   ],
@@ -188,8 +162,8 @@ class _LessonsScreenState extends State<LessonsScreen> {
                           );
                         },
                     child: isListView
-                        ? _buildListView(filteredLessons)
-                        : _buildGridView(filteredLessons),
+                        ? _buildListView(lessonState.lessons)
+                        : _buildGridView(lessonState.lessons),
                   ),
                 ),
               ],
@@ -201,31 +175,37 @@ class _LessonsScreenState extends State<LessonsScreen> {
   }
 }
 
-Widget _buildListView(List lessons) {
+Widget _buildListView(List<Lesson> lessons) {
   return ListView.builder(
     itemCount: lessons.length, // Replace with your data.length
     itemBuilder: (context, index) {
-      return Card(
+      final lesson = lessons[index];
+      return Container(
         margin: const EdgeInsets.only(bottom: 12),
-        elevation: 1,
-        color: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 1,
+              offset: const Offset(1, 1),
+              color: Colors.black.withValues(alpha: 0.1), // Very subtle color
+            ),
+          ],
+        ),
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 10,
           ),
-          leading: Container(
+          leading: SizedBox(
             width: 50,
             height: 50,
-
-            decoration: BoxDecoration(
-              color: Colors.greenAccent,
-              borderRadius: BorderRadius.circular(10),
-            ),
+            child: Image.asset(lesson.imagePath, fit: BoxFit.cover),
           ), // Lesson Image
           title: Text(
-            lessons[index]['title'],
+            lesson.title,
             style: TextStyle(fontWeight: FontWeight.w700),
           ),
           subtitle: Column(
@@ -235,16 +215,16 @@ Widget _buildListView(List lessons) {
               Row(
                 children: [
                   Text(
-                    "${lessons[index]['count']} Lessons",
+                    "${lesson.count} Lessons",
                     style: TextStyle(
                       color: Colors.black.withValues(alpha: 0.4),
                     ),
                   ),
                 ],
               ),
-              DifficultyBadge(level: lessons[index]['level']),
+              DifficultyBadge(level: lesson.level),
               const SizedBox(height: 1),
-              ProgressBar(percentage: lessons[index]['progress']),
+              ProgressBar(percentage: lesson.progress),
             ],
           ),
           trailing: const Icon(
@@ -288,6 +268,7 @@ class ProgressBar extends StatelessWidget {
 Widget _buildGridView(List lessons) {
   return GridView.builder(
     itemCount: lessons.length,
+
     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
       crossAxisCount: 2, // 2 items per row
       crossAxisSpacing: 20, // Horizontal gap
@@ -296,6 +277,7 @@ Widget _buildGridView(List lessons) {
     ),
     itemBuilder: (context, index) {
       final lesson = lessons[index];
+
       return Container(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
         decoration: BoxDecoration(
@@ -303,8 +285,8 @@ Widget _buildGridView(List lessons) {
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 3,
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 1,
               offset: const Offset(1, 1), // Bottom-right shadow
             ),
           ],
@@ -324,7 +306,7 @@ Widget _buildGridView(List lessons) {
             ), // Lesson Icon
             const SizedBox(height: 10),
             Text(
-              lesson['title'],
+              lesson.title,
               style: TextStyle(fontWeight: FontWeight.w700),
               overflow: TextOverflow.ellipsis, // Adds the "..."
               maxLines: 1, // Limits to a single line
@@ -332,16 +314,16 @@ Widget _buildGridView(List lessons) {
             ),
 
             Text(
-              "${lesson['count']} Lessons",
+              "${lesson.count} Lessons",
               style: TextStyle(color: Colors.black.withValues(alpha: 0.4)),
               overflow: TextOverflow.ellipsis, // Adds the "..."
               maxLines: 1, // Limits to a single line
               softWrap: false,
             ),
             const SizedBox(height: 7),
-            DifficultyBadge(level: lessons[index]['level']),
+            DifficultyBadge(level: lesson.level),
             const SizedBox(height: 10),
-            ProgressBar(percentage: lessons[index]['progress']),
+            ProgressBar(percentage: lesson.progress),
           ],
         ),
       );
