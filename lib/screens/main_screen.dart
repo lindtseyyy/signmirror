@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:signmirror_flutter/screens/dashboard_screen.dart';
+import 'package:signmirror_flutter/screens/dictionary_screen.dart';
 import 'package:signmirror_flutter/screens/lessons_screen.dart';
+import 'package:signmirror_flutter/screens/profile_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -16,9 +18,9 @@ class _MainScreenState extends State<MainScreen> {
   static const List<Widget> _pages = [
     DashboardScreen(),
     LessonsScreen(),
+    DictionaryScreen(),
     DashboardScreen(),
-    DashboardScreen(),
-    DashboardScreen(),
+    ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
