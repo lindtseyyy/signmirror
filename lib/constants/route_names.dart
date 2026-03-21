@@ -6,4 +6,5 @@ class RouteNames {
   static const String personalization = '/personalization';
   static const String main = '/main';
   static const String dashboard = '/dashboard';
+  static const String profile = '/profile';
 }
