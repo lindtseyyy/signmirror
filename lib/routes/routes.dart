@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:signmirror_flutter/screens/achievements_screen.dart';
 import 'package:signmirror_flutter/screens/dashboard_screen.dart';
 import 'package:signmirror_flutter/screens/main_screen.dart';
 import 'package:signmirror_flutter/screens/personalization_screen.dart';
@@ -16,6 +17,7 @@ class AppRoutes {
   static const String dashboard = '/dashboard';
   static const String main = '/main';
   static const String profile = '/profile';
+  static const String achievements = "/achievements";
 
   // Create the route map
   static Map<String, WidgetBuilder> getRoutes() {
@@ -27,6 +29,7 @@ class AppRoutes {
       RouteNames.main: (context) => const MainScreen(),
       RouteNames.dashboard: (context) => const DashboardScreen(),
       RouteNames.profile: (context) => const ProfileScreen(),
+      RouteNames.achievements: (context) => const AchievementsScreen(),
     };
   }
 }
