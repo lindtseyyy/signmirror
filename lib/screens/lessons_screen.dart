@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signmirror_flutter/models/lesson.dart';
-import 'package:signmirror_flutter/state/providers.dart';
+import 'package:signmirror_flutter/providers/providers.dart';
 
 class LessonsScreen extends ConsumerStatefulWidget {
   const LessonsScreen({super.key});
