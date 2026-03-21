@@ -73,7 +73,51 @@ class DynamicBarChart extends StatelessWidget {
               BarChartData(
                 alignment: BarChartAlignment.spaceAround,
                 maxY: chartLimitY,
-                barTouchData: BarTouchData(enabled: true), // Tooltip enabled
+                barTouchData: BarTouchData(
+                  enabled: true,
+                  touchTooltipData: BarTouchTooltipData(
+                    // 1. Set the background color to white
+                    getTooltipColor: (group) {
+                      // We look at the first rod of the group to determine the base color
+                      // Or you can use: group.barRods[0].color
+                      return group.barRods[0].color!.withValues(alpha: 0.9);
+                    },
+
+                    tooltipPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    tooltipMargin: 8,
+
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      // Get the Day Label (Monday, Tuesday, etc.)
+                      String day = labels[groupIndex];
+
+                      // Determine if it's "Last" or "This" week based on the rodIndex
+                      // In your _generateGroups, 0 is Last Week, 1 is This Week
+                      String weekLabel = rodIndex == 0 ? "(Last)" : "(This)";
+
+                      return BarTooltipItem(
+                        '$day $weekLabel\n',
+                        const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: rod.toY.toInt().toString(),
+                            style: TextStyle(
+                              color: Colors.white, // Matches the bar color
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ), // Tooltip enabled
                 titlesData: FlTitlesData(
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
