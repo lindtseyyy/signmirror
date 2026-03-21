@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:signmirror_flutter/screens/dashboard_screen.dart';
 import 'package:signmirror_flutter/screens/main_screen.dart';
 import 'package:signmirror_flutter/screens/personalization_screen.dart';
+import 'package:signmirror_flutter/screens/profile_screen.dart';
 // Import your screens here
 import '../screens/screens.dart';
 import "../constants/route_names.dart";
@@ -14,6 +15,7 @@ class AppRoutes {
   static const String personalization = '/personalization';
   static const String dashboard = '/dashboard';
   static const String main = '/main';
+  static const String profile = '/profile';
 
   // Create the route map
   static Map<String, WidgetBuilder> getRoutes() {
@@ -24,6 +26,7 @@ class AppRoutes {
       RouteNames.personalization: (context) => const PersonalizationScreen(),
       RouteNames.main: (context) => const MainScreen(),
       RouteNames.dashboard: (context) => const DashboardScreen(),
+      RouteNames.profile: (context) => const ProfileScreen(),
     };
   }
 }
