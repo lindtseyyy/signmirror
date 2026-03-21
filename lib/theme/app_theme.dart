@@ -6,6 +6,11 @@ class AppTheme {
     useMaterial3: true,
     fontFamily: 'Inter',
     brightness: Brightness.light,
+    scaffoldBackgroundColor: const Color(0xfff2f3f4),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Color(0xff304166),
+      foregroundColor: Colors.white,
+    ),
     colorScheme: const ColorScheme.light(
       primary: Color(0xFF304166),
       surface: Color(0xFFFFFFFF),
