@@ -16,10 +16,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         title: const Text(
           "Dashboard",
           style: TextStyle(fontWeight: FontWeight.w700, fontSize: 24),
-        ),
-        backgroundColor: Color(0xff304166),
-        foregroundColor: Colors.white, // Sets color for icons and text
-        elevation: 4,
+        ), // Sets color for icons and text
       ),
       backgroundColor: Color(0xffF4F4F8),
 
