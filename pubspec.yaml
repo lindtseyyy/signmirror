@@ -30,7 +30,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  fl_chart: ^0.70.0
+  fl_chart: ^1.2.0
+  # Use the community-maintained 4.x versions
+  isar_community: ^3.3.0
+  isar_community_flutter_libs: ^3.3.0
+  path_provider: ^2.1.5
+  flutter_riverpod: ^2.6.1
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -46,6 +51,9 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  # The community-maintained generator
+  isar_community_generator: ^3.3.0
+  build_runner: any
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -61,6 +69,8 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
+    - assets/images/lessons/
+    - assets/images/achievements/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
