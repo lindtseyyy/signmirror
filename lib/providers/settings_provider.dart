@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/settings_service.dart';
-import 'package:intl/intl.dart'; // 
+import 'package:intl/intl.dart'; //
 
 // This provider gives you access to the service anywhere
 final settingsServiceProvider = Provider<SettingsService>((ref) {
@@ -69,6 +69,7 @@ class LanguageNotifier extends StateNotifier<String> {
   LanguageNotifier(this._service) : super(_service.language);
 
   void setLanguage(String language) async {
+    state = language;
     await _service.setLanguage(language);
   }
 }

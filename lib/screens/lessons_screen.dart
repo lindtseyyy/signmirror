@@ -110,42 +110,59 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
       body: SafeArea(
         child: SizedBox(
           child: Container(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
             child: Column(
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: selectedDifficulty,
-                        dropdownColor: Colors.white, // Background of the list
-                        icon: const Icon(
-                          Icons.arrow_drop_down,
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(15, 10, 5, 10),
+                      decoration: BoxDecoration(
+                        color: Color(0xff776483),
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(
                           color: Color(0xff304166),
+                          width: 0.1,
                         ),
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isDense: true,
+                          value: selectedDifficulty,
+                          dropdownColor: Color(
+                            0xff776483,
+                          ), // Background of the list
+                          icon: const Icon(
+                            Icons.arrow_drop_down,
+                            color: Colors.white,
+                          ),
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              selectedDifficulty = newValue!;
+                            });
+                            ref
+                                .read(lessonsProvider.notifier)
+                                .updateDifficulty(
+                                  newValue!,
+                                ); // Update the provider with the new category
+                          },
+                          items: categories.map<DropdownMenuItem<String>>((
+                            String value,
+                          ) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(
+                                value,
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            );
+                          }).toList(),
                         ),
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            selectedDifficulty = newValue!;
-                          });
-                          ref
-                              .read(lessonsProvider.notifier)
-                              .updateDifficulty(
-                                newValue!,
-                              ); // Update the provider with the new category
-                        },
-                        items: categories.map<DropdownMenuItem<String>>((
-                          String value,
-                        ) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
                       ),
                     ),
                   ],
@@ -296,13 +313,10 @@ Widget _buildGridView(List lessons) {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
+            SizedBox(
               width: double.infinity,
               height: 60,
-              decoration: BoxDecoration(
-                color: Colors.greenAccent,
-                borderRadius: BorderRadius.circular(10),
-              ),
+              child: Image.asset(lesson.imagePath, fit: BoxFit.contain),
             ), // Lesson Icon
             const SizedBox(height: 10),
             Text(

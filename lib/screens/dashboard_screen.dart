@@ -12,11 +12,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          "Dashboard",
-          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 24),
-        ), // Sets color for icons and text
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(50.0),
+        child: AppBar(
+          title: const Text(
+            "Dashboard",
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22),
+          ), // Sets color for icons and text
+        ),
       ),
       backgroundColor: Color(0xffF4F4F8),
 

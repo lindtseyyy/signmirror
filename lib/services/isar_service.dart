@@ -1,6 +1,7 @@
 // providers.dart
 import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:signmirror_flutter/models/community_video.dart';
 import 'package:signmirror_flutter/models/lesson.dart';
 import 'package:signmirror_flutter/models/sign.dart';
 
@@ -20,6 +21,7 @@ class IsarService {
       final isar = await Isar.open([
         SignSchema,
         LessonSchema,
+        CommunityVideoSchema,
       ], directory: dir.path);
 
       // await resetDatabase();
@@ -114,6 +116,79 @@ class IsarService {
         },
       ];
 
+      final sampleVideos = [
+        CommunityVideo()
+          ..id = 1
+          ..title = "Sunset Timelapse"
+          ..description = "A relaxing sunset view at the beach."
+          ..videoUrl = "assets/videos/sample_portrait_video.mp4"
+          ..comments = [
+            Comment()
+              ..userId = 101
+              ..text = "Ang ganda ng view!",
+            Comment()
+              ..userId = 102
+              ..text = "So relaxing 😌",
+          ]
+          ..approves = 15
+          ..uploaderId = 1
+          ..isApprovedByCurrentUser = true, // Default value for new videos
+
+        CommunityVideo()
+          ..id = 2
+          ..title = "Street Food Adventure"
+          ..description = "Trying different street foods in Manila."
+          ..videoUrl = "assets/videos/sample_landscape_video.mp4"
+          ..comments = [
+            Comment()
+              ..userId = 103
+              ..text = "Sarap nito!",
+            Comment()
+              ..userId = 104
+              ..text = "Where is this located?",
+            Comment()
+              ..userId = 105
+              ..text = "Gutom tuloy ako 🤤",
+          ]
+          ..approves = 32
+          ..uploaderId = 2
+          ..isApprovedByCurrentUser = false, // Default value for new videos
+
+        CommunityVideo()
+          ..id = 3
+          ..title = "Basketball Highlights"
+          ..description = "Top plays from our barangay league."
+          ..videoUrl = "assets/videos/sample_portrait_video.mp4"
+          ..comments = [
+            Comment()
+              ..userId = 106
+              ..text = "Nice shot!",
+            Comment()
+              ..userId = 107
+              ..text = "Solid defense 🔥",
+          ]
+          ..approves = 21
+          ..uploaderId = 3
+          ..isApprovedByCurrentUser = true, // Default value for new videos
+
+        CommunityVideo()
+          ..id = 4
+          ..title = "Coding Setup Tour"
+          ..description = "My simple programming workspace."
+          ..videoUrl = "assets/videos/sample_landscape_video.mp4"
+          ..comments = [
+            Comment()
+              ..userId = 108
+              ..text = "Clean setup!",
+            Comment()
+              ..userId = 109
+              ..text = "What monitor is that?",
+          ]
+          ..approves = 12
+          ..uploaderId = 1
+          ..isApprovedByCurrentUser = false, // Default value for new videos
+      ];
+
       // Seed signs
       final initialSigns = allSigns.map((sign) {
         return Sign()
@@ -133,13 +208,19 @@ class IsarService {
               lesson['imagePath']; // Using 'level' as the category for now
       }).toList();
 
+      final initialCommunityVideos = sampleVideos;
+
       await isar.writeTxn(() async {
         await isar.lessons.putAll(initialLessons);
         await isar.signs.putAll(initialSigns);
+        await isar.communityVideos.putAll(initialCommunityVideos);
       });
 
       print("Database seeded with ${initialLessons.length} lesson items.");
       print("Database seeded with ${initialSigns.length} sign items.");
+      print(
+        "Database seeded with ${initialCommunityVideos.length} community video items.",
+      );
     }
   }
 
@@ -169,6 +250,12 @@ class IsarService {
   Future<List<Lesson>> getAllLessons() async {
     final isar = await db;
     return await isar.lessons.where().findAll();
+  }
+
+  // Get all lessons
+  Future<List<CommunityVideo>> getAllCommunityVideos() async {
+    final isar = await db;
+    return await isar.communityVideos.where().findAll();
   }
 
   // Search signs by title (Case Insensitive)

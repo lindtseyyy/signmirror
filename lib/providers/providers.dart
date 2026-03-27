@@ -1,5 +1,6 @@
 // providers.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:signmirror_flutter/models/community_video.dart';
 import 'package:signmirror_flutter/models/sign.dart';
 import 'package:signmirror_flutter/state/lesson/lesson_state.dart';
 import '../services/isar_service.dart';
@@ -65,5 +66,24 @@ class LessonsNotifier extends StateNotifier<LessonsState> {
   void updateDifficulty(String newDiff) {
     state = state.copyWith(difficulty: newDiff);
     _applyFilters();
+  }
+}
+
+// This provides a dynamic list of signs that updates when searched
+final communityVideoProvider =
+    StateNotifierProvider<CommunityVideoNotifier, List<CommunityVideo>>((ref) {
+      final service = ref.watch(isarServiceProvider);
+      return CommunityVideoNotifier(service);
+    });
+
+class CommunityVideoNotifier extends StateNotifier<List<CommunityVideo>> {
+  final IsarService _service;
+
+  CommunityVideoNotifier(this._service) : super([]) {
+    loadAll(); // Load initial data
+  }
+
+  Future<void> loadAll() async {
+    state = await _service.getAllCommunityVideos();
   }
 }

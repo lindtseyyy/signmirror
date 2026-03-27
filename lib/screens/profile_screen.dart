@@ -22,10 +22,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final displayTime = ref
         .read(practiceTimeProvider.notifier)
         .getDisplayTime();
+    final language = ref.watch(languageProvider);
 
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(60.0),
+        preferredSize: Size.fromHeight(50.0),
         child: AppBar(
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,10 +34,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Text(
                 "Profile",
                 style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22),
-              ),
-              Text(
-                "Learn new signs and improve your skills",
-                style: TextStyle(fontSize: 12, color: Colors.white70),
               ),
             ],
           ),
@@ -290,13 +287,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               contentPadding: EdgeInsets.zero,
                               horizontalTitleGap:
                                   8, // Removes the gap between icon and text
+                              visualDensity: const VisualDensity(vertical: -4),
                               minLeadingWidth: 0,
                               leading: const Icon(Icons.language),
                               title: const Text("Language"),
                               subtitle: Text(
-                                ref.watch(languageProvider) == 'en'
-                                    ? "English"
-                                    : "Filipino",
+                                language == 'en' ? "English" : "Filipino",
                               ),
                               trailing: const Icon(
                                 Icons.arrow_forward_ios,
@@ -346,7 +342,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             ),
                             ListTile(
                               contentPadding: EdgeInsets.zero,
-                              visualDensity: VisualDensity.compact,
+                              visualDensity: const VisualDensity(vertical: -4),
 
                               horizontalTitleGap:
                                   8, // Removes the gap between icon and text

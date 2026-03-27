@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:signmirror_flutter/screens/community_screen.dart';
 import 'package:signmirror_flutter/screens/dashboard_screen.dart';
 import 'package:signmirror_flutter/screens/dictionary_screen.dart';
 import 'package:signmirror_flutter/screens/lessons_screen.dart';
@@ -19,7 +20,7 @@ class _MainScreenState extends State<MainScreen> {
     DashboardScreen(),
     LessonsScreen(),
     DictionaryScreen(),
-    DashboardScreen(),
+    CommunityScreen(),
     ProfileScreen(),
   ];
 
