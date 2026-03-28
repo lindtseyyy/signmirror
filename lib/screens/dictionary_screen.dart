@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signmirror_flutter/models/sign.dart';
 import 'package:signmirror_flutter/providers/providers.dart';
+import 'package:signmirror_flutter/screens/dictionary_sign_screen.dart';
 
 class DictionaryScreen extends ConsumerStatefulWidget {
   const DictionaryScreen({super.key});
@@ -134,6 +135,14 @@ Widget _buildListView(List<Sign> signs) {
           ],
         ),
         child: ListTile(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DictionarySignScreen(sign: sign),
+              ),
+            );
+          },
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 0,

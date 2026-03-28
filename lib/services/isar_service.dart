@@ -127,74 +127,78 @@ class IsarService {
       final sampleVideos = [
         CommunityVideo()
           ..id = 1
-          ..title = "Sunset Timelapse"
-          ..description = "A relaxing sunset view at the beach."
+          ..title = "Greetings in FSL"
+          ..description =
+              "Learn basic greetings in Filipino Sign Language, demonstrated step by step."
           ..videoUrl = "assets/videos/sample_portrait_video.mp4"
           ..comments = [
             Comment()
               ..userId = 101
-              ..text = "Ang ganda ng view!",
+              ..text = "Very clear demonstration, thank you!",
             Comment()
               ..userId = 102
-              ..text = "So relaxing 😌",
+              ..text = "I can follow along easily 😃",
           ]
           ..approves = 15
           ..uploaderId = 1
-          ..isApprovedByCurrentUser = true, // Default value for new videos
+          ..isApprovedByCurrentUser = true,
 
         CommunityVideo()
           ..id = 2
-          ..title = "Street Food Adventure"
-          ..description = "Trying different street foods in Manila."
+          ..title = "FSL: Common Everyday Phrases"
+          ..description =
+              "A quick guide to commonly used Filipino Sign Language phrases in daily conversation."
           ..videoUrl = "assets/videos/sample_landscape_video.mp4"
           ..comments = [
             Comment()
               ..userId = 103
-              ..text = "Sarap nito!",
+              ..text = "This helps a lot for practicing with friends!",
             Comment()
               ..userId = 104
-              ..text = "Where is this located?",
+              ..text = "Can you make a video for questions too?",
             Comment()
               ..userId = 105
-              ..text = "Gutom tuloy ako 🤤",
+              ..text = "Super helpful! Thank you 👐",
           ]
           ..approves = 32
           ..uploaderId = 2
-          ..isApprovedByCurrentUser = false, // Default value for new videos
+          ..isApprovedByCurrentUser = false,
 
         CommunityVideo()
           ..id = 3
-          ..title = "Basketball Highlights"
-          ..description = "Top plays from our barangay league."
+          ..title = "FSL Alphabet Practice"
+          ..description =
+              "Master the FSL alphabet with this step-by-step demonstration and practice guide."
           ..videoUrl = "assets/videos/sample_portrait_video.mp4"
           ..comments = [
             Comment()
               ..userId = 106
-              ..text = "Nice shot!",
+              ..text = "Perfect for daily practice!",
             Comment()
               ..userId = 107
-              ..text = "Solid defense 🔥",
+              ..text = "Love the slow motion for tricky letters 🔥",
           ]
           ..approves = 21
           ..uploaderId = 3
-          ..isApprovedByCurrentUser = true, // Default value for new videos
+          ..isApprovedByCurrentUser = true,
 
         CommunityVideo()
           ..id = 4
-          ..title = "Coding Setup Tour"
-          ..description = "My simple programming workspace."
+          ..title = "Community FSL Storytelling"
+          ..description =
+              "Watch members of our FSL community share short stories using Filipino Sign Language."
           ..videoUrl = "assets/videos/sample_landscape_video.mp4"
           ..comments = [
             Comment()
               ..userId = 108
-              ..text = "Clean setup!",
+              ..text = "Amazing storytelling! Learned new expressions.",
             Comment()
               ..userId = 109
-              ..text = "What monitor is that?",
+              ..text = "Great job everyone, so inspiring! 👏",
           ]
           ..approves = 12
           ..uploaderId = 1
-          ..isApprovedByCurrentUser = false, // Default value for new videos
+          ..isApprovedByCurrentUser = false,
       ];
 
       // Seed signs
