@@ -278,12 +278,7 @@ class IsarService {
         .filter()
         .optional(
           query != null && query.isNotEmpty,
-          (q) => q.group(
-            (q) => q
-                .titleContains(query!, caseSensitive: false)
-                .or()
-                .levelContains(query, caseSensitive: false),
-          ),
+          (q) => q.group((q) => q.titleContains(query!, caseSensitive: false)),
         )
         .optional(
           category != null &&
