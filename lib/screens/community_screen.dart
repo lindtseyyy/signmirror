@@ -138,12 +138,35 @@ Widget _buildCommunityPost(
           trailing: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.orange),
+              color: video.approves >= 3
+                  ? Colors.green.shade50
+                  : Colors.transparent,
+              border: Border.all(
+                color: video.approves >= 3 ? Colors.green : Colors.orange,
+              ),
               borderRadius: BorderRadius.circular(5),
             ),
-            child: Text(
-              "${video.approves}/3 Approved",
-              style: TextStyle(fontSize: 11),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (video.approves >= 3)
+                  const Padding(
+                    padding: EdgeInsets.only(right: 4.0),
+                    child: Icon(Icons.verified, color: Colors.green, size: 14),
+                  ),
+                Text(
+                  video.approves >= 3
+                      ? "Top Approved (${video.approves})"
+                      : "${video.approves}/3 Approved",
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: video.approves >= 3
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                    color: video.approves >= 3 ? Colors.green.shade800 : null,
+                  ),
+                ),
+              ],
             ),
           ),
         ),

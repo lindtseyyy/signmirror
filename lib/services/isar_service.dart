@@ -139,7 +139,7 @@ class IsarService {
               ..userId = 102
               ..text = "I can follow along easily 😃",
           ]
-          ..approves = 15
+          ..approves = 2
           ..uploaderId = 1
           ..isApprovedByCurrentUser = true,
 
