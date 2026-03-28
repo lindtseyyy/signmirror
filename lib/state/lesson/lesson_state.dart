@@ -8,7 +8,7 @@ class LessonsState {
   LessonsState({
     required this.lessons,
     this.query = '',
-    this.difficulty = 'All',
+    this.difficulty = 'Difficulty Level',
   });
 
   // Helper to update only one piece of state at a time

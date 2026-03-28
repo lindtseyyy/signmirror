@@ -278,13 +278,20 @@ class IsarService {
         .filter()
         .optional(
           query != null && query.isNotEmpty,
-          (q) => q.titleContains(query!, caseSensitive: false),
+          (q) => q.group(
+            (q) => q
+                .titleContains(query!, caseSensitive: false)
+                .or()
+                .levelContains(query, caseSensitive: false),
+          ),
         )
         .optional(
-          category != null && category != "Difficulty Level",
+          category != null &&
+              category != "Difficulty Level" &&
+              category != "All" &&
+              category.isNotEmpty,
           (q) => q.levelEqualTo(category!, caseSensitive: false),
         )
-        .build()
         .findAll();
 
     return results;
