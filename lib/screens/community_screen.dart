@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signmirror_flutter/models/community_video.dart';
 import 'package:signmirror_flutter/widgets/video/video_dialog.dart';
+import 'package:signmirror_flutter/widgets/video/video_comments_sheet.dart';
 import 'package:signmirror_flutter/providers/providers.dart';
 
 class CommunityScreen extends ConsumerStatefulWidget {
@@ -40,7 +41,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                     itemCount: communityVideos.length,
                     itemBuilder: (context, index) {
                       final video = communityVideos[index];
-                      return _buildCommunityPost(context, video);
+                      return _buildCommunityPost(context, ref, video);
                     },
                   ),
                 ),
@@ -102,7 +103,11 @@ void _openVideoPlayer(BuildContext context, String videoUrl) {
   );
 }
 
-Widget _buildCommunityPost(BuildContext context, CommunityVideo video) {
+Widget _buildCommunityPost(
+  BuildContext context,
+  WidgetRef ref,
+  CommunityVideo video,
+) {
   return Card(
     margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
@@ -184,13 +189,23 @@ Widget _buildCommunityPost(BuildContext context, CommunityVideo video) {
                 ),
               ),
               OutlinedButton(
-                onPressed: () {},
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.75,
+                      child: VideoCommentsSheet(video: video),
+                    ),
+                  );
+                },
                 child: Row(
                   children: [
                     Icon(Icons.comment_outlined),
                     const SizedBox(width: 10),
                     Text(
-                      "${video.comments.length} ${video.comments.length > 1 ? 'Comments' : 'Comment'}",
+                      "${video.comments.length} ${video.comments.length == 1 ? 'Comment' : 'Comments'}",
                     ),
                   ],
                 ),

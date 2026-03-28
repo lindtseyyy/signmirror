@@ -86,4 +86,12 @@ class CommunityVideoNotifier extends StateNotifier<List<CommunityVideo>> {
   Future<void> loadAll() async {
     state = await _service.getAllCommunityVideos();
   }
+
+  Future<void> addComment(int videoId, int userId, String text) async {
+    final comment = Comment()
+      ..userId = userId
+      ..text = text;
+    await _service.addCommentToVideo(videoId, comment);
+    await loadAll(); // Refresh the state
+  }
 }

@@ -1,6 +1,7 @@
 // providers.dart
 import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:signmirror_flutter/models/user.dart';
 import 'package:signmirror_flutter/models/community_video.dart';
 import 'package:signmirror_flutter/models/lesson.dart';
 import 'package:signmirror_flutter/models/sign.dart';
@@ -22,6 +23,7 @@ class IsarService {
         SignSchema,
         LessonSchema,
         CommunityVideoSchema,
+        UserSchema,
       ], directory: dir.path);
 
       // await resetDatabase();
@@ -210,10 +212,66 @@ class IsarService {
 
       final initialCommunityVideos = sampleVideos;
 
+      // Seed mock users for comments
+      final initialUsers = [
+        User()
+          ..id = 101
+          ..name = 'Alice'
+          ..email = 'alice@example.com'
+          ..password = 'password123',
+        User()
+          ..id = 102
+          ..name = 'Bob'
+          ..email = 'bob@example.com'
+          ..password = 'password123',
+        User()
+          ..id = 103
+          ..name = 'Charlie'
+          ..email = 'charlie@example.com'
+          ..password = 'password123',
+        User()
+          ..id = 104
+          ..name = 'David'
+          ..email = 'david@example.com'
+          ..password = 'password123',
+        User()
+          ..id = 105
+          ..name = 'Eve'
+          ..email = 'eve@example.com'
+          ..password = 'password123',
+        User()
+          ..id = 106
+          ..name = 'Frank'
+          ..email = 'frank@example.com'
+          ..password = 'password123',
+        User()
+          ..id = 107
+          ..name = 'Grace'
+          ..email = 'grace@example.com'
+          ..password = 'password123',
+        User()
+          ..id = 108
+          ..name = 'Heidi'
+          ..email = 'heidi@example.com'
+          ..password = 'password123',
+        User()
+          ..id = 109
+          ..name = 'Ivan'
+          ..email = 'ivan@example.com'
+          ..password = 'password123',
+        // Current user
+        User()
+          ..id = 1
+          ..name = 'Current User'
+          ..email = 'user@example.com'
+          ..password = 'password123',
+      ];
+
       await isar.writeTxn(() async {
         await isar.lessons.putAll(initialLessons);
         await isar.signs.putAll(initialSigns);
         await isar.communityVideos.putAll(initialCommunityVideos);
+        await isar.users.putAll(initialUsers);
       });
 
       print("Database seeded with ${initialLessons.length} lesson items.");
@@ -298,5 +356,24 @@ class IsarService {
     await isar.writeTxn(() async {
       await isar.signs.put(sign);
     });
+  }
+
+  // Add a comment to a community video
+  Future<void> addCommentToVideo(int videoId, Comment comment) async {
+    final isar = await db;
+    
+    await isar.writeTxn(() async {
+      final video = await isar.communityVideos.get(videoId);
+      if (video != null) {
+        video.comments = [...video.comments, comment];
+        await isar.communityVideos.put(video);
+      }
+    });
+  }
+
+  // Get a user by ID
+  Future<User?> getUserById(int userId) async {
+    final isar = await db;
+    return await isar.users.get(userId);
   }
 }
