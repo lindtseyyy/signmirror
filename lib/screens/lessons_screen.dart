@@ -1,7 +1,9 @@
+import 'package:signmirror_flutter/widgets/adaptive_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signmirror_flutter/models/lesson.dart';
 import 'package:signmirror_flutter/providers/providers.dart';
+import 'package:signmirror_flutter/screens/lesson_signs_screen.dart';
 
 class LessonsScreen extends ConsumerStatefulWidget {
   const LessonsScreen({super.key});
@@ -212,6 +214,14 @@ Widget _buildListView(List<Lesson> lessons) {
           ],
         ),
         child: ListTile(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => LessonSignsScreen(lesson: lesson),
+              ),
+            );
+          },
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 10,
@@ -219,7 +229,7 @@ Widget _buildListView(List<Lesson> lessons) {
           leading: SizedBox(
             width: 50,
             height: 50,
-            child: Image.asset(lesson.imagePath, fit: BoxFit.cover),
+            child: AdaptiveImage(lesson.imagePath, fit: BoxFit.cover),
           ), // Lesson Image
           title: Text(
             lesson.title,
@@ -309,36 +319,46 @@ Widget _buildGridView(List lessons) {
           ],
         ),
         clipBehavior: Clip.hardEdge,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: double.infinity,
-              height: 60,
-              child: Image.asset(lesson.imagePath, fit: BoxFit.contain),
-            ), // Lesson Icon
-            const SizedBox(height: 10),
-            Text(
-              lesson.title,
-              style: TextStyle(fontWeight: FontWeight.w700),
-              overflow: TextOverflow.ellipsis, // Adds the "..."
-              maxLines: 1, // Limits to a single line
-              softWrap: false,
-            ),
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => LessonSignsScreen(lesson: lesson),
+              ),
+            );
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: double.infinity,
+                height: 60,
+                child: AdaptiveImage(lesson.imagePath, fit: BoxFit.contain),
+              ), // Lesson Icon
+              const SizedBox(height: 10),
+              Text(
+                lesson.title,
+                style: TextStyle(fontWeight: FontWeight.w700),
+                overflow: TextOverflow.ellipsis, // Adds the "..."
+                maxLines: 1, // Limits to a single line
+                softWrap: false,
+              ),
 
-            Text(
-              "${lesson.count} Lessons",
-              style: TextStyle(color: Colors.black.withValues(alpha: 0.4)),
-              overflow: TextOverflow.ellipsis, // Adds the "..."
-              maxLines: 1, // Limits to a single line
-              softWrap: false,
-            ),
-            const SizedBox(height: 7),
-            DifficultyBadge(level: lesson.level),
-            const SizedBox(height: 10),
-            ProgressBar(percentage: lesson.progress),
-          ],
+              Text(
+                "${lesson.count} Lessons",
+                style: TextStyle(color: Colors.black.withValues(alpha: 0.4)),
+                overflow: TextOverflow.ellipsis, // Adds the "..."
+                maxLines: 1, // Limits to a single line
+                softWrap: false,
+              ),
+              const SizedBox(height: 7),
+              DifficultyBadge(level: lesson.level),
+              const SizedBox(height: 10),
+              ProgressBar(percentage: lesson.progress),
+            ],
+          ),
         ),
       );
     },

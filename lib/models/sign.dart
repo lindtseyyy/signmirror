@@ -10,4 +10,8 @@ class Sign {
   late String title;
   late String category;
   late String imagePath;
+
+  String? videoUrl;
+  String? videoId;
+  String? instructions;
 }

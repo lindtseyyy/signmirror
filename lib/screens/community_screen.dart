@@ -1,3 +1,4 @@
+import 'package:signmirror_flutter/widgets/adaptive_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signmirror_flutter/models/community_video.dart';
@@ -69,7 +70,7 @@ Widget _buildVideoThumbnail(
         // 1. The Image Thumbnail
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: Image.asset(
+          child: AdaptiveImage(
             thumbnailUrl,
             height: 200,
             width: double.infinity,

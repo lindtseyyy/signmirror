@@ -79,24 +79,30 @@ class IsarService {
           'title': 'Letter A',
           'category': 'Alphabet',
           'imagePath': 'assets/images/lessons/daily_conversation.png',
+          'videoUrl': 'https://youtu.be/iYpTJ5cEl9Y?si=B1WP_YUBMsjEdRMr',
+          'videoId': 'iYpTJ5cEl9Y',
         },
         {
           'id': 2,
           'title': 'Letter B',
           'category': 'Alphabet',
           'imagePath': 'assets/images/lessons/daily_conversation.png',
+          'videoUrl': 'https://youtu.be/e6MYgcbUKqQ?si=PUcl1r4duqdTzSA8',
+          'videoId': 'e6MYgcbUKqQ',
         },
         {
           'id': 3,
           'title': 'Number 1',
           'category': 'Numbers',
           'imagePath': 'assets/images/lessons/daily_conversation.png',
+          'videoId': 'iYpTJ5cEl9Y',
         },
         {
           'id': 4,
           'title': 'Hello',
           'category': 'Greetings',
           'imagePath': 'assets/images/lessons/daily_conversation.png',
+          'videoId': 'iYpTJ5cEl9Y',
         },
         {
           'id': 5,
@@ -196,7 +202,10 @@ class IsarService {
         return Sign()
           ..title = sign['title']
           ..category = sign['category']
-          ..imagePath = sign['imagePath'];
+          ..imagePath = sign['imagePath']
+          ..videoUrl =
+              sign['videoUrl'] ?? 'assets/videos/sample_landscape_video.mp4'
+          ..videoId = sign['videoId'];
       }).toList();
 
       // Convert your List of Maps into a List of Sign objects
@@ -326,6 +335,15 @@ class IsarService {
         .titleContains(query, caseSensitive: false)
         .or()
         .categoryContains(query, caseSensitive: false)
+        .findAll();
+  }
+
+  // Get signs by category
+  Future<List<Sign>> getSignsByCategory(String category) async {
+    final isar = await db;
+    return await isar.signs
+        .filter()
+        .categoryEqualTo(category, caseSensitive: false)
         .findAll();
   }
 
