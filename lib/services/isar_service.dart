@@ -361,7 +361,7 @@ class IsarService {
   // Add a comment to a community video
   Future<void> addCommentToVideo(int videoId, Comment comment) async {
     final isar = await db;
-    
+
     await isar.writeTxn(() async {
       final video = await isar.communityVideos.get(videoId);
       if (video != null) {
