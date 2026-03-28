@@ -22,6 +22,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(50.0),
         child: AppBar(
+          automaticallyImplyLeading: false,
           title: const Text(
             "Community",
             style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22),

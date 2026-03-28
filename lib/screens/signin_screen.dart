@@ -107,12 +107,12 @@ class _SigninScreenState extends State<SigninScreen> {
         await Future.delayed(const Duration(seconds: 1));
 
         setState(() {
-          _isLoginValid = false;
+          _isLoginValid = true;
         });
 
-        // Redirect to Login
+        // Redirect to Personalization instead of Login (Onboarding)
         if (mounted) {
-          Navigator.pushReplacementNamed(context, RouteNames.login);
+          Navigator.pushReplacementNamed(context, RouteNames.personalization);
         }
       }
     }

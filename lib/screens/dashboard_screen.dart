@@ -15,6 +15,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(50.0),
         child: AppBar(
+          automaticallyImplyLeading: false,
           title: const Text(
             "Dashboard",
             style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22),

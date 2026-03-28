@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/route_names.dart';
 
 class PersonalizationScreen extends StatelessWidget {
   const PersonalizationScreen({super.key});
@@ -132,7 +133,9 @@ class PersonalizationChoice extends StatelessWidget {
         elevation: 5, // Higher number = larger shadow
         shadowColor: Colors.black, // Make it darker
       ),
-      onPressed: () {},
+      onPressed: () {
+        Navigator.pushReplacementNamed(context, RouteNames.main);
+      },
 
       child: Row(
         spacing: 15,

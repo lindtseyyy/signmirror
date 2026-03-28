@@ -115,9 +115,9 @@ class _SignupScreenState extends State<SignupScreen> {
         // Wait a tiny bit so they can read the success message
         await Future.delayed(const Duration(milliseconds: 1500));
 
-        // Redirect to Login
+        // Redirect to Login (SignIn)
         if (mounted) {
-          Navigator.pushReplacementNamed(context, RouteNames.login);
+          Navigator.pushReplacementNamed(context, RouteNames.signin);
         }
       }
     }

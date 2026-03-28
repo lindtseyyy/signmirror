@@ -34,6 +34,7 @@ class _DictionaryScreenState extends ConsumerState<DictionaryScreen> {
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(120.0),
         child: AppBar(
+          automaticallyImplyLeading: false,
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: const [
