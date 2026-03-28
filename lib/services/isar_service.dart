@@ -371,6 +371,27 @@ class IsarService {
     });
   }
 
+  // Toggle approve status for a video
+  Future<void> toggleApprove(int videoId) async {
+    final isar = await db;
+
+    await isar.writeTxn(() async {
+      final video = await isar.communityVideos.get(videoId);
+      if (video != null) {
+        if (!video.isApprovedByCurrentUser) {
+          // If NOT approved, user clicks approve -> toggle to true and decrease approvals
+          video.isApprovedByCurrentUser = true;
+          video.approves = video.approves + 1;
+        } else {
+          // If already approved, user clicks un-approve -> toggle to false and increase approvals
+          video.isApprovedByCurrentUser = false;
+          video.approves = video.approves - 1;
+        }
+        await isar.communityVideos.put(video);
+      }
+    });
+  }
+
   // Get a user by ID
   Future<User?> getUserById(int userId) async {
     final isar = await db;

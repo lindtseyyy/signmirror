@@ -163,7 +163,11 @@ Widget _buildCommunityPost(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               FilledButton(
-                onPressed: () {},
+                onPressed: () {
+                  ref
+                      .read(communityVideoProvider.notifier)
+                      .toggleApprove(video.id);
+                },
                 style: video.isApprovedByCurrentUser
                     ? FilledButton.styleFrom(
                         shape: RoundedRectangleBorder(

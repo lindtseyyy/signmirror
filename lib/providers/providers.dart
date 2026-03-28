@@ -94,4 +94,9 @@ class CommunityVideoNotifier extends StateNotifier<List<CommunityVideo>> {
     await _service.addCommentToVideo(videoId, comment);
     await loadAll(); // Refresh the state
   }
+
+  Future<void> toggleApprove(int videoId) async {
+    await _service.toggleApprove(videoId);
+    await loadAll(); // Refresh the state
+  }
 }
