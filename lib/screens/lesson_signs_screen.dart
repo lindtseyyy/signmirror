@@ -21,6 +21,15 @@ class _LessonSignsScreenState extends ConsumerState<LessonSignsScreen> {
   List<Sign> signs = [];
   bool isLoading = true;
 
+  bool _looksLikeYoutubeId(String value) {
+    final v = value.trim();
+    if (v.isEmpty) return false;
+    if (v.startsWith('assets/')) return false;
+    if (v.contains('http://') || v.contains('https://')) return false;
+    if (v.contains('/')) return false;
+    return RegExp(r'^[a-zA-Z0-9_-]{11}$').hasMatch(v);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -61,9 +70,14 @@ class _LessonSignsScreenState extends ConsumerState<LessonSignsScreen> {
   }
 
   void _practiceSign(Sign sign) {
-    final referenceVideoUrl =
-        (sign.videoUrl != null && sign.videoUrl!.isNotEmpty)
-        ? sign.videoUrl!
+    final videoUrl = sign.videoUrl?.trim();
+    final videoId = sign.videoId?.trim();
+    final referenceVideoUrl = (videoUrl != null && videoUrl.isNotEmpty)
+        ? (_looksLikeYoutubeId(videoUrl)
+              ? 'https://www.youtube.com/watch?v=$videoUrl'
+              : videoUrl)
+        : (videoId != null && videoId.isNotEmpty)
+        ? 'https://www.youtube.com/watch?v=$videoId'
         : 'assets/videos/sample_portrait_video.mp4';
 
     Navigator.of(context).push(

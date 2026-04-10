@@ -505,22 +505,16 @@ class _CameraPreviewCover extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final aspect = controller.value.aspectRatio;
+    final aspect = controller.value.aspectRatio;
 
-        return ClipRect(
-          child: FittedBox(
-            fit: BoxFit.cover,
-            alignment: Alignment.center,
-            child: SizedBox(
-              width: constraints.maxWidth,
-              height: constraints.maxWidth / aspect,
-              child: CameraPreview(controller),
-            ),
-          ),
-        );
-      },
+    return DecoratedBox(
+      decoration: const BoxDecoration(color: Colors.black12),
+      child: Center(
+        child: AspectRatio(
+          aspectRatio: aspect > 0 ? aspect : 3 / 4,
+          child: CameraPreview(controller),
+        ),
+      ),
     );
   }
 }
