@@ -1,4 +1,6 @@
 // providers.dart
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signmirror_flutter/models/community_video.dart';
 import 'package:signmirror_flutter/models/sign.dart';
@@ -136,4 +138,33 @@ class CommunityVideoNotifier extends StateNotifier<List<CommunityVideo>> {
     await _service.toggleApprove(videoId);
     await loadAll(); // Refresh the state
   }
+
+  Future<void> uploadVideo({
+    required File videoFile,
+    required String description,
+    required int uploaderId,
+  }) async {
+    await _service.uploadCommunityVideo(
+      videoFile: videoFile,
+      description: description,
+      uploaderId: uploaderId,
+    );
+    await loadAll();
+  }
 }
+
+// Exposes uploader names for the currently loaded community video list.
+final uploaderNamesProvider = FutureProvider<Map<int, String>>((ref) async {
+  final videos = ref.watch(communityVideoProvider);
+  final service = ref.watch(isarServiceProvider);
+
+  final uploaderIds = videos
+      .map((v) => v.uploaderId)
+      .where((id) => id > 0)
+      .toSet()
+      .toList();
+  if (uploaderIds.isEmpty) return {};
+
+  // Missing users are omitted from the map.
+  return service.getUploaderNamesByIds(uploaderIds);
+});

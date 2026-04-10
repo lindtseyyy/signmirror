@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
@@ -15,11 +16,28 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   late final Future<void> _initFuture;
 
   VideoPlayerController _createController(String url) {
-    final uri = Uri.tryParse(url);
-    if (uri != null && (uri.scheme == 'http' || uri.scheme == 'https')) {
-      return VideoPlayerController.networkUrl(uri);
+    final raw = url.trim();
+    final uri = Uri.tryParse(raw);
+
+    if (uri != null) {
+      final scheme = uri.scheme.toLowerCase();
+      if (scheme == 'http' || scheme == 'https') {
+        return VideoPlayerController.networkUrl(uri);
+      }
+
+      // Tolerate file:// URIs (e.g. file:///data/user/0/.../video.mp4)
+      if (scheme == 'file') {
+        return VideoPlayerController.file(File.fromUri(uri));
+      }
     }
-    return VideoPlayerController.asset(url);
+
+    // Absolute local file paths (e.g. /data/user/0/.../uploads/xxx.mp4)
+    if (raw.startsWith('/')) {
+      return VideoPlayerController.file(File(raw));
+    }
+
+    // Default: treat as an asset key/path.
+    return VideoPlayerController.asset(raw);
   }
 
   @override

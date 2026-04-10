@@ -1,4 +1,6 @@
 // providers.dart
+import 'dart:io';
+
 import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:signmirror_flutter/models/user.dart';
@@ -227,6 +229,17 @@ class IsarService {
 
       // Seed mock users for comments
       final initialUsers = [
+        // Uploaders used by seeded community videos
+        User()
+          ..id = 2
+          ..name = 'Uploader Two'
+          ..email = 'uploader2@example.com'
+          ..password = 'password123',
+        User()
+          ..id = 3
+          ..name = 'Uploader Three'
+          ..email = 'uploader3@example.com'
+          ..password = 'password123',
         User()
           ..id = 101
           ..name = 'Alice'
@@ -436,9 +449,76 @@ class IsarService {
     });
   }
 
+  Future<void> uploadCommunityVideo({
+    required File videoFile,
+    required String description,
+    required int uploaderId,
+  }) async {
+    final isar = await db;
+    final docsDir = await getApplicationDocumentsDirectory();
+
+    final uploadsDir = Directory('${docsDir.path}/uploads');
+    if (!await uploadsDir.exists()) {
+      await uploadsDir.create(recursive: true);
+    }
+
+    final normalizedDescription = description
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+    final derivedTitle = normalizedDescription.isEmpty
+        ? 'User upload'
+        : (normalizedDescription.length <= 40
+              ? normalizedDescription
+              : normalizedDescription.substring(0, 40));
+
+    final originalPath = videoFile.path;
+    final lastSeparator = originalPath.lastIndexOf(Platform.pathSeparator);
+    final lastDot = originalPath.lastIndexOf('.');
+    final extension = (lastDot > lastSeparator)
+        ? originalPath.substring(lastDot)
+        : '.mp4';
+    final filename =
+        'community_${DateTime.now().millisecondsSinceEpoch}$extension';
+    final destinationPath = '${uploadsDir.path}/$filename';
+
+    final copiedFile = await videoFile.copy(destinationPath);
+
+    final newVideo = CommunityVideo()
+      ..title = derivedTitle
+      ..description = description
+      ..videoUrl = copiedFile.path
+      ..comments = <Comment>[]
+      ..approves = 0
+      ..uploaderId = uploaderId
+      ..isApprovedByCurrentUser = false;
+
+    await isar.writeTxn(() async {
+      await isar.communityVideos.put(newVideo);
+    });
+  }
+
   // Get a user by ID
   Future<User?> getUserById(int userId) async {
     final isar = await db;
     return await isar.users.get(userId);
+  }
+
+  // Batch fetch uploader names for the given ids.
+  // Missing users are omitted from the returned map.
+  Future<Map<int, String>> getUploaderNamesByIds(List<int> uploaderIds) async {
+    final ids = uploaderIds.where((id) => id > 0).toList();
+    if (ids.isEmpty) return {};
+
+    final isar = await db;
+    final uniqueIds = ids.toSet().toList();
+    final users = await isar.users.getAll(uniqueIds);
+
+    final Map<int, String> result = {};
+    for (var i = 0; i < uniqueIds.length; i++) {
+      final user = users[i];
+      if (user == null) continue;
+      result[uniqueIds[i]] = user.name;
+    }
+    return result;
   }
 }

@@ -10,5 +10,6 @@ class RouteNames {
   static const String editProfile = '/edit-profile';
   static const String achievements = '/achievements';
   static const String community = '/community';
+  static const String communityUpload = '/community-upload';
   static const String bookmarkedSigns = '/bookmarked-signs';
 }

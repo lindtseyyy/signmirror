@@ -31,6 +31,8 @@ dependencies:
   flutter:
     sdk: flutter
   fl_chart: ^1.2.0
+  file_picker: ^8.0.0
+  file_selector: ^1.0.3
   # Use the community-maintained 4.x versions
   isar_community: ^3.3.0
   isar_community_flutter_libs: ^3.3.0

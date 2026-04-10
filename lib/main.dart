@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:signmirror_flutter/constants/route_names.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +11,7 @@ import './theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  ui.DartPluginRegistrant.ensureInitialized();
 
   // 1. Initialize the service manually once
   final settingsService = SettingsService();
