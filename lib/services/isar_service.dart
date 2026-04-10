@@ -162,7 +162,7 @@ class IsarService {
               ..userId = 105
               ..text = "Super helpful! Thank you 👐",
           ]
-          ..approves = 32
+          ..approves = 2
           ..uploaderId = 2
           ..isApprovedByCurrentUser = false,
 

@@ -88,12 +88,12 @@ class _SigninScreenState extends State<SigninScreen> {
       });
 
       // For invalid login later
-      SnackBarUtils.show(
-        context,
-        message: "Invalid credentials. Please try again.",
-        isError: true,
-        position: SnackBarPosition.top,
-      );
+      // SnackBarUtils.show(
+      //   context,
+      //   message: "Invalid credentials. Please try again.",
+      //   isError: true,
+      //   position: SnackBarPosition.top,
+      // );
 
       // Simulate a network delay (e.g., 2 seconds)
       await Future.delayed(const Duration(seconds: 2));

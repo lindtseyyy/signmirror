@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:signmirror_flutter/models/practice_stats.dart';
 import 'package:signmirror_flutter/models/sign.dart';
 import 'package:signmirror_flutter/providers/providers.dart';
 import 'package:signmirror_flutter/screens/dictionary_sign_screen.dart';
@@ -27,6 +28,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final signs = ref.watch(signsProvider);
+    final progress = ref.watch(practiceStatsProvider);
 
     final letterASign = _resolveSignByTitle(signs, 'Letter A');
     final letterBSign = _resolveSignByTitle(signs, 'Letter B');
@@ -145,7 +147,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
+
+                  progress.when(
+                    data: (stats) => _ProgressSummaryCard(stats: stats),
+                    loading: () => const _ProgressSummaryLoading(),
+                    error: (e, _) => _ProgressSummaryError(message: '$e'),
+                  ),
+
+                  const SizedBox(height: 20),
                   DynamicBarChart(
                     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
                     data: [
@@ -247,6 +257,186 @@ class StruggledSign extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ProgressSummaryCard extends StatelessWidget {
+  final PracticeStats stats;
+
+  const _ProgressSummaryCard({required this.stats});
+
+  String _formatPercent(double value) {
+    if (value.isNaN || value.isInfinite) return '0%';
+    final rounded = value.round();
+    return '$rounded%';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final showMock =
+        stats.totalAttempts == 0 &&
+        stats.streak == 0 &&
+        stats.learnedSigns.isEmpty &&
+        stats.lastPracticeAt == null;
+
+    final signsLearnedValue = showMock
+        ? '8'
+        : stats.learnedSigns.length.toString();
+    final avgAccuracy = showMock
+        ? '76%'
+        : _formatPercent(stats.averageAccuracyRate);
+    final streakValue = showMock ? '3d' : '${stats.streak}d';
+    final attemptsValue = showMock ? '18' : stats.totalAttempts.toString();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xffffffff),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'PROGRESS',
+            style: TextStyle(
+              color: const Color(0xff000000).withValues(alpha: 0.6),
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _ProgressMetricTile(
+                  label: 'Signs learned',
+                  value: signsLearnedValue,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _ProgressMetricTile(
+                  label: 'Avg accuracy',
+                  value: avgAccuracy,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _ProgressMetricTile(
+                  label: 'Practice streak',
+                  value: streakValue,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _ProgressMetricTile(
+                  label: 'Total attempts',
+                  value: attemptsValue,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProgressMetricTile extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _ProgressMetricTile({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xffF4F4F8),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.black.withValues(alpha: 0.6),
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProgressSummaryLoading extends StatelessWidget {
+  const _ProgressSummaryLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xffffffff),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: const Center(
+        child: SizedBox(
+          height: 24,
+          width: 24,
+          child: CircularProgressIndicator(strokeWidth: 3),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProgressSummaryError extends StatelessWidget {
+  final String message;
+
+  const _ProgressSummaryError({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xffffffff),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        'Unable to load progress: $message',
+        style: TextStyle(color: Colors.black.withValues(alpha: 0.7)),
       ),
     );
   }

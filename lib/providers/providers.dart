@@ -3,8 +3,10 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signmirror_flutter/models/community_video.dart';
+import 'package:signmirror_flutter/models/practice_stats.dart';
 import 'package:signmirror_flutter/models/sign.dart';
 import 'package:signmirror_flutter/state/lesson/lesson_state.dart';
+import 'package:signmirror_flutter/services/practice_stats_service.dart';
 import '../services/isar_service.dart';
 
 // This provides the actual database logic class
@@ -168,3 +170,47 @@ final uploaderNamesProvider = FutureProvider<Map<int, String>>((ref) async {
   // Missing users are omitted from the map.
   return service.getUploaderNamesByIds(uploaderIds);
 });
+
+final practiceStatsServiceProvider = Provider<PracticeStatsService>((ref) {
+  return PracticeStatsService();
+});
+
+final practiceStatsProvider =
+    StateNotifierProvider<PracticeStatsNotifier, AsyncValue<PracticeStats>>((
+      ref,
+    ) {
+      return PracticeStatsNotifier(ref.watch(practiceStatsServiceProvider));
+    });
+
+class PracticeStatsNotifier extends StateNotifier<AsyncValue<PracticeStats>> {
+  final PracticeStatsService _service;
+
+  PracticeStatsNotifier(this._service) : super(const AsyncValue.loading()) {
+    load();
+  }
+
+  Future<void> load() async {
+    try {
+      final stats = await _service.load();
+      state = AsyncValue.data(stats);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  Future<void> recordAttempt({
+    required String signTitle,
+    required double accuracyRate,
+  }) async {
+    try {
+      state = const AsyncValue.loading();
+      final stats = await _service.recordAttempt(
+        signTitle: signTitle,
+        accuracyRate: accuracyRate,
+      );
+      state = AsyncValue.data(stats);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+}

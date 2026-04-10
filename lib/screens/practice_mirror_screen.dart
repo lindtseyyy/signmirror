@@ -3,11 +3,13 @@ import 'dart:math';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:signmirror_flutter/providers/providers.dart';
 import 'package:signmirror_flutter/widgets/video/adaptive_video_player.dart';
 
-class PracticeMirrorScreen extends StatefulWidget {
+class PracticeMirrorScreen extends ConsumerStatefulWidget {
   final String referenceVideoUrl;
   final String targetGestureName;
 
@@ -21,10 +23,11 @@ class PracticeMirrorScreen extends StatefulWidget {
   static const Duration lowLightPauseAfter = Duration(seconds: 10);
 
   @override
-  State<PracticeMirrorScreen> createState() => _PracticeMirrorScreenState();
+  ConsumerState<PracticeMirrorScreen> createState() =>
+      _PracticeMirrorScreenState();
 }
 
-class _PracticeMirrorScreenState extends State<PracticeMirrorScreen>
+class _PracticeMirrorScreenState extends ConsumerState<PracticeMirrorScreen>
     with SingleTickerProviderStateMixin {
   static const _frameInterval = Duration(milliseconds: 66); // ~15 FPS
 
@@ -71,6 +74,15 @@ class _PracticeMirrorScreenState extends State<PracticeMirrorScreen>
 
   @override
   void dispose() {
+    final accuracyRate = _predictions.isNotEmpty
+        ? _predictions.first.confidence
+        : 0.0;
+    ref
+        .read(practiceStatsProvider.notifier)
+        .recordAttempt(
+          signTitle: widget.targetGestureName,
+          accuracyRate: accuracyRate,
+        );
     _timer?.cancel();
     _pulseController.dispose();
     _cameraController?.dispose();
