@@ -32,13 +32,40 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
     return uploaderNames[uploaderId] ?? 'User $uploaderId';
   }
 
+  List<CommunityVideo> _createMockUnapprovedVideos() {
+    CommunityVideo mockVideo({
+      required int id,
+      required String title,
+      required String description,
+    }) {
+      return CommunityVideo()
+        ..id = id
+        ..title = title
+        ..description = description
+        ..videoUrl = 'assets/videos/sample_portrait_video.mp4'
+        ..comments = <Comment>[]
+        ..approves = 0
+        ..uploaderId = 2
+        ..isApprovedByCurrentUser = false;
+    }
+
+    return <CommunityVideo>[
+      mockVideo(
+        id: -101,
+        title: 'Beginner Practice Clip (Mock)',
+        description:
+            'Example community video shown while there are no uploads.',
+      ),
+    ];
+  }
+
   Widget _buildVideoList({
     required List<CommunityVideo> videos,
     required Map<int, String> uploaderNames,
     required bool Function(CommunityVideo video) tabFilter,
   }) {
     final queryLower = _query.trim().toLowerCase();
-    final filtered = videos.where((video) {
+    var filtered = videos.where((video) {
       if (!tabFilter(video)) return false;
 
       if (queryLower.isEmpty) return true;
@@ -50,6 +77,12 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
       return video.title.toLowerCase().contains(queryLower) ||
           uploaderName.toLowerCase().contains(queryLower);
     }).toList();
+
+    if (filtered.isEmpty &&
+        queryLower.isEmpty &&
+        tabFilter(_createMockUnapprovedVideos().first)) {
+      filtered = _createMockUnapprovedVideos();
+    }
 
     return ListView.builder(
       padding: const EdgeInsets.all(2.0),
@@ -549,6 +582,7 @@ Widget _buildCommunityPost(
   String uploaderName,
 ) {
   final hasDescription = video.description?.trim().isNotEmpty == true;
+  final isMock = video.id < 0;
 
   return Card(
     margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
@@ -592,13 +626,19 @@ Widget _buildCommunityPost(
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (isMock) ...[
+                  const Icon(Icons.science_outlined, size: 14),
+                  const SizedBox(width: 4),
+                ],
                 if (video.approves >= 3)
                   const Padding(
                     padding: EdgeInsets.only(right: 4.0),
                     child: Icon(Icons.verified, color: Colors.green, size: 14),
                   ),
                 Text(
-                  video.approves >= 3
+                  isMock
+                      ? 'Mock Video'
+                      : video.approves >= 3
                       ? 'Top Approved (${video.approves})'
                       : '${video.approves}/3 Approved',
                   style: TextStyle(
@@ -630,11 +670,13 @@ Widget _buildCommunityPost(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               FilledButton(
-                onPressed: () {
-                  ref
-                      .read(communityVideoProvider.notifier)
-                      .toggleApprove(video.id);
-                },
+                onPressed: isMock
+                    ? null
+                    : () {
+                        ref
+                            .read(communityVideoProvider.notifier)
+                            .toggleApprove(video.id);
+                      },
                 style: video.isApprovedByCurrentUser
                     ? FilledButton.styleFrom(
                         shape: RoundedRectangleBorder(
@@ -659,17 +701,19 @@ Widget _buildCommunityPost(
                 ),
               ),
               OutlinedButton(
-                onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (context) => SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.75,
-                      child: VideoCommentsSheet(video: video),
-                    ),
-                  );
-                },
+                onPressed: isMock
+                    ? null
+                    : () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) => SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.75,
+                            child: VideoCommentsSheet(video: video),
+                          ),
+                        );
+                      },
                 child: Row(
                   children: [
                     const Icon(Icons.comment_outlined),

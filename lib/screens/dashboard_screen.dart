@@ -275,11 +275,7 @@ class _ProgressSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final showMock =
-        stats.totalAttempts == 0 &&
-        stats.streak == 0 &&
-        stats.learnedSigns.isEmpty &&
-        stats.lastPracticeAt == null;
+    final showMock = stats.totalAttempts == 0;
 
     final signsLearnedValue = showMock
         ? '8'
