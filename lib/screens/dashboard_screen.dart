@@ -1,16 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:signmirror_flutter/models/sign.dart';
+import 'package:signmirror_flutter/providers/providers.dart';
+import 'package:signmirror_flutter/screens/dictionary_sign_screen.dart';
 import '../widgets//dynamic_bar_chart.dart';
 
-class DashboardScreen extends StatefulWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  Sign? _resolveSignByTitle(List<Sign> signs, String title) {
+    final normalized = title.trim().toLowerCase();
+    for (final sign in signs) {
+      if (sign.title.trim().toLowerCase() == normalized) {
+        return sign;
+      }
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final signs = ref.watch(signsProvider);
+
+    final letterASign = _resolveSignByTitle(signs, 'Letter A');
+    final letterBSign = _resolveSignByTitle(signs, 'Letter B');
+
+    final VoidCallback? onTapLetterA = (letterASign == null)
+        ? null
+        : () {
+            final sign = letterASign!;
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => DictionarySignScreen(sign: sign),
+              ),
+            );
+          };
+
+    final VoidCallback? onTapLetterB = (letterBSign == null)
+        ? null
+        : () {
+            final sign = letterBSign!;
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => DictionarySignScreen(sign: sign),
+              ),
+            );
+          };
+
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(50.0),
@@ -129,11 +170,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       spacing: 10.0,
                       children: [
                         StruggledSign(
-                          signTitle: "Good Morning",
-                          percentage: 67,
+                          signTitle: 'Letter A',
+                          percentage: 45,
+                          onTap: onTapLetterA,
                         ),
-                        StruggledSign(signTitle: "Hospital", percentage: 39),
-                        StruggledSign(signTitle: "Thank you", percentage: 16),
+                        StruggledSign(
+                          signTitle: 'Letter B',
+                          percentage: 52,
+                          onTap: onTapLetterB,
+                        ),
                       ],
                     ),
                   ),
@@ -147,23 +192,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-// Struggled Sign Widget
 class StruggledSign extends StatelessWidget {
   final String signTitle;
   final int percentage;
+  final VoidCallback? onTap;
 
   const StruggledSign({
     super.key,
     required this.signTitle,
     required this.percentage,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      height: 50,
       width: double.infinity,
+      height: 50,
       decoration: BoxDecoration(
         color: Color(0xffffffff),
         borderRadius: BorderRadius.circular(10),
@@ -171,19 +216,32 @@ class StruggledSign extends StatelessWidget {
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 3,
-            offset: const Offset(1, 1), // Bottom-right shadow
+            offset: const Offset(1, 1),
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(signTitle, style: TextStyle(fontWeight: FontWeight.w700)),
-          Text(
-            percentage.toString() + ("% Accurracy"),
-            style: TextStyle(fontWeight: FontWeight.w300),
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(10),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  signTitle,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  percentage.toString() + ("% Accurracy"),
+                  style: const TextStyle(fontWeight: FontWeight.w300),
+                ),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }
