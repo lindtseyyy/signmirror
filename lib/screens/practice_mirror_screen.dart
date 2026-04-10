@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:math';
-import 'dart:ui' show lerpDouble;
 
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:signmirror_flutter/widgets/video/adaptive_video_player.dart';
 
 class PracticeMirrorScreen extends StatefulWidget {
@@ -46,6 +47,11 @@ class _PracticeMirrorScreenState extends State<PracticeMirrorScreen>
   // Simple animation for the haptic icon.
   late final AnimationController _pulseController;
 
+  CameraController? _cameraController;
+  Future<void>? _cameraInit;
+  bool _cameraPermissionDenied = false;
+  String? _cameraError;
+
   @override
   void initState() {
     super.initState();
@@ -59,6 +65,7 @@ class _PracticeMirrorScreenState extends State<PracticeMirrorScreen>
       upperBound: 1.0,
     );
 
+    _initFrontCamera();
     _startSimulation();
   }
 
@@ -66,7 +73,61 @@ class _PracticeMirrorScreenState extends State<PracticeMirrorScreen>
   void dispose() {
     _timer?.cancel();
     _pulseController.dispose();
+    _cameraController?.dispose();
     super.dispose();
+  }
+
+  Future<void> _initFrontCamera() async {
+    try {
+      final status = await Permission.camera.request();
+      if (!mounted) return;
+
+      if (!status.isGranted) {
+        setState(() {
+          _cameraPermissionDenied = true;
+        });
+        return;
+      }
+
+      final cameras = await availableCameras();
+      if (!mounted) return;
+
+      if (cameras.isEmpty) {
+        setState(() {
+          _cameraError = 'No cameras available on this device.';
+        });
+        return;
+      }
+
+      final front = cameras.firstWhere(
+        (c) => c.lensDirection == CameraLensDirection.front,
+        orElse: () => cameras.first,
+      );
+
+      final controller = CameraController(
+        front,
+        ResolutionPreset.medium,
+        enableAudio: false,
+      );
+
+      await _cameraController?.dispose();
+      _cameraController = controller;
+
+      final init = controller.initialize();
+      _cameraInit = init;
+      await init;
+      if (!mounted) return;
+
+      setState(() {
+        _cameraPermissionDenied = false;
+        _cameraError = null;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _cameraError = e.toString();
+      });
+    }
   }
 
   void _startSimulation() {
@@ -218,8 +279,6 @@ class _PracticeMirrorScreenState extends State<PracticeMirrorScreen>
             const Divider(height: 1),
             Expanded(
               child: _MirrorPanel(
-                frame: _frame,
-                luminance: _luminance,
                 isLowLight: isLowLight,
                 scoringPaused: _scoringPaused,
                 detectedGestureLabel: detected.name,
@@ -228,6 +287,10 @@ class _PracticeMirrorScreenState extends State<PracticeMirrorScreen>
                 performanceColor: performanceColor,
                 pulse: _lowConfidencePulse,
                 pulseAnimation: _pulseController,
+                cameraController: _cameraController,
+                cameraInit: _cameraInit,
+                cameraPermissionDenied: _cameraPermissionDenied,
+                cameraError: _cameraError,
               ),
             ),
           ],
@@ -276,8 +339,6 @@ class _ReferencePanel extends StatelessWidget {
 }
 
 class _MirrorPanel extends StatelessWidget {
-  final int frame;
-  final double luminance;
   final bool isLowLight;
   final bool scoringPaused;
   final String detectedGestureLabel;
@@ -287,9 +348,12 @@ class _MirrorPanel extends StatelessWidget {
   final bool pulse;
   final Animation<double> pulseAnimation;
 
+  final CameraController? cameraController;
+  final Future<void>? cameraInit;
+  final bool cameraPermissionDenied;
+  final String? cameraError;
+
   const _MirrorPanel({
-    required this.frame,
-    required this.luminance,
     required this.isLowLight,
     required this.scoringPaused,
     required this.detectedGestureLabel,
@@ -298,6 +362,10 @@ class _MirrorPanel extends StatelessWidget {
     required this.performanceColor,
     required this.pulse,
     required this.pulseAnimation,
+    required this.cameraController,
+    required this.cameraInit,
+    required this.cameraPermissionDenied,
+    required this.cameraError,
   });
 
   @override
@@ -309,7 +377,12 @@ class _MirrorPanel extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            _SimulatedCameraFeed(frame: frame, luminance: luminance),
+            _LiveCameraLayer(
+              controller: cameraController,
+              init: cameraInit,
+              permissionDenied: cameraPermissionDenied,
+              error: cameraError,
+            ),
 
             // Darken when low light.
             if (isLowLight)
@@ -360,6 +433,150 @@ class _MirrorPanel extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LiveCameraLayer extends StatelessWidget {
+  final CameraController? controller;
+  final Future<void>? init;
+  final bool permissionDenied;
+  final String? error;
+
+  const _LiveCameraLayer({
+    required this.controller,
+    required this.init,
+    required this.permissionDenied,
+    required this.error,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (permissionDenied) {
+      return const _CameraMessage(
+        icon: Icons.no_photography,
+        title: 'Camera permission needed',
+        subtitle: 'Enable camera access to show live practice feed.',
+      );
+    }
+
+    if (error != null) {
+      return _CameraMessage(
+        icon: Icons.error_outline,
+        title: 'Camera unavailable',
+        subtitle: error!,
+      );
+    }
+
+    if (controller == null || init == null) {
+      return const _CameraMessage(
+        icon: Icons.camera_alt,
+        title: 'Starting camera…',
+        subtitle: 'Preparing live preview.',
+        showSpinner: true,
+      );
+    }
+
+    return FutureBuilder<void>(
+      future: init,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done ||
+            !controller!.value.isInitialized) {
+          return const _CameraMessage(
+            icon: Icons.camera_alt,
+            title: 'Starting camera…',
+            subtitle: 'Preparing live preview.',
+            showSpinner: true,
+          );
+        }
+
+        return _CameraPreviewCover(controller: controller!);
+      },
+    );
+  }
+}
+
+class _CameraPreviewCover extends StatelessWidget {
+  final CameraController controller;
+
+  const _CameraPreviewCover({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final aspect = controller.value.aspectRatio;
+
+        return ClipRect(
+          child: FittedBox(
+            fit: BoxFit.cover,
+            alignment: Alignment.center,
+            child: SizedBox(
+              width: constraints.maxWidth,
+              height: constraints.maxWidth / aspect,
+              child: CameraPreview(controller),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _CameraMessage extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool showSpinner;
+
+  const _CameraMessage({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    this.showSpinner = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(color: Colors.black12),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 320),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (showSpinner) ...[
+                  const SizedBox(
+                    width: 28,
+                    height: 28,
+                    child: CircularProgressIndicator(strokeWidth: 3),
+                  ),
+                  const SizedBox(height: 12),
+                ] else ...[
+                  Icon(icon, size: 30, color: Colors.black54),
+                  const SizedBox(height: 10),
+                ],
+                Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  subtitle,
+                  style: TextStyle(color: Colors.black.withValues(alpha: 0.65)),
+                  textAlign: TextAlign.center,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -617,128 +834,6 @@ class _HapticIndicator extends StatelessWidget {
         child: const Icon(Icons.vibration, color: Color(0xffF9A825), size: 20),
       ),
     );
-  }
-}
-
-class _SimulatedCameraFeed extends StatelessWidget {
-  final int frame;
-  final double luminance;
-
-  const _SimulatedCameraFeed({required this.frame, required this.luminance});
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _SimulatedCameraPainter(frame: frame, luminance: luminance),
-      child: const SizedBox.expand(),
-    );
-  }
-}
-
-class _SimulatedCameraPainter extends CustomPainter {
-  final int frame;
-  final double luminance;
-
-  _SimulatedCameraPainter({required this.frame, required this.luminance});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final base = lerpDouble(0.10, 0.55, luminance) ?? 0.3;
-    final bgPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          Color.lerp(const Color(0xff304166), Colors.black, 1 - base)!,
-          Color.lerp(const Color(0xff2A2C41), Colors.black, 1 - base)!,
-        ],
-      ).createShader(Offset.zero & size);
-
-    canvas.drawRect(Offset.zero & size, bgPaint);
-
-    // Noise overlay.
-    final seed = frame;
-    final rand = Random(seed);
-
-    final noisePaint = Paint()..color = Colors.white.withValues(alpha: 0.03);
-    for (var i = 0; i < 140; i++) {
-      final x = rand.nextDouble() * size.width;
-      final y = rand.nextDouble() * size.height;
-      final w = rand.nextDouble() * 4 + 1;
-      final h = rand.nextDouble() * 4 + 1;
-      canvas.drawRect(Rect.fromLTWH(x, y, w, h), noisePaint);
-    }
-
-    // Simple "person" silhouette.
-    final center = Offset(size.width * 0.52, size.height * 0.55);
-    final bodyPaint = Paint()
-      ..color = Colors.black.withValues(alpha: 0.25)
-      ..style = PaintingStyle.fill;
-
-    canvas.drawCircle(
-      Offset(center.dx, size.height * 0.30),
-      size.width * 0.08,
-      bodyPaint,
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromCenter(
-          center: Offset(center.dx, size.height * 0.58),
-          width: size.width * 0.30,
-          height: size.height * 0.46,
-        ),
-        const Radius.circular(28),
-      ),
-      bodyPaint,
-    );
-
-    // "Hand box" region to simulate detection.
-    final handBox = Rect.fromCenter(
-      center: Offset(
-        size.width * (0.25 + 0.10 * sin(frame / 10.0)),
-        size.height * (0.52 + 0.10 * cos(frame / 12.0)),
-      ),
-      width: size.width * 0.22,
-      height: size.height * 0.22,
-    );
-
-    final boxPaint = Paint()
-      ..color = const Color(0xff2D68FF).withValues(alpha: 0.85)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3;
-
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(handBox, const Radius.circular(14)),
-      boxPaint,
-    );
-
-    // Corner markers.
-    final cornerPaint = Paint()
-      ..color = const Color(0xff2D68FF)
-      ..strokeWidth = 3
-      ..style = PaintingStyle.stroke;
-
-    const corner = 14.0;
-    void cornerLine(Offset p, Offset a, Offset b) {
-      canvas.drawLine(p + a, p + b, cornerPaint);
-    }
-
-    cornerLine(handBox.topLeft, Offset.zero, const Offset(corner, 0));
-    cornerLine(handBox.topLeft, Offset.zero, const Offset(0, corner));
-
-    cornerLine(handBox.topRight, Offset.zero, const Offset(-corner, 0));
-    cornerLine(handBox.topRight, Offset.zero, const Offset(0, corner));
-
-    cornerLine(handBox.bottomLeft, Offset.zero, const Offset(corner, 0));
-    cornerLine(handBox.bottomLeft, Offset.zero, const Offset(0, -corner));
-
-    cornerLine(handBox.bottomRight, Offset.zero, const Offset(-corner, 0));
-    cornerLine(handBox.bottomRight, Offset.zero, const Offset(0, -corner));
-  }
-
-  @override
-  bool shouldRepaint(covariant _SimulatedCameraPainter oldDelegate) {
-    return oldDelegate.frame != frame || oldDelegate.luminance != luminance;
   }
 }
 

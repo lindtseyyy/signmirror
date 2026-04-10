@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:signmirror_flutter/models/sign.dart';
+import 'package:signmirror_flutter/screens/practice_mirror_screen.dart';
 import 'package:signmirror_flutter/widgets/video/adaptive_video_player.dart';
 import 'package:signmirror_flutter/widgets/adaptive_image.dart';
 
@@ -9,10 +10,19 @@ class DictionarySignScreen extends StatelessWidget {
   const DictionarySignScreen({super.key, required this.sign});
 
   void _practiceSign(BuildContext context) {
-    // ScaffoldMessenger.of(context).showSnackBar(
-    //   const SnackBar(content: Text('Starting real-time practice...')),
-    // );
-    // Implement actual practice logic here
+    final referenceVideoUrl =
+        (sign.videoUrl != null && sign.videoUrl!.isNotEmpty)
+        ? sign.videoUrl!
+        : 'assets/videos/sample_portrait_video.mp4';
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PracticeMirrorScreen(
+          referenceVideoUrl: referenceVideoUrl,
+          targetGestureName: sign.title,
+        ),
+      ),
+    );
   }
 
   @override
