@@ -44,4 +44,19 @@ class SettingsService {
   Future<void> setPracticeTime(String time) async {
     await _prefs.setString('practiceTime', time);
   }
+
+  // --- USER NAME ---
+  String get userName => _prefs.getString('userName') ?? '';
+
+  Future<void> setUserName(String value) async {
+    await _prefs.setString('userName', value);
+  }
+
+  // --- USER PERSONALIZATION ---
+  String get userPersonalization =>
+      _prefs.getString('userPersonalization') ?? '';
+
+  Future<void> setUserPersonalization(String value) async {
+    await _prefs.setString('userPersonalization', value);
+  }
 }

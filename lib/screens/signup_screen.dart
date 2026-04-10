@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signmirror_flutter/utils/snackbar_utils.dart';
+import 'package:signmirror_flutter/providers/settings_provider.dart';
 import '../constants/route_names.dart';
 import 'package:signmirror_flutter/widgets/loading_screen.dart';
 
-class SignupScreen extends StatefulWidget {
+class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
 
   @override
-  State<SignupScreen> createState() => _SignupScreenState();
+  ConsumerState<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> {
+class _SignupScreenState extends ConsumerState<SignupScreen> {
   // 1. Declare the recognizer here
   late TapGestureRecognizer _signUpRecognizer;
 
@@ -111,6 +113,11 @@ class _SignupScreenState extends State<SignupScreen> {
           isError: false,
           position: SnackBarPosition.top,
         );
+
+        // Persist the entered name for later use
+        ref
+            .read(userNameProvider.notifier)
+            .setUserName(_nameController.text.trim());
 
         // Wait a tiny bit so they can read the success message
         await Future.delayed(const Duration(milliseconds: 1500));

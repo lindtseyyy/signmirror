@@ -23,12 +23,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         .read(practiceTimeProvider.notifier)
         .getDisplayTime();
     final language = ref.watch(languageProvider);
+    final userName = ref.watch(userNameProvider);
+    final personalization = ref.watch(personalizationProvider);
 
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(50.0),
         child: AppBar(
           automaticallyImplyLeading: false,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () {
+                Navigator.pushNamed(context, RouteNames.editProfile);
+              },
+            ),
+          ],
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: const [
@@ -69,16 +79,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               ),
                             ),
                             const SizedBox(height: 10),
-                            const Text(
-                              "Ping Pong Dantes",
+                            Text(
+                              userName.trim().isNotEmpty ? userName : 'User',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             const SizedBox(height: 3),
-                            const Text(
-                              "Self-Learning",
+                            Text(
+                              personalization.trim().isNotEmpty
+                                  ? personalization
+                                  : 'Not set',
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w300,

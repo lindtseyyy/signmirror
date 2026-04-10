@@ -3,6 +3,7 @@ import 'package:signmirror_flutter/screens/achievements_screen.dart';
 import 'package:signmirror_flutter/screens/bookmarked_signs_screen.dart';
 import 'package:signmirror_flutter/screens/community_screen.dart';
 import 'package:signmirror_flutter/screens/dashboard_screen.dart';
+import 'package:signmirror_flutter/screens/edit_profile_screen.dart';
 import 'package:signmirror_flutter/screens/main_screen.dart';
 import 'package:signmirror_flutter/screens/personalization_screen.dart';
 import 'package:signmirror_flutter/screens/profile_screen.dart';
@@ -32,6 +33,7 @@ class AppRoutes {
       RouteNames.main: (context) => const MainScreen(),
       RouteNames.dashboard: (context) => const DashboardScreen(),
       RouteNames.profile: (context) => const ProfileScreen(),
+      RouteNames.editProfile: (context) => const EditProfileScreen(),
       RouteNames.achievements: (context) => const AchievementsScreen(),
       RouteNames.community: (context) => const CommunityScreen(),
       RouteNames.bookmarkedSigns: (context) => const BookmarkedSignsScreen(),

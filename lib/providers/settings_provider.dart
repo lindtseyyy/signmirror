@@ -74,6 +74,37 @@ class LanguageNotifier extends StateNotifier<String> {
   }
 }
 
+// 4. User Name Provider
+final userNameProvider = StateNotifierProvider<UserNameNotifier, String>((ref) {
+  return UserNameNotifier(ref.watch(settingsServiceProvider));
+});
+
+class UserNameNotifier extends StateNotifier<String> {
+  final SettingsService _service;
+  UserNameNotifier(this._service) : super(_service.userName);
+
+  void setUserName(String value) async {
+    state = value;
+    await _service.setUserName(value);
+  }
+}
+
+// 5. Personalization Provider
+final personalizationProvider =
+    StateNotifierProvider<PersonalizationNotifier, String>((ref) {
+      return PersonalizationNotifier(ref.watch(settingsServiceProvider));
+    });
+
+class PersonalizationNotifier extends StateNotifier<String> {
+  final SettingsService _service;
+  PersonalizationNotifier(this._service) : super(_service.userPersonalization);
+
+  void setPersonalization(String value) async {
+    state = value;
+    await _service.setUserPersonalization(value);
+  }
+}
+
 // 3. Practice Time Provider
 final practiceTimeProvider =
     StateNotifierProvider<PracticeTimeNotifier, String>((ref) {

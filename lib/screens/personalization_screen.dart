@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/route_names.dart';
+import '../providers/settings_provider.dart';
 
-class PersonalizationScreen extends StatelessWidget {
+class PersonalizationScreen extends ConsumerWidget {
   const PersonalizationScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
     return Scaffold(
       body: SafeArea(
@@ -80,18 +82,45 @@ class PersonalizationScreen extends StatelessWidget {
                           title: "Self-Learning",
                           description:
                               "I want to learn FSL at my own pace through interactive lessons and feedback.",
+                          onPressed: () {
+                            ref
+                                .read(personalizationProvider.notifier)
+                                .setPersonalization("Self-Learning");
+                            Navigator.pushReplacementNamed(
+                              context,
+                              RouteNames.main,
+                            );
+                          },
                         ),
                         PersonalizationChoice(
                           imageDir: "assets/images/school.png",
                           title: "Teaching",
                           description:
                               "I am an educator looking for tools and resources to teach FSL to my students.",
+                          onPressed: () {
+                            ref
+                                .read(personalizationProvider.notifier)
+                                .setPersonalization("Teaching");
+                            Navigator.pushReplacementNamed(
+                              context,
+                              RouteNames.main,
+                            );
+                          },
                         ),
                         PersonalizationChoice(
                           imageDir: "assets/images/family.png",
                           title: "Parent Support",
                           description:
                               "I want to learn FSL to communicate better with my child and support their development.",
+                          onPressed: () {
+                            ref
+                                .read(personalizationProvider.notifier)
+                                .setPersonalization("Parent Support");
+                            Navigator.pushReplacementNamed(
+                              context,
+                              RouteNames.main,
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -110,11 +139,13 @@ class PersonalizationChoice extends StatelessWidget {
   final String imageDir;
   final String title;
   final String description;
+  final VoidCallback onPressed;
   const PersonalizationChoice({
     super.key,
     required this.imageDir,
     required this.title,
     required this.description,
+    required this.onPressed,
   });
 
   @override
@@ -133,9 +164,7 @@ class PersonalizationChoice extends StatelessWidget {
         elevation: 5, // Higher number = larger shadow
         shadowColor: Colors.black, // Make it darker
       ),
-      onPressed: () {
-        Navigator.pushReplacementNamed(context, RouteNames.main);
-      },
+      onPressed: onPressed,
 
       child: Row(
         spacing: 15,
