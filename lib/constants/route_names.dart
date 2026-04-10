@@ -12,4 +12,5 @@ class RouteNames {
   static const String community = '/community';
   static const String communityUpload = '/community-upload';
   static const String bookmarkedSigns = '/bookmarked-signs';
+  static const String practiceMirror = '/practice-mirror';
 }

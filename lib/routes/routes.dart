@@ -8,6 +8,7 @@ import 'package:signmirror_flutter/screens/edit_profile_screen.dart';
 import 'package:signmirror_flutter/screens/main_screen.dart';
 import 'package:signmirror_flutter/screens/personalization_screen.dart';
 import 'package:signmirror_flutter/screens/profile_screen.dart';
+import 'package:signmirror_flutter/screens/practice_mirror_screen.dart';
 // Import your screens here
 import '../screens/screens.dart';
 import "../constants/route_names.dart";
@@ -40,6 +41,10 @@ class AppRoutes {
       RouteNames.community: (context) => const CommunityScreen(),
       RouteNames.communityUpload: (context) => const CommunityUploadScreen(),
       RouteNames.bookmarkedSigns: (context) => const BookmarkedSignsScreen(),
+      RouteNames.practiceMirror: (context) => const PracticeMirrorScreen(
+        referenceVideoUrl: 'assets/videos/sample_portrait_video.mp4',
+        targetGestureName: 'Letter A',
+      ),
     };
   }
 }

@@ -5,6 +5,7 @@ import 'package:signmirror_flutter/models/lesson.dart';
 import 'package:signmirror_flutter/models/sign.dart';
 import 'package:signmirror_flutter/providers/providers.dart';
 import 'package:signmirror_flutter/widgets/adaptive_image.dart';
+import 'package:signmirror_flutter/screens/practice_mirror_screen.dart';
 
 class LessonSignsScreen extends ConsumerStatefulWidget {
   final Lesson? lesson;
@@ -59,11 +60,20 @@ class _LessonSignsScreenState extends ConsumerState<LessonSignsScreen> {
     }
   }
 
-  void _practiceSign() {
-    // ScaffoldMessenger.of(context).showSnackBar(
-    //   const SnackBar(content: Text('Starting real-time practice...')),
-    // );
-    // Implement actual practice logic here
+  void _practiceSign(Sign sign) {
+    final referenceVideoUrl =
+        (sign.videoUrl != null && sign.videoUrl!.isNotEmpty)
+        ? sign.videoUrl!
+        : 'assets/videos/sample_portrait_video.mp4';
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PracticeMirrorScreen(
+          referenceVideoUrl: referenceVideoUrl,
+          targetGestureName: sign.title,
+        ),
+      ),
+    );
   }
 
   @override
@@ -183,7 +193,7 @@ class _LessonSignsScreenState extends ConsumerState<LessonSignsScreen> {
                   // Practice Button
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: _practiceSign,
+                      onPressed: () => _practiceSign(currentSign),
                       icon: const Icon(Icons.camera_alt, size: 18),
                       label: const Text(
                         "Practice",

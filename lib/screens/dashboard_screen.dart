@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signmirror_flutter/models/sign.dart';
 import 'package:signmirror_flutter/providers/providers.dart';
 import 'package:signmirror_flutter/screens/dictionary_sign_screen.dart';
+import 'package:signmirror_flutter/constants/route_names.dart';
 import '../widgets//dynamic_bar_chart.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -33,7 +34,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final VoidCallback? onTapLetterA = (letterASign == null)
         ? null
         : () {
-            final sign = letterASign!;
+            final sign = letterASign;
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) => DictionarySignScreen(sign: sign),
@@ -44,7 +45,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final VoidCallback? onTapLetterB = (letterBSign == null)
         ? null
         : () {
-            final sign = letterBSign!;
+            final sign = letterBSign;
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) => DictionarySignScreen(sign: sign),
@@ -116,7 +117,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           ),
                           SizedBox(height: 20),
                           FilledButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.of(
+                                context,
+                              ).pushNamed(RouteNames.practiceMirror);
+                            },
 
                             style: FilledButton.styleFrom(
                               shape: const RoundedRectangleBorder(
