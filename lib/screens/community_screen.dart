@@ -326,12 +326,14 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
             _buildVideoList(
               videos: communityVideos,
               uploaderNames: uploaderNames,
-              tabFilter: (video) => video.approves < 3,
+              tabFilter: (video) =>
+                  video.approves < 3 && video.uploaderId != _currentUserId,
             ),
             _buildVideoList(
               videos: communityVideos,
               uploaderNames: uploaderNames,
-              tabFilter: (video) => video.approves >= 3,
+              tabFilter: (video) =>
+                  video.approves >= 3 && video.uploaderId != _currentUserId,
             ),
             _buildUserUploadedVideosTab(
               videos: communityVideos,
