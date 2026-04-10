@@ -16,17 +16,54 @@ final signsProvider = StateNotifierProvider<SignsNotifier, List<Sign>>((ref) {
 
 class SignsNotifier extends StateNotifier<List<Sign>> {
   final IsarService _service;
+  String _lastQuery = '';
 
   SignsNotifier(this._service) : super([]) {
     loadAll(); // Load initial data
   }
 
   Future<void> loadAll() async {
+    _lastQuery = '';
     state = await _service.getAllSigns();
   }
 
   Future<void> search(String query) async {
+    _lastQuery = query;
     state = await _service.searchSigns(query);
+  }
+
+  Future<void> toggleBookmark(Sign sign) async {
+    await _service.toggleSignBookmark(sign.id);
+
+    if (_lastQuery.isEmpty) {
+      await loadAll();
+    } else {
+      await search(_lastQuery);
+    }
+  }
+}
+
+// This provides a dynamic list of bookmarked signs
+final bookmarkedSignsProvider =
+    StateNotifierProvider<BookmarkedSignsNotifier, List<Sign>>((ref) {
+      final service = ref.watch(isarServiceProvider);
+      return BookmarkedSignsNotifier(service);
+    });
+
+class BookmarkedSignsNotifier extends StateNotifier<List<Sign>> {
+  final IsarService _service;
+
+  BookmarkedSignsNotifier(this._service) : super([]) {
+    loadAll();
+  }
+
+  Future<void> loadAll() async {
+    state = await _service.getBookmarkedSigns();
+  }
+
+  Future<void> toggleBookmark(Sign sign) async {
+    await _service.toggleSignBookmark(sign.id);
+    await loadAll();
   }
 }
 

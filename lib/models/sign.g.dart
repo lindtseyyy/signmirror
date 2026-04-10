@@ -32,10 +32,15 @@ const SignSchema = CollectionSchema(
       name: r'instructions',
       type: IsarType.string,
     ),
-    r'title': PropertySchema(id: 3, name: r'title', type: IsarType.string),
-    r'videoId': PropertySchema(id: 4, name: r'videoId', type: IsarType.string),
+    r'isBookmarked': PropertySchema(
+      id: 3,
+      name: r'isBookmarked',
+      type: IsarType.bool,
+    ),
+    r'title': PropertySchema(id: 4, name: r'title', type: IsarType.string),
+    r'videoId': PropertySchema(id: 5, name: r'videoId', type: IsarType.string),
     r'videoUrl': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'videoUrl',
       type: IsarType.string,
     ),
@@ -109,9 +114,10 @@ void _signSerialize(
   writer.writeString(offsets[0], object.category);
   writer.writeString(offsets[1], object.imagePath);
   writer.writeString(offsets[2], object.instructions);
-  writer.writeString(offsets[3], object.title);
-  writer.writeString(offsets[4], object.videoId);
-  writer.writeString(offsets[5], object.videoUrl);
+  writer.writeBool(offsets[3], object.isBookmarked);
+  writer.writeString(offsets[4], object.title);
+  writer.writeString(offsets[5], object.videoId);
+  writer.writeString(offsets[6], object.videoUrl);
 }
 
 Sign _signDeserialize(
@@ -125,9 +131,10 @@ Sign _signDeserialize(
   object.id = id;
   object.imagePath = reader.readString(offsets[1]);
   object.instructions = reader.readStringOrNull(offsets[2]);
-  object.title = reader.readString(offsets[3]);
-  object.videoId = reader.readStringOrNull(offsets[4]);
-  object.videoUrl = reader.readStringOrNull(offsets[5]);
+  object.isBookmarked = reader.readBool(offsets[3]);
+  object.title = reader.readString(offsets[4]);
+  object.videoId = reader.readStringOrNull(offsets[5]);
+  object.videoUrl = reader.readStringOrNull(offsets[6]);
   return object;
 }
 
@@ -145,10 +152,12 @@ P _signDeserializeProp<P>(
     case 2:
       return (reader.readStringOrNull(offset)) as P;
     case 3:
-      return (reader.readString(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 4:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 5:
+      return (reader.readStringOrNull(offset)) as P;
+    case 6:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -910,6 +919,16 @@ extension SignQueryFilter on QueryBuilder<Sign, Sign, QFilterCondition> {
     });
   }
 
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> isBookmarkedEqualTo(
+    bool value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'isBookmarked', value: value),
+      );
+    });
+  }
+
   QueryBuilder<Sign, Sign, QAfterFilterCondition> titleEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -1422,6 +1441,18 @@ extension SignQuerySortBy on QueryBuilder<Sign, Sign, QSortBy> {
     });
   }
 
+  QueryBuilder<Sign, Sign, QAfterSortBy> sortByIsBookmarked() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isBookmarked', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterSortBy> sortByIsBookmarkedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isBookmarked', Sort.desc);
+    });
+  }
+
   QueryBuilder<Sign, Sign, QAfterSortBy> sortByTitle() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.asc);
@@ -1508,6 +1539,18 @@ extension SignQuerySortThenBy on QueryBuilder<Sign, Sign, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Sign, Sign, QAfterSortBy> thenByIsBookmarked() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isBookmarked', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterSortBy> thenByIsBookmarkedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isBookmarked', Sort.desc);
+    });
+  }
+
   QueryBuilder<Sign, Sign, QAfterSortBy> thenByTitle() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.asc);
@@ -1570,6 +1613,12 @@ extension SignQueryWhereDistinct on QueryBuilder<Sign, Sign, QDistinct> {
     });
   }
 
+  QueryBuilder<Sign, Sign, QDistinct> distinctByIsBookmarked() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isBookmarked');
+    });
+  }
+
   QueryBuilder<Sign, Sign, QDistinct> distinctByTitle({
     bool caseSensitive = true,
   }) {
@@ -1617,6 +1666,12 @@ extension SignQueryProperty on QueryBuilder<Sign, Sign, QQueryProperty> {
   QueryBuilder<Sign, String?, QQueryOperations> instructionsProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'instructions');
+    });
+  }
+
+  QueryBuilder<Sign, bool, QQueryOperations> isBookmarkedProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isBookmarked');
     });
   }
 

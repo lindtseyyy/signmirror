@@ -11,6 +11,8 @@ class Sign {
   late String category;
   late String imagePath;
 
+  bool isBookmarked = false;
+
   String? videoUrl;
   String? videoId;
   String? instructions;

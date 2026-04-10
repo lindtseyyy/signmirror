@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signmirror_flutter/models/sign.dart';
+import 'package:signmirror_flutter/constants/route_names.dart';
 import 'package:signmirror_flutter/providers/providers.dart';
 import 'package:signmirror_flutter/screens/dictionary_sign_screen.dart';
 
@@ -13,7 +14,6 @@ class DictionaryScreen extends ConsumerStatefulWidget {
 
 class _DictionaryScreenState extends ConsumerState<DictionaryScreen> {
   String selectedDifficulty = "All categories";
-  bool isListView = true;
 
   String searchQuery = "";
 
@@ -104,7 +104,9 @@ class _DictionaryScreenState extends ConsumerState<DictionaryScreen> {
                 color: Colors
                     .white, // Changed to white to see it against the dark blue
               ),
-              onPressed: () => setState(() => isListView = !isListView),
+              onPressed: () {
+                Navigator.pushNamed(context, RouteNames.bookmarkedSigns);
+              },
             ),
             SizedBox(width: 5), // Add some spacing to the right of the icon
           ],
@@ -113,13 +115,13 @@ class _DictionaryScreenState extends ConsumerState<DictionaryScreen> {
 
       body: Padding(
         padding: const EdgeInsetsGeometry.fromLTRB(15, 20, 15, 0),
-        child: _buildListView(signs),
+        child: _buildListView(ref, signs),
       ),
     );
   }
 }
 
-Widget _buildListView(List<Sign> signs) {
+Widget _buildListView(WidgetRef ref, List<Sign> signs) {
   return ListView.builder(
     itemCount: signs.length,
     itemBuilder: (context, index) {
@@ -169,10 +171,16 @@ Widget _buildListView(List<Sign> signs) {
               ),
             ],
           ),
-          trailing: const Icon(
-            Icons.bookmark_add_outlined,
-            size: 20,
-            color: Color(0xff304166),
+          trailing: IconButton(
+            onPressed: () async {
+              await ref.read(signsProvider.notifier).toggleBookmark(sign);
+              await ref.read(bookmarkedSignsProvider.notifier).loadAll();
+            },
+            icon: Icon(
+              sign.isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+              size: 20,
+              color: const Color(0xff304166),
+            ),
           ),
         ),
       );

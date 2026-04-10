@@ -342,6 +342,28 @@ class IsarService {
         .findAll();
   }
 
+  // Get bookmarked signs
+  Future<List<Sign>> getBookmarkedSigns() async {
+    final isar = await db;
+    return await isar.signs.filter().isBookmarkedEqualTo(true).findAll();
+  }
+
+  // Toggle bookmark status for a sign
+  Future<Sign?> toggleSignBookmark(Id signId) async {
+    final isar = await db;
+    Sign? updated;
+
+    await isar.writeTxn(() async {
+      final sign = await isar.signs.get(signId);
+      if (sign == null) return;
+      sign.isBookmarked = !sign.isBookmarked;
+      await isar.signs.put(sign);
+      updated = sign;
+    });
+
+    return updated;
+  }
+
   // Get signs by category
   Future<List<Sign>> getSignsByCategory(String category) async {
     final isar = await db;
