@@ -2,26 +2,83 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/settings_service.dart';
 import 'package:intl/intl.dart'; //
+import 'package:signmirror_flutter/theme/theme_settings.dart';
 
 // This provider gives you access to the service anywhere
 final settingsServiceProvider = Provider<SettingsService>((ref) {
   return SettingsService();
 });
 
-// This notifier handles the actual "Theme Logic" and UI updates
+// --- THEME (Phase 2.2) ---
+// Single source of truth for all theme-related settings.
+final themeSettingsProvider =
+    StateNotifierProvider<ThemeSettingsController, ThemeSettings>((ref) {
+      final service = ref.watch(settingsServiceProvider);
+      return ThemeSettingsController(service);
+    });
+
+class ThemeSettingsController extends StateNotifier<ThemeSettings> {
+  ThemeSettingsController(this._service)
+    : super(
+        ThemeSettings(
+          mode: _service.themeMode,
+          highContrast: _service.highContrastEnabled,
+        ),
+      );
+
+  final SettingsService _service;
+
+  Future<void> setMode(AppThemeMode mode) async {
+    if (state.mode == mode) return;
+    state = ThemeSettings(mode: mode, highContrast: state.highContrast);
+    await _service.setThemeMode(mode);
+  }
+
+  Future<void> toggleMode() async {
+    final nextMode = state.mode == AppThemeMode.dark
+        ? AppThemeMode.light
+        : AppThemeMode.dark;
+    await setMode(nextMode);
+  }
+
+  Future<void> setHighContrast(bool enabled) async {
+    if (state.highContrast == enabled) return;
+    state = ThemeSettings(mode: state.mode, highContrast: enabled);
+    await _service.setHighContrastEnabled(enabled);
+  }
+
+  Future<void> toggleHighContrast() async {
+    await setHighContrast(!state.highContrast);
+  }
+}
+
+// Legacy provider kept for backwards compatibility (dark mode as bool).
+// Derives its state from themeSettingsProvider.
 final themeProvider = StateNotifierProvider<ThemeNotifier, bool>((ref) {
-  final service = ref.read(settingsServiceProvider);
-  return ThemeNotifier(service);
+  final controller = ref.read(themeSettingsProvider.notifier);
+  final notifier = ThemeNotifier(
+    controller,
+    ref.read(themeSettingsProvider).mode == AppThemeMode.dark,
+  );
+
+  ref.listen<ThemeSettings>(themeSettingsProvider, (previous, next) {
+    notifier._syncFromSettings(next);
+  });
+
+  return notifier;
 });
 
 class ThemeNotifier extends StateNotifier<bool> {
-  final SettingsService _service;
+  ThemeNotifier(this._controller, bool initialIsDark) : super(initialIsDark);
 
-  ThemeNotifier(this._service) : super(_service.isDarkMode);
+  final ThemeSettingsController _controller;
 
-  void toggleTheme() async {
-    state = !state; // Update the UI instantly
-    await _service.setDarkMode(state); // Save to local storage
+  void _syncFromSettings(ThemeSettings settings) {
+    state = settings.mode == AppThemeMode.dark;
+  }
+
+  Future<void> toggleTheme() async {
+    await _controller.toggleMode();
   }
 }
 
@@ -29,16 +86,30 @@ class ThemeNotifier extends StateNotifier<bool> {
 final highContrastProvider = StateNotifierProvider<HighContrastNotifier, bool>((
   ref,
 ) {
-  return HighContrastNotifier(ref.watch(settingsServiceProvider));
+  final controller = ref.read(themeSettingsProvider.notifier);
+  final notifier = HighContrastNotifier(
+    controller,
+    ref.read(themeSettingsProvider).highContrast,
+  );
+
+  ref.listen<ThemeSettings>(themeSettingsProvider, (previous, next) {
+    notifier._syncFromSettings(next);
+  });
+
+  return notifier;
 });
 
 class HighContrastNotifier extends StateNotifier<bool> {
-  final SettingsService _service;
-  HighContrastNotifier(this._service) : super(_service.isHighContrast);
+  HighContrastNotifier(this._controller, bool initial) : super(initial);
 
-  void toggle() async {
-    state = !state;
-    await _service.setHighContrast(state);
+  final ThemeSettingsController _controller;
+
+  void _syncFromSettings(ThemeSettings settings) {
+    state = settings.highContrast;
+  }
+
+  Future<void> toggle() async {
+    await _controller.toggleHighContrast();
   }
 }
 

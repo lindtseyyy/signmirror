@@ -1,7 +1,10 @@
+import 'dart:async' show unawaited;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signmirror_flutter/constants/route_names.dart';
 import 'package:signmirror_flutter/providers/settings_provider.dart';
+import 'package:signmirror_flutter/theme/theme_settings.dart';
 import 'package:flutter/cupertino.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -14,9 +17,10 @@ class ProfileScreen extends ConsumerStatefulWidget {
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = ref.watch(themeProvider);
+    final themeSettings = ref.watch(themeSettingsProvider);
+    final isDarkMode = themeSettings.mode == AppThemeMode.dark;
     final isOfflineDownloading = ref.watch(offlineDownloadProvider);
-    final isHighContrast = ref.watch(highContrastProvider);
+    final isHighContrast = themeSettings.highContrast;
     final time = ref.watch(practiceTimeProvider);
     // 2. GET the pretty version from your Notifier
     final displayTime = ref
@@ -125,7 +129,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   ),
                                   icon: Icon(
                                     Icons.double_arrow,
-                                    color: Colors.black.withValues(alpha: 0.6),
+                                    color: Colors.black.withOpacity(0.6),
                                   ),
                                   onPressed: () {
                                     Navigator.pushNamed(
@@ -186,29 +190,40 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               value: isDarkMode,
 
                               // 1. Change the shape/size of the track
-                              trackOutlineColor: WidgetStateProperty.all(
+                              trackOutlineColor: MaterialStateProperty.all(
                                 isDarkMode ? Colors.transparent : Colors.black,
                               ),
 
                               // 2. Put an icon INSIDE the moving circle
-                              thumbIcon: WidgetStateProperty.resolveWith<Icon?>(
-                                (states) {
-                                  if (states.contains(WidgetState.selected)) {
+                              thumbIcon:
+                                  MaterialStateProperty.resolveWith<Icon?>((
+                                    states,
+                                  ) {
+                                    if (states.contains(
+                                      MaterialState.selected,
+                                    )) {
+                                      return const Icon(
+                                        Icons.check,
+                                        color: Color(0xff2D68FF),
+                                      );
+                                    }
                                     return const Icon(
-                                      Icons.check,
-                                      color: Color(0xff2D68FF),
+                                      Icons.close,
+                                      color: Colors.white,
                                     );
-                                  }
-                                  return const Icon(
-                                    Icons.close,
-                                    color: Colors.white,
-                                  );
-                                },
-                              ),
+                                  }),
 
-                              onChanged: (value) => ref
-                                  .read(themeProvider.notifier)
-                                  .toggleTheme(),
+                              onChanged: (value) {
+                                unawaited(
+                                  ref
+                                      .read(themeSettingsProvider.notifier)
+                                      .setMode(
+                                        value
+                                            ? AppThemeMode.dark
+                                            : AppThemeMode.light,
+                                      ),
+                                );
+                              },
                             ),
                             const SizedBox(height: 10),
                             SwitchListTile(
@@ -227,27 +242,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               value: isOfflineDownloading,
 
                               // 1. Change the shape/size of the track
-                              trackOutlineColor: WidgetStateProperty.all(
+                              trackOutlineColor: MaterialStateProperty.all(
                                 isOfflineDownloading
                                     ? Colors.transparent
                                     : Colors.black,
                               ),
 
                               // 2. Put an icon INSIDE the moving circle
-                              thumbIcon: WidgetStateProperty.resolveWith<Icon?>(
-                                (states) {
-                                  if (states.contains(WidgetState.selected)) {
+                              thumbIcon:
+                                  MaterialStateProperty.resolveWith<Icon?>((
+                                    states,
+                                  ) {
+                                    if (states.contains(
+                                      MaterialState.selected,
+                                    )) {
+                                      return const Icon(
+                                        Icons.download,
+                                        color: Color(0xff2D68FF),
+                                      );
+                                    }
                                     return const Icon(
-                                      Icons.download,
-                                      color: Color(0xff2D68FF),
+                                      Icons.close,
+                                      color: Colors.white,
                                     );
-                                  }
-                                  return const Icon(
-                                    Icons.close,
-                                    color: Colors.white,
-                                  );
-                                },
-                              ),
+                                  }),
 
                               onChanged: (value) => ref
                                   .read(offlineDownloadProvider.notifier)
@@ -270,31 +288,38 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               value: isHighContrast,
 
                               // 1. Change the shape/size of the track
-                              trackOutlineColor: WidgetStateProperty.all(
+                              trackOutlineColor: MaterialStateProperty.all(
                                 isHighContrast
                                     ? Colors.transparent
                                     : Colors.black,
                               ),
 
                               // 2. Put an icon INSIDE the moving circle
-                              thumbIcon: WidgetStateProperty.resolveWith<Icon?>(
-                                (states) {
-                                  if (states.contains(WidgetState.selected)) {
+                              thumbIcon:
+                                  MaterialStateProperty.resolveWith<Icon?>((
+                                    states,
+                                  ) {
+                                    if (states.contains(
+                                      MaterialState.selected,
+                                    )) {
+                                      return const Icon(
+                                        Icons.contrast,
+                                        color: Color(0xff2D68FF),
+                                      );
+                                    }
                                     return const Icon(
-                                      Icons.contrast,
-                                      color: Color(0xff2D68FF),
+                                      Icons.close,
+                                      color: Colors.white,
                                     );
-                                  }
-                                  return const Icon(
-                                    Icons.close,
-                                    color: Colors.white,
-                                  );
-                                },
-                              ),
+                                  }),
 
-                              onChanged: (value) => ref
-                                  .read(highContrastProvider.notifier)
-                                  .toggle(),
+                              onChanged: (value) {
+                                unawaited(
+                                  ref
+                                      .read(themeSettingsProvider.notifier)
+                                      .setHighContrast(value),
+                                );
+                              },
                             ),
                             ListTile(
                               contentPadding: EdgeInsets.zero,
