@@ -35,6 +35,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final signInColor = isDarkMode
+        ? Color.lerp(colors.primaryContainer, colors.onSurface, 0.35)!
+        : colors.primary;
 
     return Scaffold(
       body: SizedBox(
@@ -102,18 +107,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             SizedBox(height: 20),
             RichText(
               text: TextSpan(
-                style: const TextStyle(
-                  color: Colors.black,
+                style: (textTheme.bodyMedium ?? const TextStyle()).copyWith(
                   fontSize: 14,
                   fontFamily: 'Inter',
                   fontWeight: FontWeight.w300,
+                  color: colors.onSurface,
                 ),
                 children: [
                   const TextSpan(text: "Already have an account? "),
                   TextSpan(
                     text: "Sign In",
-                    style: const TextStyle(
-                      color: Color(0xFF2563EB),
+                    style: TextStyle(
+                      color: signInColor,
                       fontWeight: FontWeight.bold,
                     ),
                     recognizer: _signInRecognizer,
