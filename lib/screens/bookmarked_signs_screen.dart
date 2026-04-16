@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signmirror_flutter/models/sign.dart';
 import 'package:signmirror_flutter/providers/providers.dart';
+import 'package:signmirror_flutter/providers/settings_provider.dart';
 import 'package:signmirror_flutter/screens/dictionary_sign_screen.dart';
+import 'package:signmirror_flutter/theme/app_theme.dart';
 
 class BookmarkedSignsScreen extends ConsumerWidget {
   const BookmarkedSignsScreen({super.key});
@@ -10,22 +12,68 @@ class BookmarkedSignsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bookmarkedSigns = ref.watch(bookmarkedSignsProvider);
+    final settings = ref.watch(themeSettingsProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Bookmarked Signs',
-          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
-        ),
-        backgroundColor: const Color(0xff304166),
-        foregroundColor: Colors.white,
-        elevation: 4,
-      ),
-      body: Padding(
-        padding: const EdgeInsetsGeometry.fromLTRB(15, 20, 15, 0),
-        child: bookmarkedSigns.isEmpty
-            ? const Center(child: Text('No bookmarked signs.'))
-            : _BookmarkedSignsList(signs: bookmarkedSigns),
+    final effectiveHighContrast =
+        settings.highContrast || MediaQuery.of(context).highContrast;
+
+    final resolvedTheme = AppTheme.resolve(
+      mode: settings.mode,
+      highContrast: effectiveHighContrast,
+    );
+
+    return Theme(
+      data: resolvedTheme,
+      child: Builder(
+        builder: (context) {
+          final theme = Theme.of(context);
+          final colorScheme = theme.colorScheme;
+
+          final isDark = theme.brightness == Brightness.dark;
+          final useLegacyLightColors = !isDark && !effectiveHighContrast;
+
+          final appBarBackground = useLegacyLightColors
+              ? const Color(0xff304166)
+              : colorScheme.primary;
+          final appBarForeground = useLegacyLightColors
+              ? Colors.white
+              : colorScheme.onPrimary;
+
+          final emptyTextStyle = useLegacyLightColors
+              ? null
+              : theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onBackground,
+                  fontWeight: effectiveHighContrast ? FontWeight.w600 : null,
+                );
+
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text(
+                'Bookmarked Signs',
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+              ),
+              backgroundColor: appBarBackground,
+              foregroundColor: appBarForeground,
+              elevation: 4,
+            ),
+            body: Padding(
+              padding: const EdgeInsetsGeometry.fromLTRB(15, 20, 15, 0),
+              child: bookmarkedSigns.isEmpty
+                  ? Center(
+                      child: Text(
+                        'No bookmarked signs.',
+                        style: emptyTextStyle,
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                  : _BookmarkedSignsList(
+                      signs: bookmarkedSigns,
+                      useLegacyLightColors: useLegacyLightColors,
+                      effectiveHighContrast: effectiveHighContrast,
+                    ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -33,11 +81,43 @@ class BookmarkedSignsScreen extends ConsumerWidget {
 
 class _BookmarkedSignsList extends ConsumerWidget {
   final List<Sign> signs;
+  final bool useLegacyLightColors;
+  final bool effectiveHighContrast;
 
-  const _BookmarkedSignsList({required this.signs});
+  const _BookmarkedSignsList({
+    required this.signs,
+    required this.useLegacyLightColors,
+    required this.effectiveHighContrast,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final cardColor = useLegacyLightColors ? Colors.white : colorScheme.surface;
+
+    final titleColor = useLegacyLightColors ? null : colorScheme.onSurface;
+
+    final subtitleColor = useLegacyLightColors
+        ? Colors.black.withValues(alpha: 0.4)
+        : (effectiveHighContrast
+              ? colorScheme.onSurface
+              : colorScheme.onSurface.withOpacity(0.7));
+
+    final borderSide = useLegacyLightColors
+        ? null
+        : BorderSide(
+            color: effectiveHighContrast
+                ? colorScheme.onSurface
+                : colorScheme.outline,
+            width: effectiveHighContrast ? 2 : 1,
+          );
+
+    final bookmarkColor = useLegacyLightColors
+        ? const Color(0xff304166)
+        : colorScheme.primary;
+
     return ListView.builder(
       itemCount: signs.length,
       itemBuilder: (context, index) {
@@ -46,8 +126,11 @@ class _BookmarkedSignsList extends ConsumerWidget {
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: cardColor,
             borderRadius: BorderRadius.circular(8),
+            border: borderSide == null
+                ? null
+                : Border.fromBorderSide(borderSide),
             boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0))],
           ),
           child: ListTile(
@@ -65,7 +148,7 @@ class _BookmarkedSignsList extends ConsumerWidget {
             ),
             title: Text(
               sign.title,
-              style: const TextStyle(fontWeight: FontWeight.w700),
+              style: TextStyle(fontWeight: FontWeight.w700, color: titleColor),
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,20 +158,14 @@ class _BookmarkedSignsList extends ConsumerWidget {
                   children: [
                     Text(
                       '${sign.category} Sign',
-                      style: TextStyle(
-                        color: Colors.black.withValues(alpha: 0.4),
-                      ),
+                      style: TextStyle(color: subtitleColor),
                     ),
                   ],
                 ),
               ],
             ),
             trailing: IconButton(
-              icon: const Icon(
-                Icons.bookmark,
-                size: 20,
-                color: Color(0xff304166),
-              ),
+              icon: Icon(Icons.bookmark, size: 20, color: bookmarkColor),
               onPressed: () async {
                 await ref.read(signsProvider.notifier).toggleBookmark(sign);
                 await ref.read(bookmarkedSignsProvider.notifier).loadAll();
