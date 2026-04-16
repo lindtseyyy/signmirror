@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:signmirror_flutter/constants/app_colors.dart';
 import 'package:signmirror_flutter/theme/achievements_theme.dart';
+import 'package:signmirror_flutter/theme/bookmark_theme.dart';
 import 'package:signmirror_flutter/theme/community_theme.dart';
 import 'package:signmirror_flutter/theme/theme_settings.dart';
-import 'package:signmirror_flutter/constants/app_colors.dart';
 
 class AppTheme {
   static const ColorScheme _lightColorScheme = ColorScheme.light(
@@ -103,6 +104,10 @@ class AppTheme {
         // Colors.blue
         primaryActionColor: Color(0xFF2196F3),
       ),
+      const BookmarkTheme(
+        activeColor: AppColors.bookmarkActiveLight,
+        inactiveColor: AppColors.bookmarkInactiveLight,
+      ),
     ],
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
@@ -181,6 +186,10 @@ class AppTheme {
         badgePendingBorderColor: Color(0xFFFFB74D),
         primaryActionColor: Color(0xFF64B5F6),
       ),
+      const BookmarkTheme(
+        activeColor: AppColors.bookmarkActiveDark,
+        inactiveColor: AppColors.bookmarkInactiveDark,
+      ),
     ],
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
@@ -225,7 +234,10 @@ class AppTheme {
       // Preserve any existing extensions from `lightTheme`, but override
       // Achievements + Community tokens for high-contrast.
       ...lightTheme.extensions.values.where(
-        (e) => e is! AchievementsTheme && e is! CommunityTheme,
+        (e) =>
+            e is! AchievementsTheme &&
+            e is! CommunityTheme &&
+            e is! BookmarkTheme,
       ),
       AchievementsTheme(
         cardBackgroundColor: _highContrastLightColorScheme.surface,
@@ -238,6 +250,10 @@ class AppTheme {
         progressValueColor: _highContrastLightColorScheme.primary,
         headerAccentTextColor: _highContrastLightColorScheme.primary,
         useCardShadows: false,
+      ),
+      const BookmarkTheme(
+        activeColor: Color(0xFF304166),
+        inactiveColor: Colors.black,
       ),
       CommunityTheme(
         pageBackgroundColor: const Color(0xFFF2F3F4),
@@ -301,7 +317,10 @@ class AppTheme {
       // Preserve any existing extensions from `darkTheme`, but override
       // Achievements + Community tokens for high-contrast.
       ...darkTheme.extensions.values.where(
-        (e) => e is! AchievementsTheme && e is! CommunityTheme,
+        (e) =>
+            e is! AchievementsTheme &&
+            e is! CommunityTheme &&
+            e is! BookmarkTheme,
       ),
       AchievementsTheme(
         cardBackgroundColor: _highContrastDarkColorScheme.surfaceVariant,
@@ -317,6 +336,10 @@ class AppTheme {
         progressValueColor: _highContrastDarkColorScheme.primary,
         headerAccentTextColor: _highContrastDarkColorScheme.onSurface,
         useCardShadows: false,
+      ),
+      const BookmarkTheme(
+        activeColor: AppColors.bookmarkActiveHighContrastDark,
+        inactiveColor: AppColors.bookmarkInactiveHighContrastDark,
       ),
       CommunityTheme(
         pageBackgroundColor: const Color(0xFF121212),

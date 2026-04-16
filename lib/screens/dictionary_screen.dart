@@ -6,6 +6,7 @@ import 'package:signmirror_flutter/providers/providers.dart';
 import 'package:signmirror_flutter/providers/settings_provider.dart';
 import 'package:signmirror_flutter/screens/dictionary_sign_screen.dart';
 import 'package:signmirror_flutter/theme/app_theme.dart';
+import 'package:signmirror_flutter/widgets/bookmark_icon_button.dart';
 
 class DictionaryScreen extends ConsumerStatefulWidget {
   const DictionaryScreen({super.key});
@@ -203,14 +204,6 @@ Widget _buildListView(
     itemBuilder: (context, index) {
       final sign = signs[index];
 
-      final bookmarkColor = useLegacyLightColors
-          ? const Color(0xff304166)
-          : (sign.isBookmarked
-                ? colorScheme.primary
-                : (effectiveHighContrast
-                      ? colorScheme.onSurface
-                      : colorScheme.onSurfaceVariant));
-
       return Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
@@ -254,16 +247,12 @@ Widget _buildListView(
               ),
             ],
           ),
-          trailing: IconButton(
+          trailing: BookmarkIconButton(
+            isBookmarked: sign.isBookmarked,
             onPressed: () async {
               await ref.read(signsProvider.notifier).toggleBookmark(sign);
               await ref.read(bookmarkedSignsProvider.notifier).loadAll();
             },
-            icon: Icon(
-              sign.isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-              size: 20,
-              color: bookmarkColor,
-            ),
           ),
         ),
       );

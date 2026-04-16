@@ -5,6 +5,7 @@ import 'package:signmirror_flutter/providers/providers.dart';
 import 'package:signmirror_flutter/providers/settings_provider.dart';
 import 'package:signmirror_flutter/screens/dictionary_sign_screen.dart';
 import 'package:signmirror_flutter/theme/app_theme.dart';
+import 'package:signmirror_flutter/widgets/bookmark_icon_button.dart';
 
 class BookmarkedSignsScreen extends ConsumerWidget {
   const BookmarkedSignsScreen({super.key});
@@ -114,10 +115,6 @@ class _BookmarkedSignsList extends ConsumerWidget {
             width: effectiveHighContrast ? 2 : 1,
           );
 
-    final bookmarkColor = useLegacyLightColors
-        ? const Color(0xff304166)
-        : colorScheme.primary;
-
     return ListView.builder(
       itemCount: signs.length,
       itemBuilder: (context, index) {
@@ -164,8 +161,8 @@ class _BookmarkedSignsList extends ConsumerWidget {
                 ),
               ],
             ),
-            trailing: IconButton(
-              icon: Icon(Icons.bookmark, size: 20, color: bookmarkColor),
+            trailing: BookmarkIconButton(
+              isBookmarked: true,
               onPressed: () async {
                 await ref.read(signsProvider.notifier).toggleBookmark(sign);
                 await ref.read(bookmarkedSignsProvider.notifier).loadAll();
