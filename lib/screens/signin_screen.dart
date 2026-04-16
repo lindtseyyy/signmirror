@@ -114,6 +114,7 @@ class _SigninScreenState extends ConsumerState<SigninScreen> {
           message: "Invalid credentials. Please try again.",
           isError: true,
           position: SnackBarPosition.top,
+          dismissKeyboard: true,
         );
         return;
       }
@@ -146,6 +147,7 @@ class _SigninScreenState extends ConsumerState<SigninScreen> {
         message: "Invalid credentials. Please try again.",
         isError: true,
         position: SnackBarPosition.top,
+        dismissKeyboard: true,
       );
     }
   }
@@ -285,7 +287,7 @@ class _SigninScreenState extends ConsumerState<SigninScreen> {
 
                             // CREATE ACCOUNT BUTTON
                             FilledButton(
-                              onPressed: _handleLogin,
+                              onPressed: _isLoading ? null : _handleLogin,
 
                               style: FilledButton.styleFrom(
                                 shape: const RoundedRectangleBorder(
