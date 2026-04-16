@@ -8,6 +8,48 @@ import 'package:signmirror_flutter/providers/providers.dart';
 import 'package:signmirror_flutter/constants/route_names.dart';
 import 'package:signmirror_flutter/theme/community_theme.dart';
 
+ButtonStyle _commentButtonStyle(BuildContext context) {
+  final theme = Theme.of(context);
+  final colorScheme = theme.colorScheme;
+  final isHighContrast = MediaQuery.of(context).highContrast;
+  final isDark = theme.brightness == Brightness.dark;
+
+  final Color enabledForeground = isHighContrast
+      ? colorScheme.onSurface
+      : isDark
+      ? colorScheme.onSurface
+      : colorScheme.primary;
+
+  final Color enabledBorderColor = isHighContrast
+      ? colorScheme.onSurface
+      : isDark
+      ? colorScheme.onSurface.withOpacity(0.65)
+      : colorScheme.outline;
+
+  final double borderWidth = isHighContrast ? 2.0 : (isDark ? 1.5 : 1.0);
+
+  Color disabled(Color color) {
+    final double opacity = isHighContrast ? 0.60 : (isDark ? 0.50 : 0.45);
+    return color.withOpacity(opacity);
+  }
+
+  return OutlinedButton.styleFrom(foregroundColor: enabledForeground).copyWith(
+    foregroundColor: MaterialStateProperty.resolveWith<Color?>((states) {
+      if (states.contains(MaterialState.disabled)) {
+        return disabled(enabledForeground);
+      }
+      return enabledForeground;
+    }),
+    side: MaterialStateProperty.resolveWith<BorderSide?>((states) {
+      final bool isDisabled = states.contains(MaterialState.disabled);
+      final Color color = isDisabled
+          ? disabled(enabledBorderColor)
+          : enabledBorderColor;
+      return BorderSide(color: color, width: borderWidth);
+    }),
+  );
+}
+
 class CommunityScreen extends ConsumerStatefulWidget {
   const CommunityScreen({super.key});
 
@@ -223,6 +265,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                     child: OutlinedButton(
                       onPressed: () =>
                           _openCommentsForUserUpload(context, video),
+                      style: _commentButtonStyle(context),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -959,6 +1002,7 @@ Widget _buildCommunityPost(
                           ),
                         );
                       },
+                style: _commentButtonStyle(context),
                 child: Row(
                   children: [
                     const Icon(Icons.comment_outlined),
