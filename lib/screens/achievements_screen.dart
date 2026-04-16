@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:signmirror_flutter/l10n/app_strings_provider.dart';
 import 'package:signmirror_flutter/providers/settings_provider.dart';
 import 'package:signmirror_flutter/theme/achievements_theme.dart';
 import 'package:signmirror_flutter/theme/app_theme.dart';
@@ -29,6 +30,31 @@ class AchievementsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeSettings = ref.watch(themeSettingsProvider);
+    final strings = ref.watch(appStringsProvider);
+    final userName = ref.watch(userNameProvider);
+
+    final displayName = userName.trim().isEmpty
+        ? strings.profileDefaultUserLabel
+        : userName.trim();
+
+    final headerMessage = strings.achievementsHeaderMessage(displayName);
+    final lockedLabel = strings.achievementsLockedLabel;
+
+    final studiousDescription = strings.achievementsCompletedChallenge(
+      strings.achievementsChallengeStayConsistent7Days,
+    );
+
+    final quickieDescription = strings.achievementsCompletedChallenge(
+      strings.achievementsChallengeLearn5SignsOneWeek,
+    );
+
+    final ambitiousDescription = strings.achievementsCompletedChallenge(
+      strings.achievementsChallengeLearnBasicSigns,
+    );
+
+    final perfectionistDescription = strings.achievementsCompletedChallenge(
+      strings.achievementsChallengeGet100Accuracy,
+    );
 
     final platformHighContrast = MediaQuery.of(context).highContrast;
     final effectiveHighContrast =
@@ -57,9 +83,12 @@ class AchievementsScreen extends ConsumerWidget {
                   Navigator.pop(context); // This performs the "Back" action
                 },
               ),
-              title: const Text(
-                "Achievements",
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 24),
+              title: Text(
+                strings.achievementsTitle,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 24,
+                ),
               ),
             ),
             body: SafeArea(
@@ -135,57 +164,52 @@ class AchievementsScreen extends ConsumerWidget {
                                   ],
                                 ),
                               ),
-                              const Expanded(
-                                child: Text(
-                                  "Great job, Ping Pong! Complete your achievements to unlock more!",
-                                ),
-                              ),
+                              Expanded(child: Text(headerMessage)),
                             ],
                           ),
                         ),
                         const SizedBox(height: 20),
                         Column(
                           spacing: 10,
-                          children: const [
+                          children: [
                             AchievementUnlocked(
-                              title: "Studious",
-                              description:
-                                  "You completed the 'Master the Basics' challenge.",
+                              title: strings.profileAchievementStudious,
+                              description: studiousDescription,
                               imagePath:
                                   "assets/images/achievements/trophy_icon.png",
                             ),
                             AchievementUnlocked(
-                              title: "Quickie",
-                              description:
-                                  "You completed the 'Master the Basics' challenge.",
+                              title: strings.profileAchievementQuickie,
+                              description: quickieDescription,
                               imagePath:
                                   "assets/images/achievements/time_icon.png",
                             ),
                             AchievementUnlocked(
-                              title: "Ambitious",
-                              description:
-                                  "You completed the 'Master the Basics' challenge.",
+                              title: strings.profileAchievementAmbitious,
+                              description: ambitiousDescription,
                               imagePath:
                                   "assets/images/achievements/medal_icon.png",
                             ),
                             AchievementUnlocked(
-                              title: "Perfectionist",
-                              description:
-                                  "You completed the 'Master the Basics' challenge.",
+                              title: strings.profileAchievementPerfectionist,
+                              description: perfectionistDescription,
                               imagePath:
                                   "assets/images/achievements/star_icon.png",
                             ),
                             AchievementLocked(
                               imagePath:
                                   "assets/images/achievements/sunglasses_icon.png",
+                              label: lockedLabel,
                             ),
                             AchievementLocked(
                               imagePath:
                                   "assets/images/achievements/sunglasses_icon.png",
+                              label: lockedLabel,
                             ),
                             AchievementLocked(
                               imagePath:
                                   "assets/images/achievements/sunglasses_icon.png",
+                              label: lockedLabel,
                             ),
                           ],
                         ),
@@ -292,7 +316,12 @@ class AchievementUnlocked extends StatelessWidget {
 
 class AchievementLocked extends StatelessWidget {
   final String imagePath;
-  const AchievementLocked({super.key, required this.imagePath});
+  final String label;
+  const AchievementLocked({
+    super.key,
+    required this.imagePath,
+    required this.label,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -321,7 +350,7 @@ class AchievementLocked extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Not yet unlocked",
+                  label,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,

@@ -488,6 +488,8 @@ class AppStrings {
   String get profileAchievementStudious => _t('profileAchievementStudious');
   String get profileAchievementQuickie => _t('profileAchievementQuickie');
   String get profileAchievementAmbitious => _t('profileAchievementAmbitious');
+  String get profileAchievementPerfectionist =>
+      _t('profileAchievementPerfectionist');
 
   String get profileDarkModeLabel => _t('profileDarkModeLabel');
   String get profileOfflineDownloadingLabel =>
@@ -508,6 +510,33 @@ class AppStrings {
 
   String get profileSelectTimeTitle => _t('profileSelectTimeTitle');
   String get commonDoneLabel => _t('commonDoneLabel');
+
+  // ---------------------------
+  // Achievements strings
+  // ---------------------------
+
+  String get achievementsTitle => _t('achievementsTitle');
+
+  String achievementsHeaderMessage(String name) {
+    return _template('achievementsHeaderMessage', {'name': name});
+  }
+
+  String get achievementsLockedLabel => _t('achievementsLockedLabel');
+
+  String achievementsCompletedChallenge(String challenge) {
+    return _template('achievementsCompletedChallenge', {
+      'challenge': challenge,
+    });
+  }
+
+  String get achievementsChallengeStayConsistent7Days =>
+      _t('achievementsChallengeStayConsistent7Days');
+  String get achievementsChallengeLearn5SignsOneWeek =>
+      _t('achievementsChallengeLearn5SignsOneWeek');
+  String get achievementsChallengeLearnBasicSigns =>
+      _t('achievementsChallengeLearnBasicSigns');
+  String get achievementsChallengeGet100Accuracy =>
+      _t('achievementsChallengeGet100Accuracy');
 
   // ---------------------------
   // Internals
@@ -697,6 +726,7 @@ class AppStrings {
       'profileAchievementStudious': 'Studious',
       'profileAchievementQuickie': 'Quickie',
       'profileAchievementAmbitious': 'Ambitious',
+      'profileAchievementPerfectionist': 'Perfectionist',
       'profileDarkModeLabel': 'Dark Mode',
       'profileOfflineDownloadingLabel': 'Offline Downloading',
       'profileHighContrastLabel': 'High Contrast',
@@ -710,6 +740,18 @@ class AppStrings {
       'profileNotSetLabel': 'Not set',
       'profileSelectTimeTitle': 'Select Time',
       'commonDoneLabel': 'Done',
+
+      // Achievements screen
+      'achievementsTitle': 'Achievements',
+      'achievementsHeaderMessage':
+          'Great job, {name}! Complete your achievements to unlock more!',
+      'achievementsLockedLabel': 'Not yet unlocked',
+      'achievementsCompletedChallenge':
+          'You completed the "{challenge}" challenge.',
+      'achievementsChallengeStayConsistent7Days': 'Stay Consistent for 7 Days',
+      'achievementsChallengeLearn5SignsOneWeek': 'Learn 5 Signs in One Week',
+      'achievementsChallengeLearnBasicSigns': 'Learn the Basic Signs',
+      'achievementsChallengeGet100Accuracy': 'Get 100% Accuracy',
     },
     _fil: {
       // Dashboard
@@ -892,6 +934,7 @@ class AppStrings {
       'profileAchievementStudious': 'Masipag',
       'profileAchievementQuickie': 'Mabilis',
       'profileAchievementAmbitious': 'Mapaglayon',
+      'profileAchievementPerfectionist': 'Perpeksiyonista',
       'profileDarkModeLabel': 'Madilim na Mode',
       'profileOfflineDownloadingLabel': 'Pag-download offline',
       'profileHighContrastLabel': 'Mataas na Kontrast',
@@ -905,6 +948,21 @@ class AppStrings {
       'profileNotSetLabel': 'Hindi nakatakda',
       'profileSelectTimeTitle': 'Pumili ng Oras',
       'commonDoneLabel': 'Tapos',
+
+      // Achievements screen
+      'achievementsTitle': 'Mga Tagumpay',
+      'achievementsHeaderMessage':
+          'Magaling, {name}! Kumpletuhin ang iyong mga tagumpay para makapag-unlock pa!',
+      'achievementsLockedLabel': 'Hindi pa nabubuksan',
+      'achievementsCompletedChallenge':
+          'Nakumpleto mo ang hamong "{challenge}".',
+      'achievementsChallengeStayConsistent7Days':
+          'Manatiling Konsistent sa loob ng 7 Araw',
+      'achievementsChallengeLearn5SignsOneWeek':
+          'Matuto ng 5 Senyas sa loob ng Isang Linggo',
+      'achievementsChallengeLearnBasicSigns':
+          'Matutunan ang Mga Batayang Senyas',
+      'achievementsChallengeGet100Accuracy': 'Makakuha ng 100% Katumpakan',
     },
   };
 
