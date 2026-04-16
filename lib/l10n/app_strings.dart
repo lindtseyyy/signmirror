@@ -250,6 +250,205 @@ class AppStrings {
   }
 
   // ---------------------------
+  // Community strings
+  // ---------------------------
+
+  // Community main screen
+  String get communityTitle => _t('communityTitle');
+  String get communityUploadTooltip => _t('communityUploadTooltip');
+  String get communitySearchHint => _t('communitySearchHint');
+
+  // Tabs (tooltips/semantics)
+  String get communityTabUnapprovedVideos => _t('communityTabUnapprovedVideos');
+  String get communityTabApprovedVideos => _t('communityTabApprovedVideos');
+  String get communityTabUserUploadedVideos =>
+      _t('communityTabUserUploadedVideos');
+
+  // Common actions/menus (community scope)
+  String get communityMoreOptionsTooltip => _t('communityMoreOptionsTooltip');
+  String get communityEditLabel => _t('communityEditLabel');
+  String get communityDeleteLabel => _t('communityDeleteLabel');
+  String get communityCancelLabel => _t('communityCancelLabel');
+  String get communitySaveLabel => _t('communitySaveLabel');
+
+  // Approvals / approving
+  String get communityApproveLabel => _t('communityApproveLabel');
+  String get communityApprovedLabel => _t('communityApprovedLabel');
+  String get communityApprovedExclamationLabel =>
+      _t('communityApprovedExclamationLabel');
+
+  /// Builds a localized approvals count label.
+  ///
+  /// Examples (EN): "1 Approval", "12 Approvals".
+  /// Example (FIL): "12 Pag-apruba".
+  String communityApprovalCountLabel(num count) {
+    final n = count is int ? count : count.round();
+    final key = (langCode == _en && n == 1)
+        ? 'communityApprovalCountLabelOne'
+        : 'communityApprovalCountLabelOther';
+    return _template(key, {'count': _formatNumber(n)});
+  }
+
+  /// Builds a localized "Top Approved" badge label.
+  ///
+  /// Example (EN): "Top Approved (3)".
+  String communityTopApprovedLabel(num approves) {
+    final n = approves is int ? approves : approves.round();
+    return _template('communityTopApprovedLabel', {'count': _formatNumber(n)});
+  }
+
+  /// Builds a localized approvals progress label.
+  ///
+  /// Example (EN): "2/3 Approved".
+  /// Example (FIL): "2/3 Naaprubahan".
+  String communityApprovalProgressLabel(num approves, num threshold) {
+    final a = approves is int ? approves : approves.round();
+    final t = threshold is int ? threshold : threshold.round();
+    return _template('communityApprovalProgressLabel', {
+      'count': _formatNumber(a),
+      'threshold': _formatNumber(t),
+    });
+  }
+
+  // Comments
+
+  /// Builds a localized comment count label.
+  ///
+  /// Examples (EN): "1 Comment", "12 Comments".
+  /// Example (FIL): "12 Komento".
+  String communityCommentCountLabel(num count) {
+    final n = count is int ? count : count.round();
+    final key = (langCode == _en && n == 1)
+        ? 'communityCommentCountLabelOne'
+        : 'communityCommentCountLabelOther';
+    return _template(key, {'count': _formatNumber(n)});
+  }
+
+  /// Builds a localized comments sheet title with count.
+  ///
+  /// Example (EN): "Comments (2)".
+  /// Example (FIL): "Mga komento (2)".
+  String communityCommentsTitleWithCount(num count) {
+    final n = count is int ? count : count.round();
+    return _template('communityCommentsTitleWithCount', {
+      'count': _formatNumber(n),
+    });
+  }
+
+  String get communityNoCommentsYetMessage => _t('communityNoCommentsYetMessage');
+  String get communityAddCommentHint => _t('communityAddCommentHint');
+  String get communitySendTooltip => _t('communitySendTooltip');
+
+  /// Builds a localized placeholder label for an unknown user.
+  ///
+  /// Example (EN): "User 12".
+  /// Example (FIL): "Gumagamit 12".
+  String communityUserWithId(num id) {
+    return _template('communityUserWithId', {'id': _formatNumber(id)});
+  }
+
+  // User/system labels specific to community UI
+  String get communityMockVideoBadge => _t('communityMockVideoBadge');
+
+  String get communityMockFirstUploadTitle => _t('communityMockFirstUploadTitle');
+  String get communityMockFirstUploadDescription =>
+      _t('communityMockFirstUploadDescription');
+  String get communityMockPracticeVideoTitle =>
+      _t('communityMockPracticeVideoTitle');
+  String get communityMockPracticeVideoDescription =>
+      _t('communityMockPracticeVideoDescription');
+
+  // Dialogs + snackbars
+  String get communityEditDescriptionTitle => _t('communityEditDescriptionTitle');
+  String get communityEditDescriptionHint => _t('communityEditDescriptionHint');
+
+  String get communityDeletePostTitle => _t('communityDeletePostTitle');
+  String get communityDeletePostBody => _t('communityDeletePostBody');
+
+  String get communitySnackbarDescriptionUpdated =>
+      _t('communitySnackbarDescriptionUpdated');
+  String get communitySnackbarDescriptionUpdateFailed =>
+      _t('communitySnackbarDescriptionUpdateFailed');
+  String get communitySnackbarPostDeleted => _t('communitySnackbarPostDeleted');
+  String get communitySnackbarPostDeleteFailed =>
+      _t('communitySnackbarPostDeleteFailed');
+
+  // Video dialog/player
+  String get communityCloseTooltip => _t('communityCloseTooltip');
+  String get communityVideoLoadError => _t('communityVideoLoadError');
+
+  // Upload screen
+  String get communityUploadScreenTitle => _t('communityUploadScreenTitle');
+  String get communityUploadScreenInstructions =>
+      _t('communityUploadScreenInstructions');
+
+  String get communityUploadVideoSectionLabel =>
+      _t('communityUploadVideoSectionLabel');
+  String get communityUploadNoVideoSelectedLabel =>
+      _t('communityUploadNoVideoSelectedLabel');
+
+  // Semantics (upload picker)
+  String get communityUploadSelectedVideoSemanticLabel =>
+      _t('communityUploadSelectedVideoSemanticLabel');
+  String get communityUploadChooseVideoSemanticLabel =>
+      _t('communityUploadChooseVideoSemanticLabel');
+  String get communityUploadInProgressSemanticHint =>
+      _t('communityUploadInProgressSemanticHint');
+  String get communityUploadTapToPickVideoSemanticHint =>
+      _t('communityUploadTapToPickVideoSemanticHint');
+
+  String get communityUploadVideoSelectedLabel =>
+      _t('communityUploadVideoSelectedLabel');
+  String get communityUploadPickVideoLabel => _t('communityUploadPickVideoLabel');
+  String get communityUploadSupportedFormatsLabel =>
+      _t('communityUploadSupportedFormatsLabel');
+
+  String get communityUploadChangeSelectedVideoTooltip =>
+      _t('communityUploadChangeSelectedVideoTooltip');
+  String get communityUploadChooseVideoTooltip =>
+      _t('communityUploadChooseVideoTooltip');
+  String get communityUploadChangeButtonLabel =>
+      _t('communityUploadChangeButtonLabel');
+  String get communityUploadChooseButtonLabel =>
+      _t('communityUploadChooseButtonLabel');
+
+  String get communityUploadDescriptionSectionLabel =>
+      _t('communityUploadDescriptionSectionLabel');
+  String get communityUploadDescriptionOptionalLabel =>
+      _t('communityUploadDescriptionOptionalLabel');
+  String get communityUploadDescriptionHint =>
+      _t('communityUploadDescriptionHint');
+
+  // Semantics (upload action)
+  String get communityUploadVideoButtonSemanticLabel =>
+      _t('communityUploadVideoButtonSemanticLabel');
+  String get communityUploadSelectedVideoSemanticHint =>
+      _t('communityUploadSelectedVideoSemanticHint');
+  String get communityUploadSelectVideoFirstSemanticHint =>
+      _t('communityUploadSelectVideoFirstSemanticHint');
+
+  String get communityUploadingLabel => _t('communityUploadingLabel');
+  String get communityUploadButtonLabel => _t('communityUploadButtonLabel');
+
+  // Upload snackbars/errors
+  String get communityUploadFallbackPickerNoUsablePathError =>
+      _t('communityUploadFallbackPickerNoUsablePathError');
+  String get communityUploadNoPickerPluginError =>
+      _t('communityUploadNoPickerPluginError');
+  String get communityUploadFallbackPickerOpenError =>
+      _t('communityUploadFallbackPickerOpenError');
+  String get communityUploadVideoSelectionGenericError =>
+      _t('communityUploadVideoSelectionGenericError');
+  String get communityUploadPlatformNoPathError =>
+      _t('communityUploadPlatformNoPathError');
+  String get communityUploadFilePickerOpenError =>
+      _t('communityUploadFilePickerOpenError');
+  String get communityUploadChooseVideoFilePrompt =>
+      _t('communityUploadChooseVideoFilePrompt');
+  String get communityUploadSuccessSnackbar => _t('communityUploadSuccessSnackbar');
+  String get communityUploadFailureSnackbar => _t('communityUploadFailureSnackbar');
+
+  // ---------------------------
   // Internals
   // ---------------------------
 
@@ -325,6 +524,108 @@ class AppStrings {
 
       // Progress (used by lessonSignProgressLabel(current,total))
       'lessonSignProgressLabel': 'Sign {current} of {total}',
+
+      // Community
+      'communityTitle': 'Community',
+      'communityUploadTooltip': 'Upload',
+      'communitySearchHint': 'Search by title or uploader',
+
+      'communityTabUnapprovedVideos': 'Unapproved Videos',
+      'communityTabApprovedVideos': 'Approved Videos',
+      'communityTabUserUploadedVideos': 'User Uploaded Videos',
+
+      'communityMoreOptionsTooltip': 'More options',
+      'communityEditLabel': 'Edit',
+      'communityDeleteLabel': 'Delete',
+      'communityCancelLabel': 'Cancel',
+      'communitySaveLabel': 'Save',
+
+      'communityApproveLabel': 'Approve',
+      'communityApprovedLabel': 'Approved',
+      'communityApprovedExclamationLabel': 'Approved!',
+
+      'communityApprovalCountLabelOne': '{count} Approval',
+      'communityApprovalCountLabelOther': '{count} Approvals',
+      'communityTopApprovedLabel': 'Top Approved ({count})',
+      'communityApprovalProgressLabel': '{count}/{threshold} Approved',
+
+      'communityCommentCountLabelOne': '{count} Comment',
+      'communityCommentCountLabelOther': '{count} Comments',
+      'communityCommentsTitleWithCount': 'Comments ({count})',
+      'communityNoCommentsYetMessage': 'No comments yet. Be the first to comment!',
+      'communityAddCommentHint': 'Add a comment...',
+      'communitySendTooltip': 'Send',
+      'communityUserWithId': 'User {id}',
+
+      'communityMockVideoBadge': 'Mock Video',
+      'communityMockFirstUploadTitle': 'My First Upload (Mock)',
+      'communityMockFirstUploadDescription':
+          'Example upload shown because you have no uploads yet.',
+      'communityMockPracticeVideoTitle': 'Practice Video (Mock)',
+      'communityMockPracticeVideoDescription':
+          'Record and upload a video to replace this mock item.',
+
+      'communityEditDescriptionTitle': 'Edit description',
+      'communityEditDescriptionHint': 'Write a description...',
+
+      'communityDeletePostTitle': 'Delete post?',
+      'communityDeletePostBody': 'This action cannot be undone.',
+
+      'communitySnackbarDescriptionUpdated': 'Description updated.',
+      'communitySnackbarDescriptionUpdateFailed': 'Failed to update description.',
+      'communitySnackbarPostDeleted': 'Post deleted.',
+      'communitySnackbarPostDeleteFailed': 'Failed to delete post.',
+
+      'communityCloseTooltip': 'Close',
+      'communityVideoLoadError': 'Error loading video',
+
+      'communityUploadScreenTitle': 'Upload',
+      'communityUploadScreenInstructions':
+          'Choose a video file, add an optional description, then upload it to the community.',
+
+      'communityUploadVideoSectionLabel': 'Video',
+      'communityUploadNoVideoSelectedLabel': 'No video selected',
+
+      'communityUploadSelectedVideoSemanticLabel': 'Selected video',
+      'communityUploadChooseVideoSemanticLabel': 'Choose a video to upload',
+      'communityUploadInProgressSemanticHint': 'Upload in progress',
+      'communityUploadTapToPickVideoSemanticHint': 'Tap to open the video picker',
+
+      'communityUploadVideoSelectedLabel': 'Video selected',
+      'communityUploadPickVideoLabel': 'Pick a video',
+      'communityUploadSupportedFormatsLabel':
+          'Supported: MP4, MOV, M4V, WebM, MKV, AVI',
+
+      'communityUploadChangeSelectedVideoTooltip': 'Change selected video',
+      'communityUploadChooseVideoTooltip': 'Choose video',
+      'communityUploadChangeButtonLabel': 'Change',
+      'communityUploadChooseButtonLabel': 'Choose',
+
+      'communityUploadDescriptionSectionLabel': 'Description',
+      'communityUploadDescriptionOptionalLabel': 'Description (optional)',
+      'communityUploadDescriptionHint': 'Enter description',
+
+      'communityUploadVideoButtonSemanticLabel': 'Upload video',
+      'communityUploadSelectedVideoSemanticHint': 'Uploads the selected video',
+      'communityUploadSelectVideoFirstSemanticHint': 'Select a video first',
+
+      'communityUploadingLabel': 'Uploading…',
+      'communityUploadButtonLabel': 'Upload',
+
+      'communityUploadFallbackPickerNoUsablePathError':
+          "Couldn't access a usable local file path from the fallback picker.",
+      'communityUploadNoPickerPluginError':
+          'No file picker plugin is available on this platform.',
+      'communityUploadFallbackPickerOpenError':
+          'Could not open the fallback file picker.',
+      'communityUploadVideoSelectionGenericError':
+          'Something went wrong selecting a video.',
+      'communityUploadPlatformNoPathError':
+          "This platform can't provide an accessible local file path.",
+      'communityUploadFilePickerOpenError': 'Could not open the file picker.',
+      'communityUploadChooseVideoFilePrompt': 'Please choose a video file.',
+      'communityUploadSuccessSnackbar': 'Upload successful.',
+      'communityUploadFailureSnackbar': 'Upload failed. Please try again.',
     },
     _fil: {
       // Dashboard
@@ -393,6 +694,108 @@ class AppStrings {
 
       // Progress (used by lessonSignProgressLabel(current,total))
       'lessonSignProgressLabel': 'Sign {current} sa {total}',
+
+      // Community
+      'communityTitle': 'Komunidad',
+      'communityUploadTooltip': 'Mag-upload',
+      'communitySearchHint': 'Maghanap ayon sa pamagat o nag-upload',
+
+      'communityTabUnapprovedVideos': 'Mga Hindi Pa Naaprubahang Video',
+      'communityTabApprovedVideos': 'Mga Naaprubahang Video',
+      'communityTabUserUploadedVideos': 'Mga Video na In-upload Ko',
+
+      'communityMoreOptionsTooltip': 'Iba pang opsyon',
+      'communityEditLabel': 'I-edit',
+      'communityDeleteLabel': 'Tanggalin',
+      'communityCancelLabel': 'Kanselahin',
+      'communitySaveLabel': 'I-save',
+
+      'communityApproveLabel': 'Aprubahan',
+      'communityApprovedLabel': 'Naaprubahan',
+      'communityApprovedExclamationLabel': 'Naaprubahan!',
+
+      'communityApprovalCountLabelOne': '{count} Pag-apruba',
+      'communityApprovalCountLabelOther': '{count} Pag-apruba',
+      'communityTopApprovedLabel': 'Pinaka-naaprubahan ({count})',
+      'communityApprovalProgressLabel': '{count}/{threshold} Naaprubahan',
+
+      'communityCommentCountLabelOne': '{count} Komento',
+      'communityCommentCountLabelOther': '{count} Komento',
+      'communityCommentsTitleWithCount': 'Mga komento ({count})',
+      'communityNoCommentsYetMessage': 'Wala pang komento. Ikaw ang unang magkomento!',
+      'communityAddCommentHint': 'Magdagdag ng komento...',
+      'communitySendTooltip': 'Ipadala',
+      'communityUserWithId': 'Gumagamit {id}',
+
+      'communityMockVideoBadge': 'Halimbawang Video',
+      'communityMockFirstUploadTitle': 'Una Kong Upload (Mock)',
+      'communityMockFirstUploadDescription':
+          'Halimbawang upload na ipinapakita dahil wala ka pang naiu-upload.',
+      'communityMockPracticeVideoTitle': 'Pang-praktis na Video (Mock)',
+      'communityMockPracticeVideoDescription':
+          'Mag-record at mag-upload ng video para mapalitan ang mock na item na ito.',
+
+      'communityEditDescriptionTitle': 'I-edit ang paglalarawan',
+      'communityEditDescriptionHint': 'Sumulat ng paglalarawan...',
+
+      'communityDeletePostTitle': 'Tanggalin ang post?',
+      'communityDeletePostBody': 'Hindi na ito maibabalik.',
+
+      'communitySnackbarDescriptionUpdated': 'Na-update ang paglalarawan.',
+      'communitySnackbarDescriptionUpdateFailed': 'Hindi na-update ang paglalarawan.',
+      'communitySnackbarPostDeleted': 'Natanggal ang post.',
+      'communitySnackbarPostDeleteFailed': 'Hindi natanggal ang post.',
+
+      'communityCloseTooltip': 'Isara',
+      'communityVideoLoadError': 'Hindi ma-load ang video',
+
+      'communityUploadScreenTitle': 'Mag-upload',
+      'communityUploadScreenInstructions':
+          'Pumili ng video file, magdagdag ng opsyonal na paglalarawan, at i-upload ito sa komunidad.',
+
+      'communityUploadVideoSectionLabel': 'Video',
+      'communityUploadNoVideoSelectedLabel': 'Walang napiling video',
+
+      'communityUploadSelectedVideoSemanticLabel': 'Napiling video',
+      'communityUploadChooseVideoSemanticLabel': 'Pumili ng video na i-upload',
+      'communityUploadInProgressSemanticHint': 'Isinasagawa ang pag-upload',
+      'communityUploadTapToPickVideoSemanticHint': 'I-tap para pumili ng video',
+
+      'communityUploadVideoSelectedLabel': 'Napili na ang video',
+      'communityUploadPickVideoLabel': 'Pumili ng video',
+      'communityUploadSupportedFormatsLabel':
+          'Sinusuportahan: MP4, MOV, M4V, WebM, MKV, AVI',
+
+      'communityUploadChangeSelectedVideoTooltip': 'Palitan ang napiling video',
+      'communityUploadChooseVideoTooltip': 'Pumili ng video',
+      'communityUploadChangeButtonLabel': 'Palitan',
+      'communityUploadChooseButtonLabel': 'Pumili',
+
+      'communityUploadDescriptionSectionLabel': 'Paglalarawan',
+      'communityUploadDescriptionOptionalLabel': 'Paglalarawan (opsyonal)',
+      'communityUploadDescriptionHint': 'Ilagay ang paglalarawan',
+
+      'communityUploadVideoButtonSemanticLabel': 'Mag-upload ng video',
+      'communityUploadSelectedVideoSemanticHint': 'Iu-upload ang napiling video',
+      'communityUploadSelectVideoFirstSemanticHint': 'Pumili muna ng video',
+
+      'communityUploadingLabel': 'Nag-a-upload…',
+      'communityUploadButtonLabel': 'I-upload',
+
+      'communityUploadFallbackPickerNoUsablePathError':
+          'Hindi ma-access ang magagamit na local file path mula sa fallback picker.',
+      'communityUploadNoPickerPluginError':
+          'Walang available na file picker plugin sa platform na ito.',
+      'communityUploadFallbackPickerOpenError':
+          'Hindi mabuksan ang fallback file picker.',
+      'communityUploadVideoSelectionGenericError':
+          'May nangyaring problema sa pagpili ng video.',
+      'communityUploadPlatformNoPathError':
+          'Hindi makapagbigay ang platform na ito ng accessible na local file path.',
+      'communityUploadFilePickerOpenError': 'Hindi mabuksan ang file picker.',
+      'communityUploadChooseVideoFilePrompt': 'Pumili ng video file.',
+      'communityUploadSuccessSnackbar': 'Matagumpay ang pag-upload.',
+      'communityUploadFailureSnackbar': 'Hindi natuloy ang pag-upload. Pakisubukan muli.',
     },
   };
 

@@ -5,6 +5,7 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:signmirror_flutter/l10n/app_strings_provider.dart';
 import 'package:signmirror_flutter/providers/providers.dart';
 
 class CommunityUploadScreen extends ConsumerStatefulWidget {
@@ -52,12 +53,21 @@ class _CommunityUploadScreenState extends ConsumerState<CommunityUploadScreen> {
   }
 
   Future<bool> _pickVideoWithFileSelector() async {
+    final strings = ref.read(appStringsProvider);
+
     try {
       final file = await openFile(
-        acceptedTypeGroups: const <XTypeGroup>[
+        acceptedTypeGroups: <XTypeGroup>[
           XTypeGroup(
-            label: 'video',
-            extensions: <String>['mp4', 'mov', 'm4v', 'webm', 'mkv', 'avi'],
+            label: strings.communityUploadVideoSectionLabel,
+            extensions: const <String>[
+              'mp4',
+              'mov',
+              'm4v',
+              'webm',
+              'mkv',
+              'avi',
+            ],
           ),
         ],
       );
@@ -69,9 +79,9 @@ class _CommunityUploadScreenState extends ConsumerState<CommunityUploadScreen> {
       if (!_isUsableLocalPath(path)) {
         if (!mounted) return false;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
-              "Couldn't access a usable local file path from the fallback picker.",
+              strings.communityUploadFallbackPickerNoUsablePathError,
             ),
           ),
         );
@@ -83,24 +93,20 @@ class _CommunityUploadScreenState extends ConsumerState<CommunityUploadScreen> {
     } on MissingPluginException {
       if (!mounted) return false;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No file picker plugin is available on this platform.'),
-        ),
+        SnackBar(content: Text(strings.communityUploadNoPickerPluginError)),
       );
       return false;
     } on PlatformException {
       if (!mounted) return false;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not open the fallback file picker.'),
-        ),
+        SnackBar(content: Text(strings.communityUploadFallbackPickerOpenError)),
       );
       return false;
     } catch (_) {
       if (!mounted) return false;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Something went wrong selecting a video.'),
+        SnackBar(
+          content: Text(strings.communityUploadVideoSelectionGenericError),
         ),
       );
       return false;
@@ -108,6 +114,8 @@ class _CommunityUploadScreenState extends ConsumerState<CommunityUploadScreen> {
   }
 
   Future<void> _pickVideo() async {
+    final strings = ref.read(appStringsProvider);
+
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.video,
@@ -125,11 +133,7 @@ class _CommunityUploadScreenState extends ConsumerState<CommunityUploadScreen> {
       if (!_isUsableLocalPath(path)) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              "This platform can't provide an accessible local file path.",
-            ),
-          ),
+          SnackBar(content: Text(strings.communityUploadPlatformNoPathError)),
         );
         return;
       }
@@ -138,7 +142,7 @@ class _CommunityUploadScreenState extends ConsumerState<CommunityUploadScreen> {
     } on PlatformException {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open the file picker.')),
+        SnackBar(content: Text(strings.communityUploadFilePickerOpenError)),
       );
     } on MissingPluginException {
       // Fallback: some targets fail to register `file_picker`.
@@ -146,18 +150,20 @@ class _CommunityUploadScreenState extends ConsumerState<CommunityUploadScreen> {
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Something went wrong selecting a video.'),
+        SnackBar(
+          content: Text(strings.communityUploadVideoSelectionGenericError),
         ),
       );
     }
   }
 
   Future<void> _upload() async {
+    final strings = ref.read(appStringsProvider);
+
     final path = _selectedFilePath;
     if (path == null || path.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please choose a video file.')),
+        SnackBar(content: Text(strings.communityUploadChooseVideoFilePrompt)),
       );
       return;
     }
@@ -174,14 +180,14 @@ class _CommunityUploadScreenState extends ConsumerState<CommunityUploadScreen> {
           );
 
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Upload successful.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(strings.communityUploadSuccessSnackbar)),
+      );
       Navigator.of(context).pop();
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Upload failed. Please try again.')),
+        SnackBar(content: Text(strings.communityUploadFailureSnackbar)),
       );
     } finally {
       if (mounted) setState(() => _isUploading = false);
@@ -196,12 +202,13 @@ class _CommunityUploadScreenState extends ConsumerState<CommunityUploadScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    final strings = ref.watch(appStringsProvider);
+
     final bool hasValidVideo =
         _selectedFilePath != null && _selectedFilePath!.trim().isNotEmpty;
 
-    final String fileNameLabel = _selectedFileName == null
-        ? 'No video selected'
-        : _selectedFileName!;
+    final String fileNameLabel =
+        _selectedFileName ?? strings.communityUploadNoVideoSelectedLabel;
 
     final Color secondaryTextColor = highContrast
         ? colorScheme.onSurface
@@ -218,7 +225,7 @@ class _CommunityUploadScreenState extends ConsumerState<CommunityUploadScreen> {
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Upload')),
+      appBar: AppBar(title: Text(strings.communityUploadScreenTitle)),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -226,33 +233,30 @@ class _CommunityUploadScreenState extends ConsumerState<CommunityUploadScreen> {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
               children: [
-                // Text(
-                //   'Upload video',
-                //   style: theme.textTheme.headlineSmall?.copyWith(
-                //     fontWeight: FontWeight.w600,
-                //   ),
-                // ),
                 const SizedBox(height: 6),
                 Text(
-                  'Choose a video file, add an optional description, then upload it to the community.',
+                  strings.communityUploadScreenInstructions,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: secondaryTextColor,
                   ),
                 ),
                 const SizedBox(height: 20),
-                Text('Video', style: theme.textTheme.titleMedium),
+                Text(
+                  strings.communityUploadVideoSectionLabel,
+                  style: theme.textTheme.titleMedium,
+                ),
                 const SizedBox(height: 10),
                 Semantics(
                   container: true,
                   button: true,
                   enabled: !_isUploading,
                   label: hasValidVideo
-                      ? 'Selected video'
-                      : 'Choose a video to upload',
+                      ? strings.communityUploadSelectedVideoSemanticLabel
+                      : strings.communityUploadChooseVideoSemanticLabel,
                   value: fileNameLabel,
                   hint: _isUploading
-                      ? 'Upload in progress'
-                      : 'Tap to open the video picker',
+                      ? strings.communityUploadInProgressSemanticHint
+                      : strings.communityUploadTapToPickVideoSemanticHint,
                   child: Card(
                     clipBehavior: Clip.antiAlias,
                     color: hasValidVideo
@@ -286,8 +290,9 @@ class _CommunityUploadScreenState extends ConsumerState<CommunityUploadScreen> {
                                 children: [
                                   Text(
                                     hasValidVideo
-                                        ? 'Video selected'
-                                        : 'Pick a video',
+                                        ? strings
+                                              .communityUploadVideoSelectedLabel
+                                        : strings.communityUploadPickVideoLabel,
                                     style: theme.textTheme.titleMedium,
                                   ),
                                   const SizedBox(height: 4),
@@ -304,7 +309,8 @@ class _CommunityUploadScreenState extends ConsumerState<CommunityUploadScreen> {
                                   if (!hasValidVideo) ...[
                                     const SizedBox(height: 4),
                                     Text(
-                                      'Supported: MP4, MOV, M4V, WebM, MKV, AVI',
+                                      strings
+                                          .communityUploadSupportedFormatsLabel,
                                       style: theme.textTheme.bodySmall
                                           ?.copyWith(color: secondaryTextColor),
                                     ),
@@ -315,12 +321,16 @@ class _CommunityUploadScreenState extends ConsumerState<CommunityUploadScreen> {
                             const SizedBox(width: 12),
                             Tooltip(
                               message: hasValidVideo
-                                  ? 'Change selected video'
-                                  : 'Choose video',
+                                  ? strings
+                                        .communityUploadChangeSelectedVideoTooltip
+                                  : strings.communityUploadChooseVideoTooltip,
                               child: FilledButton.tonal(
                                 onPressed: _isUploading ? null : _pickVideo,
                                 child: Text(
-                                  hasValidVideo ? 'Change' : 'Choose',
+                                  hasValidVideo
+                                      ? strings.communityUploadChangeButtonLabel
+                                      : strings
+                                            .communityUploadChooseButtonLabel,
                                 ),
                               ),
                             ),
@@ -331,14 +341,17 @@ class _CommunityUploadScreenState extends ConsumerState<CommunityUploadScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Text('Description', style: theme.textTheme.titleMedium),
+                Text(
+                  strings.communityUploadDescriptionSectionLabel,
+                  style: theme.textTheme.titleMedium,
+                ),
                 const SizedBox(height: 10),
                 TextField(
                   controller: _descriptionController,
                   enabled: !_isUploading,
                   decoration: InputDecoration(
-                    labelText: 'Description (optional)',
-                    hintText: 'Enter description',
+                    labelText: strings.communityUploadDescriptionOptionalLabel,
+                    hintText: strings.communityUploadDescriptionHint,
                     alignLabelWithHint: true,
                     border: const OutlineInputBorder(),
                     enabledBorder: OutlineInputBorder(
@@ -362,10 +375,10 @@ class _CommunityUploadScreenState extends ConsumerState<CommunityUploadScreen> {
                 Semantics(
                   button: true,
                   enabled: !_isUploading && hasValidVideo,
-                  label: 'Upload video',
+                  label: strings.communityUploadVideoButtonSemanticLabel,
                   hint: hasValidVideo
-                      ? 'Uploads the selected video'
-                      : 'Select a video first',
+                      ? strings.communityUploadSelectedVideoSemanticHint
+                      : strings.communityUploadSelectVideoFirstSemanticHint,
                   child: SizedBox(
                     width: double.infinity,
                     height: 48,
@@ -388,10 +401,10 @@ class _CommunityUploadScreenState extends ConsumerState<CommunityUploadScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 12),
-                                const Text('Uploading…'),
+                                Text(strings.communityUploadingLabel),
                               ],
                             )
-                          : const Text('Upload'),
+                          : Text(strings.communityUploadButtonLabel),
                     ),
                   ),
                 ),

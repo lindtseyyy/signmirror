@@ -1,6 +1,8 @@
 import 'package:signmirror_flutter/widgets/adaptive_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:signmirror_flutter/l10n/app_strings.dart';
+import 'package:signmirror_flutter/l10n/app_strings_provider.dart';
 import 'package:signmirror_flutter/models/community_video.dart';
 import 'package:signmirror_flutter/widgets/video/video_dialog.dart';
 import 'package:signmirror_flutter/widgets/video/video_comments_sheet.dart';
@@ -85,11 +87,16 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
     super.dispose();
   }
 
-  String _resolveUploaderName(Map<int, String> uploaderNames, int uploaderId) {
-    return uploaderNames[uploaderId] ?? 'User $uploaderId';
+  String _resolveUploaderName(
+    AppStrings strings,
+    Map<int, String> uploaderNames,
+    int uploaderId,
+  ) {
+    return uploaderNames[uploaderId] ?? strings.communityUserWithId(uploaderId);
   }
 
   Widget _buildVideoList({
+    required AppStrings strings,
     required List<CommunityVideo> videos,
     required Map<int, String> uploaderNames,
     required bool Function(CommunityVideo video) tabFilter,
@@ -101,6 +108,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
       if (queryLower.isEmpty) return true;
 
       final uploaderName = _resolveUploaderName(
+        strings,
         uploaderNames,
         video.uploaderId,
       );
@@ -114,15 +122,16 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
       itemBuilder: (context, index) {
         final video = filtered[index];
         final uploaderName = _resolveUploaderName(
+          strings,
           uploaderNames,
           video.uploaderId,
         );
-        return _buildCommunityPost(context, ref, video, uploaderName);
+        return _buildCommunityPost(context, ref, strings, video, uploaderName);
       },
     );
   }
 
-  List<CommunityVideo> _createMockUserUploadedVideos() {
+  List<CommunityVideo> _createMockUserUploadedVideos(AppStrings strings) {
     CommunityVideo mockVideo({
       required int id,
       required String title,
@@ -142,18 +151,19 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
     return <CommunityVideo>[
       mockVideo(
         id: -1,
-        title: 'My First Upload (Mock)',
-        description: 'Example upload shown because you have no uploads yet.',
+        title: strings.communityMockFirstUploadTitle,
+        description: strings.communityMockFirstUploadDescription,
       ),
       mockVideo(
         id: -2,
-        title: 'Practice Video (Mock)',
-        description: 'Record and upload a video to replace this mock item.',
+        title: strings.communityMockPracticeVideoTitle,
+        description: strings.communityMockPracticeVideoDescription,
       ),
     ];
   }
 
   Widget _buildUserUploadedVideosTab({
+    required AppStrings strings,
     required List<CommunityVideo> videos,
     required Map<int, String> uploaderNames,
   }) {
@@ -163,13 +173,14 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
         .where((v) => v.uploaderId == _currentUserId)
         .toList();
     final baseList = userVideos.isEmpty
-        ? _createMockUserUploadedVideos()
+        ? _createMockUserUploadedVideos(strings)
         : userVideos;
 
     final filtered = baseList.where((video) {
       if (queryLower.isEmpty) return true;
 
       final uploaderName = _resolveUploaderName(
+        strings,
         uploaderNames,
         video.uploaderId,
       );
@@ -182,12 +193,16 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
       itemCount: filtered.length,
       itemBuilder: (context, index) {
         final video = filtered[index];
-        return _buildUserUploadedPost(context, video);
+        return _buildUserUploadedPost(context, strings, video);
       },
     );
   }
 
-  Widget _buildUserUploadedPost(BuildContext context, CommunityVideo video) {
+  Widget _buildUserUploadedPost(
+    BuildContext context,
+    AppStrings strings,
+    CommunityVideo video,
+  ) {
     final communityTheme = Theme.of(context).extension<CommunityTheme>()!;
 
     final isRealUpload = video.id > 0;
@@ -231,7 +246,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                       const Icon(Icons.thumb_up_alt_outlined, size: 16),
                       const SizedBox(width: 6),
                       Text(
-                        '${video.approves} Approvals',
+                        strings.communityApprovalCountLabel(video.approves),
                         style: const TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 12,
@@ -264,7 +279,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                     height: 40,
                     child: OutlinedButton(
                       onPressed: () =>
-                          _openCommentsForUserUpload(context, video),
+                          _openCommentsForUserUpload(context, strings, video),
                       style: _commentButtonStyle(context),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -273,7 +288,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                           const SizedBox(width: 10),
                           Flexible(
                             child: Text(
-                              '$commentCount ${commentCount == 1 ? 'Comment' : 'Comments'}',
+                              strings.communityCommentCountLabel(commentCount),
                               overflow: TextOverflow.ellipsis,
                               softWrap: false,
                             ),
@@ -290,28 +305,32 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                     height: 40,
                     child: Center(
                       child: PopupMenuButton<String>(
-                        tooltip: 'More options',
+                        tooltip: strings.communityMoreOptionsTooltip,
                         padding: EdgeInsets.zero,
                         icon: const Icon(Icons.more_vert),
                         onSelected: (value) {
                           switch (value) {
                             case 'edit':
-                              _editUserUploadedDescription(context, video);
+                              _editUserUploadedDescription(
+                                context,
+                                strings,
+                                video,
+                              );
                               break;
                             case 'delete':
-                              _confirmDeleteUserUpload(context, video);
+                              _confirmDeleteUserUpload(context, strings, video);
                               break;
                           }
                         },
                         itemBuilder: (context) => [
-                          const PopupMenuItem<String>(
+                          PopupMenuItem<String>(
                             value: 'edit',
-                            child: Text('Edit'),
+                            child: Text(strings.communityEditLabel),
                           ),
                           PopupMenuItem<String>(
                             value: 'delete',
                             child: Text(
-                              'Delete',
+                              strings.communityDeleteLabel,
                               style: TextStyle(
                                 color: Theme.of(context).colorScheme.error,
                               ),
@@ -332,6 +351,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
 
   Future<void> _editUserUploadedDescription(
     BuildContext context,
+    AppStrings strings,
     CommunityVideo video,
   ) async {
     if (video.id <= 0) return;
@@ -370,24 +390,30 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                 messenger
                   ..hideCurrentSnackBar()
                   ..showSnackBar(
-                    const SnackBar(content: Text('Description updated.')),
+                    SnackBar(
+                      content: Text(
+                        strings.communitySnackbarDescriptionUpdated,
+                      ),
+                    ),
                   );
               } catch (_) {
                 setDialogState(() => isSaving = false);
                 messenger
                   ..hideCurrentSnackBar()
                   ..showSnackBar(
-                    const SnackBar(
-                      content: Text('Failed to update description.'),
+                    SnackBar(
+                      content: Text(
+                        strings.communitySnackbarDescriptionUpdateFailed,
+                      ),
                     ),
                   );
               }
             }
 
             return AlertDialog(
-              title: const Text(
-                'Edit description',
-                style: TextStyle(fontSize: 18),
+              title: Text(
+                strings.communityEditDescriptionTitle,
+                style: const TextStyle(fontSize: 18),
               ),
               // Reduce horizontal inset so the dialog can breathe on wider screens.
               insetPadding: const EdgeInsets.symmetric(
@@ -405,9 +431,9 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                     textInputAction: TextInputAction.newline,
                     onChanged: (value) => editedDescription = value,
                     onSaved: (value) => editedDescription = value ?? '',
-                    decoration: const InputDecoration(
-                      hintText: 'Write a description...',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      hintText: strings.communityEditDescriptionHint,
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                 ),
@@ -415,7 +441,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
               actions: [
                 TextButton(
                   onPressed: isSaving ? null : () => navigator.pop(),
-                  child: const Text('Cancel'),
+                  child: Text(strings.communityCancelLabel),
                 ),
                 FilledButton(
                   onPressed: isSaving ? null : save,
@@ -425,7 +451,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                           height: 18,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('Save'),
+                      : Text(strings.communitySaveLabel),
                 ),
               ],
             );
@@ -437,6 +463,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
 
   Future<void> _confirmDeleteUserUpload(
     BuildContext context,
+    AppStrings strings,
     CommunityVideo video,
   ) async {
     if (video.id <= 0) return;
@@ -447,12 +474,12 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
         await showDialog<bool>(
           context: context,
           builder: (dialogContext) => AlertDialog(
-            title: const Text('Delete post?'),
-            content: const Text('This action cannot be undone.'),
+            title: Text(strings.communityDeletePostTitle),
+            content: Text(strings.communityDeletePostBody),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(false),
-                child: const Text('Cancel'),
+                child: Text(strings.communityCancelLabel),
               ),
               FilledButton(
                 onPressed: () => Navigator.of(dialogContext).pop(true),
@@ -460,7 +487,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                   backgroundColor: Theme.of(context).colorScheme.error,
                   foregroundColor: Theme.of(context).colorScheme.onError,
                 ),
-                child: const Text('Delete'),
+                child: Text(strings.communityDeleteLabel),
               ),
             ],
           ),
@@ -475,12 +502,16 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
 
       messenger
         ..hideCurrentSnackBar()
-        ..showSnackBar(const SnackBar(content: Text('Post deleted.')));
+        ..showSnackBar(
+          SnackBar(content: Text(strings.communitySnackbarPostDeleted)),
+        );
     } catch (_) {
       if (!mounted) return;
       messenger
         ..hideCurrentSnackBar()
-        ..showSnackBar(const SnackBar(content: Text('Failed to delete post.')));
+        ..showSnackBar(
+          SnackBar(content: Text(strings.communitySnackbarPostDeleteFailed)),
+        );
     }
   }
 
@@ -488,6 +519,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
   Widget build(BuildContext context) {
     final communityVideos = ref.watch(communityVideoProvider);
     final uploaderNamesAsync = ref.watch(uploaderNamesProvider);
+    final strings = ref.watch(appStringsProvider);
 
     final effectiveHighContrast = MediaQuery.of(context).highContrast;
 
@@ -510,13 +542,13 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
           automaticallyImplyLeading: false,
           backgroundColor: colorScheme.primary,
           foregroundColor: colorScheme.onPrimary,
-          title: const Text(
-            'Community',
-            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22),
+          title: Text(
+            strings.communityTitle,
+            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 22),
           ),
           actions: [
             IconButton(
-              tooltip: 'Upload',
+              tooltip: strings.communityUploadTooltip,
               icon: const Icon(Icons.add),
               onPressed: () {
                 Navigator.of(context).pushNamed(RouteNames.communityUpload);
@@ -539,7 +571,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                       style: TextStyle(color: searchTextColor),
                       cursorColor: searchTextColor,
                       decoration: InputDecoration(
-                        hintText: 'Search by title or uploader',
+                        hintText: strings.communitySearchHint,
                         filled: true,
                         fillColor: communityTheme.searchFieldFillColor,
                         prefixIcon: const Icon(Icons.search),
@@ -582,28 +614,28 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                   tabs: [
                     Tab(
                       icon: Tooltip(
-                        message: 'Unapproved Videos',
+                        message: strings.communityTabUnapprovedVideos,
                         child: Icon(
                           Icons.pending_actions,
-                          semanticLabel: 'Unapproved Videos',
+                          semanticLabel: strings.communityTabUnapprovedVideos,
                         ),
                       ),
                     ),
                     Tab(
                       icon: Tooltip(
-                        message: 'Approved Videos',
+                        message: strings.communityTabApprovedVideos,
                         child: Icon(
                           Icons.verified,
-                          semanticLabel: 'Approved Videos',
+                          semanticLabel: strings.communityTabApprovedVideos,
                         ),
                       ),
                     ),
                     Tab(
                       icon: Tooltip(
-                        message: 'User Uploaded Videos',
+                        message: strings.communityTabUserUploadedVideos,
                         child: Icon(
                           Icons.cloud_upload_outlined,
-                          semanticLabel: 'User Uploaded Videos',
+                          semanticLabel: strings.communityTabUserUploadedVideos,
                         ),
                       ),
                     ),
@@ -616,18 +648,21 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
         body: TabBarView(
           children: [
             _buildVideoList(
+              strings: strings,
               videos: communityVideos,
               uploaderNames: uploaderNames,
               tabFilter: (video) =>
                   video.approves < 3 && video.uploaderId != _currentUserId,
             ),
             _buildVideoList(
+              strings: strings,
               videos: communityVideos,
               uploaderNames: uploaderNames,
               tabFilter: (video) =>
                   video.approves >= 3 && video.uploaderId != _currentUserId,
             ),
             _buildUserUploadedVideosTab(
+              strings: strings,
               videos: communityVideos,
               uploaderNames: uploaderNames,
             ),
@@ -637,7 +672,11 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
     );
   }
 
-  void _openCommentsForUserUpload(BuildContext context, CommunityVideo video) {
+  void _openCommentsForUserUpload(
+    BuildContext context,
+    AppStrings strings,
+    CommunityVideo video,
+  ) {
     if (video.id > 0) {
       showModalBottomSheet(
         context: context,
@@ -705,7 +744,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'Comments (${initial.length})',
+                      strings.communityCommentsTitleWithCount(initial.length),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -714,9 +753,9 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                     Divider(color: communityTheme.dividerColor),
                     Expanded(
                       child: initial.isEmpty
-                          ? const Center(
+                          ? Center(
                               child: Text(
-                                'No comments yet. Be the first to comment!',
+                                strings.communityNoCommentsYetMessage,
                               ),
                             )
                           : ListView.builder(
@@ -731,7 +770,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                                     ),
                                   ),
                                   title: Text(
-                                    'User ${comment.userId}',
+                                    strings.communityUserWithId(comment.userId),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 13,
@@ -754,7 +793,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                             child: TextField(
                               controller: commentController,
                               decoration: InputDecoration(
-                                hintText: 'Add a comment...',
+                                hintText: strings.communityAddCommentHint,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(25),
                                   borderSide: BorderSide.none,
@@ -772,6 +811,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                           ),
                           const SizedBox(width: 8),
                           IconButton(
+                            tooltip: strings.communitySendTooltip,
                             icon: Icon(
                               Icons.send,
                               color: communityTheme.primaryActionColor,
@@ -854,6 +894,7 @@ void _openVideoPlayer(BuildContext context, String videoUrl) {
 Widget _buildCommunityPost(
   BuildContext context,
   WidgetRef ref,
+  AppStrings strings,
   CommunityVideo video,
   String uploaderName,
 ) {
@@ -923,10 +964,13 @@ Widget _buildCommunityPost(
                   ),
                 Text(
                   isMock
-                      ? 'Mock Video'
+                      ? strings.communityMockVideoBadge
                       : isTopApproved
-                      ? 'Top Approved (${video.approves})'
-                      : '${video.approves}/3 Approved',
+                      ? strings.communityTopApprovedLabel(video.approves)
+                      : strings.communityApprovalProgressLabel(
+                          video.approves,
+                          3,
+                        ),
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: isTopApproved
@@ -971,16 +1015,18 @@ Widget _buildCommunityPost(
                           borderRadius: BorderRadius.circular(10),
                         ),
                         backgroundColor: const Color(0xff69B85E),
-                        fixedSize: const Size(130, 40),
+                        fixedSize: const Size(150, 40),
                       )
                     : FilledButton.styleFrom(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        fixedSize: const Size(130, 40),
+                        fixedSize: const Size(150, 40),
                       ),
                 child: Text(
-                  video.isApprovedByCurrentUser ? 'Approved!' : 'Approve',
+                  video.isApprovedByCurrentUser
+                      ? strings.communityApprovedExclamationLabel
+                      : strings.communityApproveLabel,
                   style: const TextStyle(
                     fontFamily: 'Inter',
                     fontWeight: FontWeight.w700,
@@ -1008,7 +1054,7 @@ Widget _buildCommunityPost(
                     const Icon(Icons.comment_outlined),
                     const SizedBox(width: 10),
                     Text(
-                      '${video.comments.length} ${video.comments.length == 1 ? 'Comment' : 'Comments'}',
+                      strings.communityCommentCountLabel(video.comments.length),
                     ),
                   ],
                 ),

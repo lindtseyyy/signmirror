@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:signmirror_flutter/l10n/app_strings_provider.dart';
 import 'package:signmirror_flutter/models/community_video.dart';
 import 'package:signmirror_flutter/providers/providers.dart';
 import 'package:signmirror_flutter/theme/community_theme.dart';
@@ -39,6 +40,7 @@ class _VideoCommentsSheetState extends ConsumerState<VideoCommentsSheet> {
     final communityTheme = Theme.of(context).extension<CommunityTheme>()!;
     final textTheme = Theme.of(context).textTheme;
     final highContrast = MediaQuery.of(context).highContrast;
+    final appStrings = ref.watch(appStringsProvider);
 
     // Re-fetch video from state to get the latest comments
     final videos = ref.watch(communityVideoProvider);
@@ -104,7 +106,7 @@ class _VideoCommentsSheetState extends ConsumerState<VideoCommentsSheet> {
             ),
             const SizedBox(height: 10),
             Text(
-              "Comments (${video.comments.length})",
+              appStrings.communityCommentsTitleWithCount(video.comments.length),
               style: (textTheme.titleMedium ?? const TextStyle(fontSize: 16))
                   .copyWith(fontWeight: FontWeight.bold),
             ),
@@ -113,7 +115,7 @@ class _VideoCommentsSheetState extends ConsumerState<VideoCommentsSheet> {
               child: video.comments.isEmpty
                   ? Center(
                       child: Text(
-                        "No comments yet. Be the first to comment!",
+                        appStrings.communityNoCommentsYetMessage,
                         style: textTheme.bodyMedium,
                       ),
                     )
@@ -130,7 +132,7 @@ class _VideoCommentsSheetState extends ConsumerState<VideoCommentsSheet> {
                             ),
                           ),
                           title: Text(
-                            "User ${comment.userId}",
+                            appStrings.communityUserWithId(comment.userId),
                             // Replace with actual user name logic if available
                             style:
                                 (textTheme.bodyMedium ??
@@ -159,7 +161,7 @@ class _VideoCommentsSheetState extends ConsumerState<VideoCommentsSheet> {
                       style: TextStyle(color: colorScheme.onSurface),
                       cursorColor: primaryActionColor,
                       decoration: InputDecoration(
-                        hintText: "Add a comment...",
+                        hintText: appStrings.communityAddCommentHint,
                         hintStyle: TextStyle(
                           color: highContrast
                               ? colorScheme.onSurface
@@ -185,7 +187,7 @@ class _VideoCommentsSheetState extends ConsumerState<VideoCommentsSheet> {
                   ),
                   const SizedBox(width: 8),
                   IconButton(
-                    tooltip: 'Send',
+                    tooltip: appStrings.communitySendTooltip,
                     icon: Icon(Icons.send, color: primaryActionColor),
                     onPressed: _submitComment,
                   ),

@@ -1,17 +1,20 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:signmirror_flutter/l10n/app_strings_provider.dart';
 import 'package:video_player/video_player.dart';
 
-class VideoPlayerScreen extends StatefulWidget {
+class VideoPlayerScreen extends ConsumerStatefulWidget {
   final String videoUrl;
   const VideoPlayerScreen({super.key, required this.videoUrl});
 
   @override
-  State<VideoPlayerScreen> createState() => _VideoPlayerScreenState();
+  ConsumerState<VideoPlayerScreen> createState() => _VideoPlayerScreenState();
 }
 
-class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
+class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
   late final VideoPlayerController _controller;
   late final Future<void> _initFuture;
 
@@ -55,6 +58,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appStrings = ref.watch(appStringsProvider);
+
     return FutureBuilder<void>(
       future: _initFuture,
       builder: (context, snapshot) {
@@ -112,10 +117,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         }
 
         if (snapshot.hasError) {
-          return const Center(
+          return Center(
             child: Text(
-              "Error loading video",
-              style: TextStyle(color: Colors.white),
+              appStrings.communityVideoLoadError,
+              style: const TextStyle(color: Colors.white),
             ),
           );
         }

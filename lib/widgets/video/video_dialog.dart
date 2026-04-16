@@ -1,13 +1,18 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:signmirror_flutter/l10n/app_strings_provider.dart';
 import 'package:signmirror_flutter/widgets/video/video_player_screen.dart';
 
-class VideoDialog extends StatelessWidget {
+class VideoDialog extends ConsumerWidget {
   final String videoUrl;
   const VideoDialog({super.key, required this.videoUrl});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appStrings = ref.watch(appStringsProvider);
+
     final screen = MediaQuery.sizeOf(context);
     final colorScheme = Theme.of(context).colorScheme;
     final highContrast = MediaQuery.of(context).highContrast;
@@ -56,7 +61,7 @@ class VideoDialog extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         IconButton(
-                          tooltip: 'Close',
+                          tooltip: appStrings.communityCloseTooltip,
                           onPressed: () => Navigator.of(context).pop(),
                           color: colorScheme.onSurface,
                           icon: const Icon(Icons.close),
