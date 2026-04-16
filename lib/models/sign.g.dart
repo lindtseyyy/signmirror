@@ -32,15 +32,25 @@ const SignSchema = CollectionSchema(
       name: r'instructions',
       type: IsarType.string,
     ),
-    r'isBookmarked': PropertySchema(
+    r'instructionsFil': PropertySchema(
       id: 3,
+      name: r'instructionsFil',
+      type: IsarType.string,
+    ),
+    r'isBookmarked': PropertySchema(
+      id: 4,
       name: r'isBookmarked',
       type: IsarType.bool,
     ),
-    r'title': PropertySchema(id: 4, name: r'title', type: IsarType.string),
-    r'videoId': PropertySchema(id: 5, name: r'videoId', type: IsarType.string),
-    r'videoUrl': PropertySchema(
+    r'title': PropertySchema(id: 5, name: r'title', type: IsarType.string),
+    r'titleFil': PropertySchema(
       id: 6,
+      name: r'titleFil',
+      type: IsarType.string,
+    ),
+    r'videoId': PropertySchema(id: 7, name: r'videoId', type: IsarType.string),
+    r'videoUrl': PropertySchema(
+      id: 8,
       name: r'videoUrl',
       type: IsarType.string,
     ),
@@ -89,7 +99,19 @@ int _signEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  {
+    final value = object.instructionsFil;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   bytesCount += 3 + object.title.length * 3;
+  {
+    final value = object.titleFil;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   {
     final value = object.videoId;
     if (value != null) {
@@ -114,10 +136,12 @@ void _signSerialize(
   writer.writeString(offsets[0], object.category);
   writer.writeString(offsets[1], object.imagePath);
   writer.writeString(offsets[2], object.instructions);
-  writer.writeBool(offsets[3], object.isBookmarked);
-  writer.writeString(offsets[4], object.title);
-  writer.writeString(offsets[5], object.videoId);
-  writer.writeString(offsets[6], object.videoUrl);
+  writer.writeString(offsets[3], object.instructionsFil);
+  writer.writeBool(offsets[4], object.isBookmarked);
+  writer.writeString(offsets[5], object.title);
+  writer.writeString(offsets[6], object.titleFil);
+  writer.writeString(offsets[7], object.videoId);
+  writer.writeString(offsets[8], object.videoUrl);
 }
 
 Sign _signDeserialize(
@@ -131,10 +155,12 @@ Sign _signDeserialize(
   object.id = id;
   object.imagePath = reader.readString(offsets[1]);
   object.instructions = reader.readStringOrNull(offsets[2]);
-  object.isBookmarked = reader.readBool(offsets[3]);
-  object.title = reader.readString(offsets[4]);
-  object.videoId = reader.readStringOrNull(offsets[5]);
-  object.videoUrl = reader.readStringOrNull(offsets[6]);
+  object.instructionsFil = reader.readStringOrNull(offsets[3]);
+  object.isBookmarked = reader.readBool(offsets[4]);
+  object.title = reader.readString(offsets[5]);
+  object.titleFil = reader.readStringOrNull(offsets[6]);
+  object.videoId = reader.readStringOrNull(offsets[7]);
+  object.videoUrl = reader.readStringOrNull(offsets[8]);
   return object;
 }
 
@@ -152,12 +178,16 @@ P _signDeserializeProp<P>(
     case 2:
       return (reader.readStringOrNull(offset)) as P;
     case 3:
-      return (reader.readBool(offset)) as P;
-    case 4:
-      return (reader.readString(offset)) as P;
-    case 5:
       return (reader.readStringOrNull(offset)) as P;
+    case 4:
+      return (reader.readBool(offset)) as P;
+    case 5:
+      return (reader.readString(offset)) as P;
     case 6:
+      return (reader.readStringOrNull(offset)) as P;
+    case 7:
+      return (reader.readStringOrNull(offset)) as P;
+    case 8:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -919,6 +949,168 @@ extension SignQueryFilter on QueryBuilder<Sign, Sign, QFilterCondition> {
     });
   }
 
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> instructionsFilIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'instructionsFil'),
+      );
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> instructionsFilIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'instructionsFil'),
+      );
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> instructionsFilEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'instructionsFil',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> instructionsFilGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'instructionsFil',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> instructionsFilLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'instructionsFil',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> instructionsFilBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'instructionsFil',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> instructionsFilStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'instructionsFil',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> instructionsFilEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'instructionsFil',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> instructionsFilContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'instructionsFil',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> instructionsFilMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'instructionsFil',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> instructionsFilIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'instructionsFil', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> instructionsFilIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'instructionsFil', value: ''),
+      );
+    });
+  }
+
   QueryBuilder<Sign, Sign, QAfterFilterCondition> isBookmarkedEqualTo(
     bool value,
   ) {
@@ -1071,6 +1263,168 @@ extension SignQueryFilter on QueryBuilder<Sign, Sign, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(property: r'title', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> titleFilIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'titleFil'),
+      );
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> titleFilIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'titleFil'),
+      );
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> titleFilEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'titleFil',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> titleFilGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'titleFil',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> titleFilLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'titleFil',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> titleFilBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'titleFil',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> titleFilStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'titleFil',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> titleFilEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'titleFil',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> titleFilContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'titleFil',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> titleFilMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'titleFil',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> titleFilIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'titleFil', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterFilterCondition> titleFilIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'titleFil', value: ''),
       );
     });
   }
@@ -1441,6 +1795,18 @@ extension SignQuerySortBy on QueryBuilder<Sign, Sign, QSortBy> {
     });
   }
 
+  QueryBuilder<Sign, Sign, QAfterSortBy> sortByInstructionsFil() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'instructionsFil', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterSortBy> sortByInstructionsFilDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'instructionsFil', Sort.desc);
+    });
+  }
+
   QueryBuilder<Sign, Sign, QAfterSortBy> sortByIsBookmarked() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isBookmarked', Sort.asc);
@@ -1462,6 +1828,18 @@ extension SignQuerySortBy on QueryBuilder<Sign, Sign, QSortBy> {
   QueryBuilder<Sign, Sign, QAfterSortBy> sortByTitleDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterSortBy> sortByTitleFil() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'titleFil', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterSortBy> sortByTitleFilDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'titleFil', Sort.desc);
     });
   }
 
@@ -1539,6 +1917,18 @@ extension SignQuerySortThenBy on QueryBuilder<Sign, Sign, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Sign, Sign, QAfterSortBy> thenByInstructionsFil() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'instructionsFil', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterSortBy> thenByInstructionsFilDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'instructionsFil', Sort.desc);
+    });
+  }
+
   QueryBuilder<Sign, Sign, QAfterSortBy> thenByIsBookmarked() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isBookmarked', Sort.asc);
@@ -1560,6 +1950,18 @@ extension SignQuerySortThenBy on QueryBuilder<Sign, Sign, QSortThenBy> {
   QueryBuilder<Sign, Sign, QAfterSortBy> thenByTitleDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterSortBy> thenByTitleFil() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'titleFil', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QAfterSortBy> thenByTitleFilDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'titleFil', Sort.desc);
     });
   }
 
@@ -1613,6 +2015,17 @@ extension SignQueryWhereDistinct on QueryBuilder<Sign, Sign, QDistinct> {
     });
   }
 
+  QueryBuilder<Sign, Sign, QDistinct> distinctByInstructionsFil({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(
+        r'instructionsFil',
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
   QueryBuilder<Sign, Sign, QDistinct> distinctByIsBookmarked() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'isBookmarked');
@@ -1624,6 +2037,14 @@ extension SignQueryWhereDistinct on QueryBuilder<Sign, Sign, QDistinct> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'title', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Sign, Sign, QDistinct> distinctByTitleFil({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'titleFil', caseSensitive: caseSensitive);
     });
   }
 
@@ -1669,6 +2090,12 @@ extension SignQueryProperty on QueryBuilder<Sign, Sign, QQueryProperty> {
     });
   }
 
+  QueryBuilder<Sign, String?, QQueryOperations> instructionsFilProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'instructionsFil');
+    });
+  }
+
   QueryBuilder<Sign, bool, QQueryOperations> isBookmarkedProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isBookmarked');
@@ -1678,6 +2105,12 @@ extension SignQueryProperty on QueryBuilder<Sign, Sign, QQueryProperty> {
   QueryBuilder<Sign, String, QQueryOperations> titleProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'title');
+    });
+  }
+
+  QueryBuilder<Sign, String?, QQueryOperations> titleFilProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'titleFil');
     });
   }
 

@@ -8,6 +8,10 @@ class Sign {
 
   @Index(type: IndexType.value)
   late String title;
+
+  /// Optional Filipino translation of [title].
+  String? titleFil;
+
   late String category;
   late String imagePath;
 
@@ -16,4 +20,7 @@ class Sign {
   String? videoUrl;
   String? videoId;
   String? instructions;
+
+  /// Optional Filipino translation of [instructions].
+  String? instructionsFil;
 }

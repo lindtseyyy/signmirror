@@ -19,9 +19,11 @@ class IsarService {
   Future<Isar> openDB() async {
     final dir = await getApplicationDocumentsDirectory();
 
+    late final Isar isar;
+
     // Check if an instance is already open to avoid errors
     if (Isar.instanceNames.isEmpty) {
-      final isar = await Isar.open([
+      isar = await Isar.open([
         SignSchema,
         LessonSchema,
         CommunityVideoSchema,
@@ -31,10 +33,59 @@ class IsarService {
       // await resetDatabase();
       // OPTIONAL: Seed data if the database is brand new
       await _seedData(isar);
-      return isar;
+    } else {
+      isar = Isar.getInstance()!;
     }
 
-    return Isar.getInstance()!;
+    // Idempotent migration/backfill: populate Filipino titles for known seeded signs.
+    await _backfillSignFilipinoTitles(isar);
+
+    return isar;
+  }
+
+  // --- Sign title translations (seed + migration/backfill) ---
+
+  /// Known seeded English titles -> Filipino titles.
+  ///
+  /// `Sign.title` remains the stable English identifier.
+  static const Map<String, String> _seededTitleEnToFil = {
+    'Letter A': 'Letrang A',
+    'Letter B': 'Letrang B',
+    'Number 1': 'Numero 1',
+    'Hello': 'Kumusta',
+    'Thank You': 'Salamat',
+    'Help': 'Tulong',
+    'Please': 'Pakiusap',
+  };
+
+  String? _filipinoTitleForEnglish(String englishTitle) {
+    return _seededTitleEnToFil[englishTitle];
+  }
+
+  /// Backfills `Sign.titleFil` for existing databases without wiping/overwriting user data.
+  ///
+  /// Idempotent: only fills when `titleFil` is null/blank and a known mapping exists.
+  Future<void> _backfillSignFilipinoTitles(Isar isar) async {
+    final all = await isar.signs.where().findAll();
+    if (all.isEmpty) return;
+
+    final toUpdate = <Sign>[];
+    for (final sign in all) {
+      final current = sign.titleFil;
+      if (current != null && current.trim().isNotEmpty) continue;
+
+      final mapped = _filipinoTitleForEnglish(sign.title);
+      if (mapped == null) continue;
+
+      sign.titleFil = mapped;
+      toUpdate.add(sign);
+    }
+
+    if (toUpdate.isEmpty) return;
+
+    await isar.writeTxn(() async {
+      await isar.signs.putAll(toUpdate);
+    });
   }
 
   // Seed initial data (for local testing)
@@ -79,6 +130,7 @@ class IsarService {
         {
           'id': 1,
           'title': 'Letter A',
+          'titleFil': 'Letrang A',
           'category': 'Alphabet',
           'imagePath': 'assets/images/lessons/daily_conversation.png',
           'videoUrl': 'https://youtu.be/iYpTJ5cEl9Y?si=B1WP_YUBMsjEdRMr',
@@ -87,6 +139,7 @@ class IsarService {
         {
           'id': 2,
           'title': 'Letter B',
+          'titleFil': 'Letrang B',
           'category': 'Alphabet',
           'imagePath': 'assets/images/lessons/daily_conversation.png',
           'videoUrl': 'https://youtu.be/e6MYgcbUKqQ?si=PUcl1r4duqdTzSA8',
@@ -95,6 +148,7 @@ class IsarService {
         {
           'id': 3,
           'title': 'Number 1',
+          'titleFil': 'Numero 1',
           'category': 'Numbers',
           'imagePath': 'assets/images/lessons/daily_conversation.png',
           'videoId': 'iYpTJ5cEl9Y',
@@ -102,6 +156,7 @@ class IsarService {
         {
           'id': 4,
           'title': 'Hello',
+          'titleFil': 'Kumusta',
           'category': 'Greetings',
           'imagePath': 'assets/images/lessons/daily_conversation.png',
           'videoId': 'iYpTJ5cEl9Y',
@@ -109,18 +164,21 @@ class IsarService {
         {
           'id': 5,
           'title': 'Thank You',
+          'titleFil': 'Salamat',
           'category': 'Greetings',
           'imagePath': 'assets/images/lessons/daily_conversation.png',
         },
         {
           'id': 6,
           'title': 'Help',
+          'titleFil': 'Tulong',
           'category': 'Emergency',
           'imagePath': 'assets/images/lessons/daily_conversation.png',
         },
         {
           'id': 7,
           'title': 'Please',
+          'titleFil': 'Pakiusap',
           'category': 'Basic Gestures',
           'imagePath': 'assets/images/lessons/daily_conversation.png',
         },
@@ -207,6 +265,7 @@ class IsarService {
       final initialSigns = allSigns.map((sign) {
         return Sign()
           ..title = sign['title']
+          ..titleFil = sign['titleFil']
           ..category = sign['category']
           ..imagePath = sign['imagePath']
           ..videoUrl =
@@ -459,7 +518,7 @@ class IsarService {
     });
   }
 
-  // Search signs by title (Case Insensitive)
+  // Search signs by title/category (Case Insensitive)
   Future<List<Sign>> searchSigns(String query) async {
     final isar = await db;
     if (query.isEmpty) return getAllSigns();
@@ -467,6 +526,8 @@ class IsarService {
     return await isar.signs
         .filter()
         .titleContains(query, caseSensitive: false)
+        .or()
+        .titleFilContains(query, caseSensitive: false)
         .or()
         .categoryContains(query, caseSensitive: false)
         .findAll();

@@ -8,6 +8,23 @@ class DynamicBarChart extends StatelessWidget {
   final Color lastPeriodColor;
   final Color currentPeriodColor;
 
+  /// Header/title displayed above the chart.
+  final String title;
+
+  /// Legend label for the previous period series.
+  final String lastPeriodLabel;
+
+  /// Legend label for the current period series.
+  final String currentPeriodLabel;
+
+  /// Tooltip tag appended to the day label for the previous period series.
+  /// Example: "(Last)".
+  final String lastPeriodTooltipTag;
+
+  /// Tooltip tag appended to the day label for the current period series.
+  /// Example: "(This)".
+  final String currentPeriodTooltipTag;
+
   static const Color _kDefaultLastPeriodColor = Color(0xff4A4E69);
   static const Color _kDefaultCurrentPeriodColor = Color(0xff2D68FF);
 
@@ -17,6 +34,11 @@ class DynamicBarChart extends StatelessWidget {
     required this.data,
     this.lastPeriodColor = _kDefaultLastPeriodColor, // Example muted color
     this.currentPeriodColor = _kDefaultCurrentPeriodColor,
+    this.title = 'WEEKLY PROGRESS',
+    this.lastPeriodLabel = 'Last Week',
+    this.currentPeriodLabel = 'This Week',
+    this.lastPeriodTooltipTag = '(Last)',
+    this.currentPeriodTooltipTag = '(This)',
   });
 
   @override
@@ -91,7 +113,7 @@ class DynamicBarChart extends StatelessWidget {
           Padding(
             padding: const EdgeInsetsGeometry.fromLTRB(0, 0, 0, 15),
             child: Text(
-              "WEEKLY PROGRESS",
+              title,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
@@ -124,9 +146,10 @@ class DynamicBarChart extends StatelessWidget {
                       // Get the Day Label (Monday, Tuesday, etc.)
                       String day = labels[groupIndex];
 
-                      // Determine if it's "Last" or "This" week based on the rodIndex
-                      // In your _generateGroups, 0 is Last Week, 1 is This Week
-                      String weekLabel = rodIndex == 0 ? "(Last)" : "(This)";
+                      // Determine which series is being hovered based on the rodIndex.
+                      // In _generateGroups, 0 is last period, 1 is current period.
+                      String weekLabel =
+                          rodIndex == 0 ? lastPeriodTooltipTag : currentPeriodTooltipTag;
 
                       final tooltipBackground =
                           rod.color ?? colorScheme.primary;
@@ -235,11 +258,11 @@ class DynamicBarChart extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildLegendItem(context, "Last Week", effectiveLastPeriodColor),
+              _buildLegendItem(context, lastPeriodLabel, effectiveLastPeriodColor),
               const SizedBox(width: 24),
               _buildLegendItem(
                 context,
-                "This Week",
+                currentPeriodLabel,
                 effectiveCurrentPeriodColor,
               ),
             ],
