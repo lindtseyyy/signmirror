@@ -169,6 +169,8 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
   Widget _buildUserUploadedPost(BuildContext context, CommunityVideo video) {
     final communityTheme = Theme.of(context).extension<CommunityTheme>()!;
 
+    final isRealUpload = video.id > 0;
+
     final commentCount = (video.id < 0)
         ? (_mockVideoComments[video.id]?.length ?? video.comments.length)
         : video.comments.length;
@@ -236,24 +238,228 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                OutlinedButton(
-                  onPressed: () => _openCommentsForUserUpload(context, video),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.comment_outlined),
-                      const SizedBox(width: 10),
-                      Text(
-                        '$commentCount ${commentCount == 1 ? 'Comment' : 'Comments'}',
+                Flexible(
+                  child: SizedBox(
+                    height: 40,
+                    child: OutlinedButton(
+                      onPressed: () =>
+                          _openCommentsForUserUpload(context, video),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.comment_outlined),
+                          const SizedBox(width: 10),
+                          Flexible(
+                            child: Text(
+                              '$commentCount ${commentCount == 1 ? 'Comment' : 'Comments'}',
+                              overflow: TextOverflow.ellipsis,
+                              softWrap: false,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
+                if (isRealUpload) ...[
+                  const SizedBox(width: 6),
+                  SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: Center(
+                      child: PopupMenuButton<String>(
+                        tooltip: 'More options',
+                        padding: EdgeInsets.zero,
+                        icon: const Icon(Icons.more_vert),
+                        onSelected: (value) {
+                          switch (value) {
+                            case 'edit':
+                              _editUserUploadedDescription(context, video);
+                              break;
+                            case 'delete':
+                              _confirmDeleteUserUpload(context, video);
+                              break;
+                          }
+                        },
+                        itemBuilder: (context) => [
+                          const PopupMenuItem<String>(
+                            value: 'edit',
+                            child: Text('Edit'),
+                          ),
+                          PopupMenuItem<String>(
+                            value: 'delete',
+                            child: Text(
+                              'Delete',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.error,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _editUserUploadedDescription(
+    BuildContext context,
+    CommunityVideo video,
+  ) async {
+    if (video.id <= 0) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+
+    // Avoid a short-lived TextEditingController that can be disposed while the
+    // dialog route is still animating out (leading to "used after being disposed").
+    // TextFormField manages its own controller internally.
+    final formKey = GlobalKey<FormState>();
+    var editedDescription = video.description ?? '';
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        var isSaving = false;
+
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            Future<void> save() async {
+              if (isSaving) return;
+
+              formKey.currentState?.save();
+              final newDescription = editedDescription.trim();
+              setDialogState(() => isSaving = true);
+
+              try {
+                await ref
+                    .read(communityVideoProvider.notifier)
+                    .editVideoDescription(video.id, newDescription);
+
+                if (!mounted) return;
+                navigator.pop();
+                messenger
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    const SnackBar(content: Text('Description updated.')),
+                  );
+              } catch (_) {
+                setDialogState(() => isSaving = false);
+                messenger
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    const SnackBar(
+                      content: Text('Failed to update description.'),
+                    ),
+                  );
+              }
+            }
+
+            return AlertDialog(
+              title: const Text(
+                'Edit description',
+                style: TextStyle(fontSize: 18),
+              ),
+              // Reduce horizontal inset so the dialog can breathe on wider screens.
+              insetPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 24,
+              ),
+              content: ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 340, maxWidth: 560),
+                child: Form(
+                  key: formKey,
+                  child: TextFormField(
+                    initialValue: editedDescription,
+                    maxLines: 5,
+                    minLines: 3,
+                    textInputAction: TextInputAction.newline,
+                    onChanged: (value) => editedDescription = value,
+                    onSaved: (value) => editedDescription = value ?? '',
+                    decoration: const InputDecoration(
+                      hintText: 'Write a description...',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isSaving ? null : () => navigator.pop(),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: isSaving ? null : save,
+                  child: isSaving
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Save'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _confirmDeleteUserUpload(
+    BuildContext context,
+    CommunityVideo video,
+  ) async {
+    if (video.id <= 0) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+
+    final confirmed =
+        await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Delete post?'),
+            content: const Text('This action cannot be undone.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                  foregroundColor: Theme.of(context).colorScheme.onError,
+                ),
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (!confirmed) return;
+
+    try {
+      await ref.read(communityVideoProvider.notifier).deleteVideo(video.id);
+      if (!mounted) return;
+
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(const SnackBar(content: Text('Post deleted.')));
+    } catch (_) {
+      if (!mounted) return;
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(const SnackBar(content: Text('Failed to delete post.')));
+    }
   }
 
   @override

@@ -153,6 +153,16 @@ class CommunityVideoNotifier extends StateNotifier<List<CommunityVideo>> {
     );
     await loadAll();
   }
+
+  Future<void> editVideoDescription(int videoId, String description) async {
+    await _service.editCommunityVideoDescription(videoId, description);
+    await loadAll();
+  }
+
+  Future<void> deleteVideo(int videoId) async {
+    await _service.deleteCommunityVideo(videoId);
+    await loadAll();
+  }
 }
 
 // Exposes uploader names for the currently loaded community video list.

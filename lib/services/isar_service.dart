@@ -497,6 +497,70 @@ class IsarService {
     });
   }
 
+  Future<void> editCommunityVideoDescription(
+    int videoId,
+    String description,
+  ) async {
+    final isar = await db;
+
+    final normalizedDescription = description
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+    final derivedTitle = normalizedDescription.isEmpty
+        ? 'User upload'
+        : (normalizedDescription.length <= 40
+              ? normalizedDescription
+              : normalizedDescription.substring(0, 40));
+
+    await isar.writeTxn(() async {
+      final video = await isar.communityVideos.get(videoId);
+      if (video == null) return;
+
+      video.description = normalizedDescription;
+      video.title = derivedTitle;
+      await isar.communityVideos.put(video);
+    });
+  }
+
+  Future<void> deleteCommunityVideo(int videoId) async {
+    final isar = await db;
+
+    final video = await isar.communityVideos.get(videoId);
+    if (video == null) return;
+
+    final videoUrl = video.videoUrl;
+
+    await isar.writeTxn(() async {
+      await isar.communityVideos.delete(videoId);
+    });
+
+    await _tryDeleteUploadedCommunityVideoFile(videoUrl);
+  }
+
+  Future<void> _tryDeleteUploadedCommunityVideoFile(String videoUrl) async {
+    try {
+      if (videoUrl.isEmpty) return;
+
+      final docsDir = await getApplicationDocumentsDirectory();
+      final uploadsDir = Directory('${docsDir.path}/uploads');
+
+      final uploadsPath = uploadsDir.absolute.path;
+      final file = File(videoUrl);
+      final filePath = file.absolute.path;
+
+      final isInsideUploads = filePath.startsWith(
+        '$uploadsPath${Platform.pathSeparator}',
+      );
+      if (!isInsideUploads) return;
+
+      if (await file.exists()) {
+        await file.delete();
+      }
+    } catch (_) {
+      // Ignore failures (missing perms, already deleted, etc.)
+    }
+  }
+
   // Get a user by ID
   Future<User?> getUserById(int userId) async {
     final isar = await db;
