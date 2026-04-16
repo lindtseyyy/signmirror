@@ -5,9 +5,7 @@ import 'package:signmirror_flutter/models/community_video.dart';
 import 'package:signmirror_flutter/widgets/video/video_dialog.dart';
 import 'package:signmirror_flutter/widgets/video/video_comments_sheet.dart';
 import 'package:signmirror_flutter/providers/providers.dart';
-import 'package:signmirror_flutter/providers/settings_provider.dart';
 import 'package:signmirror_flutter/constants/route_names.dart';
-import 'package:signmirror_flutter/theme/app_theme.dart';
 import 'package:signmirror_flutter/theme/community_theme.dart';
 
 class CommunityScreen extends ConsumerStatefulWidget {
@@ -448,170 +446,150 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
     final communityVideos = ref.watch(communityVideoProvider);
     final uploaderNamesAsync = ref.watch(uploaderNamesProvider);
 
-    final themeSettings = ref.watch(themeSettingsProvider);
-    final effectiveHighContrast =
-        themeSettings.highContrast || MediaQuery.of(context).highContrast;
-    final resolvedTheme = AppTheme.resolve(
-      mode: themeSettings.mode,
-      highContrast: effectiveHighContrast,
-    );
+    final effectiveHighContrast = MediaQuery.of(context).highContrast;
 
     final uploaderNames = uploaderNamesAsync.maybeWhen(
       data: (value) => value,
       orElse: () => <int, String>{},
     );
 
-    return Theme(
-      data: resolvedTheme,
-      child: Builder(
-        builder: (context) {
-          final colorScheme = Theme.of(context).colorScheme;
-          final communityTheme = Theme.of(context).extension<CommunityTheme>()!;
+    final colorScheme = Theme.of(context).colorScheme;
+    final communityTheme = Theme.of(context).extension<CommunityTheme>()!;
 
-          final searchTextColor = colorScheme.onSurface.withOpacity(0.87);
-          final searchHintColor = colorScheme.onSurface.withOpacity(0.54);
+    final searchTextColor = colorScheme.onSurface.withOpacity(0.87);
+    final searchHintColor = colorScheme.onSurface.withOpacity(0.54);
 
-          return DefaultTabController(
-            length: 3,
-            child: Scaffold(
-              backgroundColor: communityTheme.pageBackgroundColor,
-              appBar: AppBar(
-                automaticallyImplyLeading: false,
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
-                title: const Text(
-                  'Community',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22),
-                ),
-                actions: [
-                  IconButton(
-                    tooltip: 'Upload',
-                    icon: const Icon(Icons.add),
-                    onPressed: () {
-                      Navigator.of(
-                        context,
-                      ).pushNamed(RouteNames.communityUpload);
-                    },
-                  ),
-                ],
-                bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(104),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-                        child: SizedBox(
-                          height: 44,
-                          child: TextField(
-                            controller: _searchController,
-                            onChanged: (value) =>
-                                setState(() => _query = value),
-                            textInputAction: TextInputAction.search,
-                            style: TextStyle(color: searchTextColor),
-                            cursorColor: searchTextColor,
-                            decoration: InputDecoration(
-                              hintText: 'Search by title or uploader',
-                              filled: true,
-                              fillColor: communityTheme.searchFieldFillColor,
-                              prefixIcon: const Icon(Icons.search),
-                              prefixIconColor: searchHintColor,
-                              hintStyle: TextStyle(color: searchHintColor),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              enabledBorder: effectiveHighContrast
-                                  ? OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide(
-                                        color: colorScheme.onSurface,
-                                        width: 2,
-                                      ),
-                                    )
-                                  : null,
-                              focusedBorder: effectiveHighContrast
-                                  ? OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide(
-                                        color: colorScheme.onSurface,
-                                        width: 3,
-                                      ),
-                                    )
-                                  : null,
-                              isDense: true,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 10,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      TabBar(
-                        labelColor: colorScheme.onPrimary,
-                        unselectedLabelColor: colorScheme.onPrimary.withOpacity(
-                          0.75,
-                        ),
-                        indicatorColor: colorScheme.onPrimary,
-                        tabs: [
-                          Tab(
-                            icon: Tooltip(
-                              message: 'Unapproved Videos',
-                              child: Icon(
-                                Icons.pending_actions,
-                                semanticLabel: 'Unapproved Videos',
-                              ),
-                            ),
-                          ),
-                          Tab(
-                            icon: Tooltip(
-                              message: 'Approved Videos',
-                              child: Icon(
-                                Icons.verified,
-                                semanticLabel: 'Approved Videos',
-                              ),
-                            ),
-                          ),
-                          Tab(
-                            icon: Tooltip(
-                              message: 'User Uploaded Videos',
-                              child: Icon(
-                                Icons.cloud_upload_outlined,
-                                semanticLabel: 'User Uploaded Videos',
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              body: TabBarView(
-                children: [
-                  _buildVideoList(
-                    videos: communityVideos,
-                    uploaderNames: uploaderNames,
-                    tabFilter: (video) =>
-                        video.approves < 3 &&
-                        video.uploaderId != _currentUserId,
-                  ),
-                  _buildVideoList(
-                    videos: communityVideos,
-                    uploaderNames: uploaderNames,
-                    tabFilter: (video) =>
-                        video.approves >= 3 &&
-                        video.uploaderId != _currentUserId,
-                  ),
-                  _buildUserUploadedVideosTab(
-                    videos: communityVideos,
-                    uploaderNames: uploaderNames,
-                  ),
-                ],
-              ),
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        backgroundColor: communityTheme.pageBackgroundColor,
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          backgroundColor: colorScheme.primary,
+          foregroundColor: colorScheme.onPrimary,
+          title: const Text(
+            'Community',
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22),
+          ),
+          actions: [
+            IconButton(
+              tooltip: 'Upload',
+              icon: const Icon(Icons.add),
+              onPressed: () {
+                Navigator.of(context).pushNamed(RouteNames.communityUpload);
+              },
             ),
-          );
-        },
+          ],
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(104),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                  child: SizedBox(
+                    height: 44,
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (value) => setState(() => _query = value),
+                      textInputAction: TextInputAction.search,
+                      style: TextStyle(color: searchTextColor),
+                      cursorColor: searchTextColor,
+                      decoration: InputDecoration(
+                        hintText: 'Search by title or uploader',
+                        filled: true,
+                        fillColor: communityTheme.searchFieldFillColor,
+                        prefixIcon: const Icon(Icons.search),
+                        prefixIconColor: searchHintColor,
+                        hintStyle: TextStyle(color: searchHintColor),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        enabledBorder: effectiveHighContrast
+                            ? OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: colorScheme.onSurface,
+                                  width: 2,
+                                ),
+                              )
+                            : null,
+                        focusedBorder: effectiveHighContrast
+                            ? OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: colorScheme.onSurface,
+                                  width: 3,
+                                ),
+                              )
+                            : null,
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                TabBar(
+                  labelColor: colorScheme.onPrimary,
+                  unselectedLabelColor: colorScheme.onPrimary.withOpacity(0.75),
+                  indicatorColor: colorScheme.onPrimary,
+                  tabs: [
+                    Tab(
+                      icon: Tooltip(
+                        message: 'Unapproved Videos',
+                        child: Icon(
+                          Icons.pending_actions,
+                          semanticLabel: 'Unapproved Videos',
+                        ),
+                      ),
+                    ),
+                    Tab(
+                      icon: Tooltip(
+                        message: 'Approved Videos',
+                        child: Icon(
+                          Icons.verified,
+                          semanticLabel: 'Approved Videos',
+                        ),
+                      ),
+                    ),
+                    Tab(
+                      icon: Tooltip(
+                        message: 'User Uploaded Videos',
+                        child: Icon(
+                          Icons.cloud_upload_outlined,
+                          semanticLabel: 'User Uploaded Videos',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            _buildVideoList(
+              videos: communityVideos,
+              uploaderNames: uploaderNames,
+              tabFilter: (video) =>
+                  video.approves < 3 && video.uploaderId != _currentUserId,
+            ),
+            _buildVideoList(
+              videos: communityVideos,
+              uploaderNames: uploaderNames,
+              tabFilter: (video) =>
+                  video.approves >= 3 && video.uploaderId != _currentUserId,
+            ),
+            _buildUserUploadedVideosTab(
+              videos: communityVideos,
+              uploaderNames: uploaderNames,
+            ),
+          ],
+        ),
       ),
     );
   }

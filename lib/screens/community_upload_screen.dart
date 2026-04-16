@@ -19,6 +19,7 @@ class _CommunityUploadScreenState extends ConsumerState<CommunityUploadScreen> {
   static const int _uploaderId = 1;
 
   final TextEditingController _descriptionController = TextEditingController();
+  final FocusNode _videoPickerFocusNode = FocusNode(debugLabel: 'videoPicker');
 
   String? _selectedFilePath;
   String? _selectedFileName;
@@ -26,6 +27,7 @@ class _CommunityUploadScreenState extends ConsumerState<CommunityUploadScreen> {
 
   @override
   void dispose() {
+    _videoPickerFocusNode.dispose();
     _descriptionController.dispose();
     super.dispose();
   }
@@ -188,89 +190,214 @@ class _CommunityUploadScreenState extends ConsumerState<CommunityUploadScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final bool highContrast = mediaQuery.highContrast;
+
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
     final bool hasValidVideo =
         _selectedFilePath != null && _selectedFilePath!.trim().isNotEmpty;
+
+    final String fileNameLabel = _selectedFileName == null
+        ? 'No video selected'
+        : _selectedFileName!;
+
+    final Color secondaryTextColor = highContrast
+        ? colorScheme.onSurface
+        : colorScheme.onSurfaceVariant;
+
+    final double borderWidth = highContrast ? 2 : 1;
+    final Color defaultOutlineColor = highContrast
+        ? colorScheme.onSurface
+        : colorScheme.outline;
+
+    final BorderSide pickerBorderSide = BorderSide(
+      color: hasValidVideo ? colorScheme.primary : defaultOutlineColor,
+      width: borderWidth,
+    );
 
     return Scaffold(
       appBar: AppBar(title: const Text('Upload')),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            Card(
-              color: hasValidVideo ? colorScheme.secondaryContainer : null,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(
-                  color: hasValidVideo
-                      ? colorScheme.primary
-                      : theme.dividerColor,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 680),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+              children: [
+                // Text(
+                //   'Upload video',
+                //   style: theme.textTheme.headlineSmall?.copyWith(
+                //     fontWeight: FontWeight.w600,
+                //   ),
+                // ),
+                const SizedBox(height: 6),
+                Text(
+                  'Choose a video file, add an optional description, then upload it to the community.',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: secondaryTextColor,
+                  ),
                 ),
-              ),
-              child: ListTile(
-                leading: Icon(
-                  hasValidVideo ? Icons.check_circle : Icons.videocam_outlined,
-                  color: hasValidVideo
-                      ? colorScheme.primary
-                      : colorScheme.onSurfaceVariant,
-                ),
-                title: Text('Video', style: theme.textTheme.titleMedium),
-                subtitle: Text(
-                  _selectedFileName == null
-                      ? 'No video selected'
-                      : _selectedFileName!,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                trailing: OutlinedButton(
-                  onPressed: _isUploading ? null : _pickVideo,
-                  child: Text(hasValidVideo ? 'Change' : 'Choose video'),
-                ),
-                onTap: _isUploading ? null : _pickVideo,
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _descriptionController,
-              enabled: !_isUploading,
-              decoration: InputDecoration(
-                labelText: 'Description',
-                hintText: 'Optional',
-                border: const OutlineInputBorder(),
-              ),
-              minLines: 3,
-              maxLines: 5,
-              textInputAction: TextInputAction.newline,
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              height: 48,
-              child: ElevatedButton(
-                onPressed: (_isUploading || !hasValidVideo) ? null : _upload,
-                child: _isUploading
-                    ? Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                colorScheme.onPrimary,
+                const SizedBox(height: 20),
+                Text('Video', style: theme.textTheme.titleMedium),
+                const SizedBox(height: 10),
+                Semantics(
+                  container: true,
+                  button: true,
+                  enabled: !_isUploading,
+                  label: hasValidVideo
+                      ? 'Selected video'
+                      : 'Choose a video to upload',
+                  value: fileNameLabel,
+                  hint: _isUploading
+                      ? 'Upload in progress'
+                      : 'Tap to open the video picker',
+                  child: Card(
+                    clipBehavior: Clip.antiAlias,
+                    color: hasValidVideo
+                        ? colorScheme.secondaryContainer
+                        : colorScheme.surface,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: pickerBorderSide,
+                    ),
+                    child: InkWell(
+                      focusNode: _videoPickerFocusNode,
+                      canRequestFocus: !_isUploading,
+                      onTap: _isUploading ? null : _pickVideo,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Icon(
+                              hasValidVideo
+                                  ? Icons.check_circle
+                                  : Icons.videocam_outlined,
+                              color: hasValidVideo
+                                  ? colorScheme.primary
+                                  : secondaryTextColor,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    hasValidVideo
+                                        ? 'Video selected'
+                                        : 'Pick a video',
+                                    style: theme.textTheme.titleMedium,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    fileNameLabel,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: hasValidVideo
+                                          ? colorScheme.onSecondaryContainer
+                                          : secondaryTextColor,
+                                    ),
+                                  ),
+                                  if (!hasValidVideo) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Supported: MP4, MOV, M4V, WebM, MKV, AVI',
+                                      style: theme.textTheme.bodySmall
+                                          ?.copyWith(color: secondaryTextColor),
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 10),
-                          const Text('Uploading...'),
-                        ],
-                      )
-                    : const Text('Upload'),
-              ),
+                            const SizedBox(width: 12),
+                            Tooltip(
+                              message: hasValidVideo
+                                  ? 'Change selected video'
+                                  : 'Choose video',
+                              child: FilledButton.tonal(
+                                onPressed: _isUploading ? null : _pickVideo,
+                                child: Text(
+                                  hasValidVideo ? 'Change' : 'Choose',
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text('Description', style: theme.textTheme.titleMedium),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _descriptionController,
+                  enabled: !_isUploading,
+                  decoration: InputDecoration(
+                    labelText: 'Description (optional)',
+                    hintText: 'Enter description',
+                    alignLabelWithHint: true,
+                    border: const OutlineInputBorder(),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: defaultOutlineColor,
+                        width: borderWidth,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: colorScheme.primary,
+                        width: highContrast ? 3 : 2,
+                      ),
+                    ),
+                  ),
+                  minLines: 3,
+                  maxLines: 6,
+                  textInputAction: TextInputAction.newline,
+                ),
+                const SizedBox(height: 24),
+                Semantics(
+                  button: true,
+                  enabled: !_isUploading && hasValidVideo,
+                  label: 'Upload video',
+                  hint: hasValidVideo
+                      ? 'Uploads the selected video'
+                      : 'Select a video first',
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: FilledButton(
+                      onPressed: (_isUploading || !hasValidVideo)
+                          ? null
+                          : _upload,
+                      child: _isUploading
+                          ? Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      colorScheme.onPrimary,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                const Text('Uploading…'),
+                              ],
+                            )
+                          : const Text('Upload'),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
