@@ -1,5 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:signmirror_flutter/l10n/app_strings.dart';
 import 'package:signmirror_flutter/theme/theme_settings.dart';
 
 class SettingsService {
@@ -50,10 +51,15 @@ class SettingsService {
   }
 
   // --- LANGUAGE ---
-  String get language => _prefsSync.getString('language') ?? 'en';
+  /// Persisted language code.
+  ///
+  /// Always returns a supported non-null value ('en' or 'fil').
+  String get language =>
+      AppStrings.normalizeLangCode(_prefsSync.getString('language'));
 
-  Future<void> setLanguage(String lang) async {
-    await _prefsSync.setString('language', lang);
+  Future<void> setLanguage(String? lang) async {
+    final normalized = AppStrings.normalizeLangCode(lang);
+    await _prefsSync.setString('language', normalized);
   }
 
   // --- OFFLINE DOWNLOADING ---

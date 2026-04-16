@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../services/settings_service.dart';
 import 'package:intl/intl.dart'; //
+import 'package:signmirror_flutter/l10n/app_strings.dart';
 import 'package:signmirror_flutter/theme/theme_settings.dart';
+
+import '../services/settings_service.dart';
 
 // This provider gives you access to the service anywhere
 final settingsServiceProvider = Provider<SettingsService>((ref) {
@@ -137,11 +139,15 @@ final languageProvider = StateNotifierProvider<LanguageNotifier, String>((ref) {
 
 class LanguageNotifier extends StateNotifier<String> {
   final SettingsService _service;
-  LanguageNotifier(this._service) : super(_service.language);
 
-  void setLanguage(String language) async {
-    state = language;
-    await _service.setLanguage(language);
+  LanguageNotifier(this._service)
+    : super(AppStrings.normalizeLangCode(_service.language));
+
+  Future<void> setLanguage(String? language) async {
+    final normalized = AppStrings.normalizeLangCode(language);
+    if (state == normalized) return;
+    state = normalized;
+    await _service.setLanguage(normalized);
   }
 }
 

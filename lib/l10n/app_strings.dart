@@ -4,25 +4,50 @@
 /// - Pass a language code (e.g. `'en'`, `'fil'`). Unknown values fall back
 ///   to English.
 class AppStrings {
-  /// Normalized language code: `'en'` or `'fil'`.
-  final String langCode;
+  /// Backing field for the language code.
+  ///
+  /// This is intentionally nullable to be defensive against unsound/legacy calls
+  /// that might pass `null` into the private constructor at runtime.
+  final String? _langCode;
 
-  const AppStrings._(this.langCode);
+  /// Normalized language code: `'en'` or `'fil'`.
+  ///
+  /// Always returns a non-null, supported value.
+  String get langCode => normalizeLangCode(_langCode);
+
+  const AppStrings._(this._langCode);
 
   /// Creates an [AppStrings] instance for [code].
   ///
   /// Accepts `'en'` or `'fil'` (case-insensitive). Any other value falls back
   /// to English.
   factory AppStrings(String? code) {
-    final normalized = (code ?? '').trim().toLowerCase();
-    if (normalized == 'fil' || normalized == 'tl') {
-      return const AppStrings._('fil');
+    final normalized = normalizeLangCode(code);
+    if (normalized == _fil) {
+      return const AppStrings._(_fil);
     }
-    return const AppStrings._('en');
+    return const AppStrings._(_en);
   }
 
   static const String _en = 'en';
   static const String _fil = 'fil';
+
+  /// Normalizes any input into a supported language code.
+  ///
+  /// Mapping rules:
+  /// - `null` / empty / whitespace → `'en'`
+  /// - case-insensitive `'fil'` or `'tl'` → `'fil'`
+  /// - string literals `'null'` / `'undefined'` → `'en'`
+  /// - anything else → `'en'`
+  static String normalizeLangCode(String? code) {
+    final normalized = (code ?? '').trim().toLowerCase();
+
+    if (normalized.isEmpty) return _en;
+    if (normalized == 'null' || normalized == 'undefined') return _en;
+    if (normalized == _fil || normalized == 'tl') return _fil;
+
+    return _en;
+  }
 
   bool get isFilipino => langCode == _fil;
 
@@ -335,7 +360,8 @@ class AppStrings {
     });
   }
 
-  String get communityNoCommentsYetMessage => _t('communityNoCommentsYetMessage');
+  String get communityNoCommentsYetMessage =>
+      _t('communityNoCommentsYetMessage');
   String get communityAddCommentHint => _t('communityAddCommentHint');
   String get communitySendTooltip => _t('communitySendTooltip');
 
@@ -350,7 +376,8 @@ class AppStrings {
   // User/system labels specific to community UI
   String get communityMockVideoBadge => _t('communityMockVideoBadge');
 
-  String get communityMockFirstUploadTitle => _t('communityMockFirstUploadTitle');
+  String get communityMockFirstUploadTitle =>
+      _t('communityMockFirstUploadTitle');
   String get communityMockFirstUploadDescription =>
       _t('communityMockFirstUploadDescription');
   String get communityMockPracticeVideoTitle =>
@@ -359,7 +386,8 @@ class AppStrings {
       _t('communityMockPracticeVideoDescription');
 
   // Dialogs + snackbars
-  String get communityEditDescriptionTitle => _t('communityEditDescriptionTitle');
+  String get communityEditDescriptionTitle =>
+      _t('communityEditDescriptionTitle');
   String get communityEditDescriptionHint => _t('communityEditDescriptionHint');
 
   String get communityDeletePostTitle => _t('communityDeletePostTitle');
@@ -399,7 +427,8 @@ class AppStrings {
 
   String get communityUploadVideoSelectedLabel =>
       _t('communityUploadVideoSelectedLabel');
-  String get communityUploadPickVideoLabel => _t('communityUploadPickVideoLabel');
+  String get communityUploadPickVideoLabel =>
+      _t('communityUploadPickVideoLabel');
   String get communityUploadSupportedFormatsLabel =>
       _t('communityUploadSupportedFormatsLabel');
 
@@ -445,8 +474,10 @@ class AppStrings {
       _t('communityUploadFilePickerOpenError');
   String get communityUploadChooseVideoFilePrompt =>
       _t('communityUploadChooseVideoFilePrompt');
-  String get communityUploadSuccessSnackbar => _t('communityUploadSuccessSnackbar');
-  String get communityUploadFailureSnackbar => _t('communityUploadFailureSnackbar');
+  String get communityUploadSuccessSnackbar =>
+      _t('communityUploadSuccessSnackbar');
+  String get communityUploadFailureSnackbar =>
+      _t('communityUploadFailureSnackbar');
 
   // ---------------------------
   // Internals
@@ -552,7 +583,8 @@ class AppStrings {
       'communityCommentCountLabelOne': '{count} Comment',
       'communityCommentCountLabelOther': '{count} Comments',
       'communityCommentsTitleWithCount': 'Comments ({count})',
-      'communityNoCommentsYetMessage': 'No comments yet. Be the first to comment!',
+      'communityNoCommentsYetMessage':
+          'No comments yet. Be the first to comment!',
       'communityAddCommentHint': 'Add a comment...',
       'communitySendTooltip': 'Send',
       'communityUserWithId': 'User {id}',
@@ -572,7 +604,8 @@ class AppStrings {
       'communityDeletePostBody': 'This action cannot be undone.',
 
       'communitySnackbarDescriptionUpdated': 'Description updated.',
-      'communitySnackbarDescriptionUpdateFailed': 'Failed to update description.',
+      'communitySnackbarDescriptionUpdateFailed':
+          'Failed to update description.',
       'communitySnackbarPostDeleted': 'Post deleted.',
       'communitySnackbarPostDeleteFailed': 'Failed to delete post.',
 
@@ -589,7 +622,8 @@ class AppStrings {
       'communityUploadSelectedVideoSemanticLabel': 'Selected video',
       'communityUploadChooseVideoSemanticLabel': 'Choose a video to upload',
       'communityUploadInProgressSemanticHint': 'Upload in progress',
-      'communityUploadTapToPickVideoSemanticHint': 'Tap to open the video picker',
+      'communityUploadTapToPickVideoSemanticHint':
+          'Tap to open the video picker',
 
       'communityUploadVideoSelectedLabel': 'Video selected',
       'communityUploadPickVideoLabel': 'Pick a video',
@@ -669,7 +703,8 @@ class AppStrings {
 
       // Dictionary
       'dictionaryTitle': 'Diksiyonaryo',
-      'dictionarySubtitle': 'Matuto ng mga bagong senyas at paghusayin ang iyong kasanayan',
+      'dictionarySubtitle':
+          'Matuto ng mga bagong senyas at paghusayin ang iyong kasanayan',
       'dictionarySearchHint': 'Maghanap ng mga Senyas',
 
       'difficultyFilterLabel': 'Antas ng Kahirapan',
@@ -722,7 +757,8 @@ class AppStrings {
       'communityCommentCountLabelOne': '{count} Komento',
       'communityCommentCountLabelOther': '{count} Komento',
       'communityCommentsTitleWithCount': 'Mga komento ({count})',
-      'communityNoCommentsYetMessage': 'Wala pang komento. Ikaw ang unang magkomento!',
+      'communityNoCommentsYetMessage':
+          'Wala pang komento. Ikaw ang unang magkomento!',
       'communityAddCommentHint': 'Magdagdag ng komento...',
       'communitySendTooltip': 'Ipadala',
       'communityUserWithId': 'Gumagamit {id}',
@@ -742,7 +778,8 @@ class AppStrings {
       'communityDeletePostBody': 'Hindi na ito maibabalik.',
 
       'communitySnackbarDescriptionUpdated': 'Na-update ang paglalarawan.',
-      'communitySnackbarDescriptionUpdateFailed': 'Hindi na-update ang paglalarawan.',
+      'communitySnackbarDescriptionUpdateFailed':
+          'Hindi na-update ang paglalarawan.',
       'communitySnackbarPostDeleted': 'Natanggal ang post.',
       'communitySnackbarPostDeleteFailed': 'Hindi natanggal ang post.',
 
@@ -776,7 +813,8 @@ class AppStrings {
       'communityUploadDescriptionHint': 'Ilagay ang paglalarawan',
 
       'communityUploadVideoButtonSemanticLabel': 'Mag-upload ng video',
-      'communityUploadSelectedVideoSemanticHint': 'Iu-upload ang napiling video',
+      'communityUploadSelectedVideoSemanticHint':
+          'Iu-upload ang napiling video',
       'communityUploadSelectVideoFirstSemanticHint': 'Pumili muna ng video',
 
       'communityUploadingLabel': 'Nag-a-upload…',
@@ -795,7 +833,8 @@ class AppStrings {
       'communityUploadFilePickerOpenError': 'Hindi mabuksan ang file picker.',
       'communityUploadChooseVideoFilePrompt': 'Pumili ng video file.',
       'communityUploadSuccessSnackbar': 'Matagumpay ang pag-upload.',
-      'communityUploadFailureSnackbar': 'Hindi natuloy ang pag-upload. Pakisubukan muli.',
+      'communityUploadFailureSnackbar':
+          'Hindi natuloy ang pag-upload. Pakisubukan muli.',
     },
   };
 
