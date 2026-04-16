@@ -1,6 +1,7 @@
 import 'package:signmirror_flutter/widgets/video/adaptive_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:signmirror_flutter/l10n/app_strings.dart';
 import 'package:signmirror_flutter/models/lesson.dart';
 import 'package:signmirror_flutter/models/sign.dart';
 import 'package:signmirror_flutter/providers/providers.dart';
@@ -8,6 +9,27 @@ import 'package:signmirror_flutter/providers/settings_provider.dart';
 import 'package:signmirror_flutter/screens/practice_mirror_screen.dart';
 import 'package:signmirror_flutter/theme/app_theme.dart';
 import 'package:signmirror_flutter/widgets/adaptive_image.dart';
+
+extension LessonDetailStrings on AppStrings {
+  String get lessonFallbackTitle => isFilipino ? 'Aralin' : 'Lesson';
+
+  String get lessonNoSignsAvailable => isFilipino
+      ? 'Walang mga sign na magagamit para sa araling ito.'
+      : 'No signs available for this lesson.';
+
+  String get lessonPrevButton => isFilipino ? 'Nakaraan' : 'Prev';
+  String get lessonPracticeButton => isFilipino ? 'Magpraktis' : 'Practice';
+  String get lessonNextButton => isFilipino ? 'Susunod' : 'Next';
+
+  /// Matches the previous hardcoded English fallback behavior.
+  String get lessonDefaultInstructions => isFilipino
+      ? 'Sundin ang galaw ng kamay na ipinapakita sa itaas. Siguraduhing malinaw at madaling makilala ang iyong mga galaw ng kamay.'
+      : 'Follow the hand gesture shown in the visual above. Make sure your hand gestures are clear and recognizable.';
+
+  String lessonSignProgress(int current, int total) {
+    return isFilipino ? 'Sign $current ng $total' : 'Sign $current of $total';
+  }
+}
 
 class LessonSignsScreen extends ConsumerStatefulWidget {
   final Lesson? lesson;
@@ -95,6 +117,9 @@ class _LessonSignsScreenState extends ConsumerState<LessonSignsScreen> {
   @override
   Widget build(BuildContext context) {
     final themeSettings = ref.watch(themeSettingsProvider);
+    final languageCode = ref.watch(languageProvider);
+    final strings = AppStrings(languageCode);
+
     final resolvedTheme = AppTheme.resolve(
       mode: themeSettings.mode,
       highContrast: themeSettings.highContrast,
@@ -167,13 +192,15 @@ class _LessonSignsScreenState extends ConsumerState<LessonSignsScreen> {
           if (signs.isEmpty) {
             return Scaffold(
               appBar: AppBar(
-                title: Text(widget.lesson?.title ?? "Lesson"),
+                title: Text(
+                  widget.lesson?.title ?? strings.lessonFallbackTitle,
+                ),
                 backgroundColor: appBarBackground,
                 foregroundColor: appBarForeground,
               ),
               body: Center(
                 child: Text(
-                  "No signs available for this lesson.",
+                  strings.lessonNoSignsAvailable,
                   style: useLegacyLightColors
                       ? null
                       : TextStyle(
@@ -191,9 +218,36 @@ class _LessonSignsScreenState extends ConsumerState<LessonSignsScreen> {
           final hasNext = currentIndex < signs.length - 1;
           final hasPrev = currentIndex > 0;
 
+          String resolvedSignTitle(Sign sign) {
+            if (!strings.isFilipino) return sign.title;
+            final fil = sign.titleFil?.trim();
+            if (fil != null && fil.isNotEmpty) return fil;
+            return sign.title;
+          }
+
+          String resolvedSignInstructions(Sign sign) {
+            String? value;
+            if (strings.isFilipino) {
+              value = sign.instructionsFil?.trim();
+              if (value == null || value.isEmpty) {
+                value = sign.instructions?.trim();
+              }
+            } else {
+              value = sign.instructions?.trim();
+            }
+
+            if (value == null || value.isEmpty) {
+              return strings.lessonDefaultInstructions;
+            }
+            return value;
+          }
+
+          final signTitle = resolvedSignTitle(currentSign);
+          final signInstructions = resolvedSignInstructions(currentSign);
+
           return Scaffold(
             appBar: AppBar(
-              title: Text(widget.lesson?.title ?? "Lesson"),
+              title: Text(widget.lesson?.title ?? strings.lessonFallbackTitle),
               backgroundColor: appBarBackground,
               foregroundColor: appBarForeground,
             ),
@@ -233,7 +287,7 @@ class _LessonSignsScreenState extends ConsumerState<LessonSignsScreen> {
 
                     // 2. Sign Title & Instructions
                     Text(
-                      currentSign.title,
+                      signTitle,
                       style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -244,8 +298,7 @@ class _LessonSignsScreenState extends ConsumerState<LessonSignsScreen> {
                     Expanded(
                       child: SingleChildScrollView(
                         child: Text(
-                          currentSign.instructions ??
-                              "Follow the hand gesture shown in the visual above. Make sure your hand gestures are clear and recognizable.",
+                          signInstructions,
                           style: TextStyle(
                             fontSize: 16,
                             height: 1.5,
@@ -269,9 +322,9 @@ class _LessonSignsScreenState extends ConsumerState<LessonSignsScreen> {
                             child: ElevatedButton.icon(
                               onPressed: _prevSign,
                               icon: const Icon(Icons.arrow_back, size: 18),
-                              label: const Text(
-                                "Prev",
-                                style: TextStyle(
+                              label: Text(
+                                strings.lessonPrevButton,
+                                style: const TextStyle(
                                   fontSize: 13,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -295,9 +348,9 @@ class _LessonSignsScreenState extends ConsumerState<LessonSignsScreen> {
                           child: ElevatedButton.icon(
                             onPressed: () => _practiceSign(currentSign),
                             icon: const Icon(Icons.camera_alt, size: 18),
-                            label: const Text(
-                              "Practice",
-                              style: TextStyle(
+                            label: Text(
+                              strings.lessonPracticeButton,
+                              style: const TextStyle(
                                 fontSize: 13,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -336,18 +389,18 @@ class _LessonSignsScreenState extends ConsumerState<LessonSignsScreen> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
+                                children: [
                                   Flexible(
                                     child: Text(
-                                      "Next",
-                                      style: TextStyle(
+                                      strings.lessonNextButton,
+                                      style: const TextStyle(
                                         fontSize: 13,
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                   ),
-                                  SizedBox(width: 4),
-                                  Icon(Icons.arrow_forward, size: 18),
+                                  const SizedBox(width: 4),
+                                  const Icon(Icons.arrow_forward, size: 18),
                                 ],
                               ),
                             ),
@@ -360,7 +413,10 @@ class _LessonSignsScreenState extends ConsumerState<LessonSignsScreen> {
                     // Progress Indicator
                     Center(
                       child: Text(
-                        "Sign ${currentIndex + 1} of ${signs.length}",
+                        strings.lessonSignProgress(
+                          currentIndex + 1,
+                          signs.length,
+                        ),
                         style: TextStyle(
                           color: progressTextColor,
                           fontWeight: FontWeight.bold,

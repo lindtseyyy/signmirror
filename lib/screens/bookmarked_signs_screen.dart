@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:signmirror_flutter/l10n/app_strings.dart';
 import 'package:signmirror_flutter/models/sign.dart';
 import 'package:signmirror_flutter/providers/providers.dart';
 import 'package:signmirror_flutter/providers/settings_provider.dart';
@@ -96,6 +97,8 @@ class _BookmarkedSignsList extends ConsumerWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    final strings = AppStrings(ref.watch(languageProvider));
+
     final cardColor = useLegacyLightColors ? Colors.white : colorScheme.surface;
 
     final titleColor = useLegacyLightColors ? null : colorScheme.onSurface;
@@ -119,6 +122,11 @@ class _BookmarkedSignsList extends ConsumerWidget {
       itemCount: signs.length,
       itemBuilder: (context, index) {
         final sign = signs[index];
+
+        final displayTitle =
+            (strings.isFilipino && (sign.titleFil?.trim().isNotEmpty ?? false))
+            ? sign.titleFil!.trim()
+            : sign.title;
 
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
@@ -144,7 +152,7 @@ class _BookmarkedSignsList extends ConsumerWidget {
               vertical: 0,
             ),
             title: Text(
-              sign.title,
+              displayTitle,
               style: TextStyle(fontWeight: FontWeight.w700, color: titleColor),
             ),
             subtitle: Column(
@@ -154,7 +162,9 @@ class _BookmarkedSignsList extends ConsumerWidget {
                 Row(
                   children: [
                     Text(
-                      '${sign.category} Sign',
+                      strings.dictionaryCategorySubtitleForDisplay(
+                        sign.category,
+                      ),
                       style: TextStyle(color: subtitleColor),
                     ),
                   ],

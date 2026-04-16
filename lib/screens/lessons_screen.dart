@@ -1,6 +1,7 @@
 import 'package:signmirror_flutter/widgets/adaptive_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:signmirror_flutter/l10n/app_strings.dart';
 import 'package:signmirror_flutter/models/lesson.dart';
 import 'package:signmirror_flutter/providers/providers.dart';
 import 'package:signmirror_flutter/providers/settings_provider.dart';
@@ -15,13 +16,17 @@ class LessonsScreen extends ConsumerStatefulWidget {
 }
 
 class _LessonsScreenState extends ConsumerState<LessonsScreen> {
-  String selectedDifficulty = "Difficulty Level";
+  /// Internal difficulty filter key:
+  /// - '' = no filter
+  /// - otherwise must match the stable Lesson.level key (EN):
+  ///   'Beginner' | 'Intermediate' | 'Difficult'
+  String selectedDifficultyKey = '';
   bool isListView = true;
 
-  String searchQuery = "";
+  String searchQuery = '';
 
-  final List<String> categories = [
-    'Difficulty Level',
+  static const List<String> difficultyKeys = [
+    '',
     'Beginner',
     'Intermediate',
     'Difficult',
@@ -30,6 +35,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
   @override
   Widget build(BuildContext context) {
     final lessonState = ref.watch(lessonsProvider);
+    final strings = AppStrings(ref.watch(languageProvider));
     final themeSettings = ref.watch(themeSettingsProvider);
     final resolvedTheme = AppTheme.resolve(
       mode: themeSettings.mode,
@@ -89,15 +95,15 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                 title: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "Lessons",
-                      style: TextStyle(
+                    Text(
+                      strings.lessonsTitle,
+                      style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 22,
                       ),
                     ),
                     Text(
-                      "Learn new signs and improve your skills",
+                      strings.lessonsSubtitle,
                       style: TextStyle(
                         fontSize: 12,
                         color: useLegacyLightColors
@@ -134,7 +140,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                         minHeight: 45.0,
                         maxHeight: 45.0,
                       ),
-                      hintText: "Search Lessons",
+                      hintText: strings.lessonsSearchHint,
                       backgroundColor: MaterialStateProperty.all(
                         searchBackground,
                       ),
@@ -223,7 +229,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
                                 isDense: true,
-                                value: selectedDifficulty,
+                                value: selectedDifficultyKey,
                                 dropdownColor: dropdownBackground,
                                 icon: Icon(
                                   Icons.arrow_drop_down,
@@ -233,26 +239,29 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                                 ),
                                 style: dropdownSelectedTextStyle,
                                 onChanged: (String? newValue) {
+                                  if (newValue == null) return;
                                   setState(() {
-                                    selectedDifficulty = newValue!;
+                                    selectedDifficultyKey = newValue;
                                   });
                                   ref
                                       .read(lessonsProvider.notifier)
-                                      .updateDifficulty(newValue!);
+                                      .updateDifficulty(newValue);
                                 },
-                                items: categories.map<DropdownMenuItem<String>>(
-                                  (String value) {
-                                    return DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Text(
-                                        value,
-                                        style: TextStyle(
-                                          color: dropdownItemTextColor,
+                                items: difficultyKeys
+                                    .map<DropdownMenuItem<String>>((
+                                      String key,
+                                    ) {
+                                      return DropdownMenuItem<String>(
+                                        value: key,
+                                        child: Text(
+                                          strings.difficultyLabelForKey(key),
+                                          style: TextStyle(
+                                            color: dropdownItemTextColor,
+                                          ),
                                         ),
-                                      ),
-                                    );
-                                  },
-                                ).toList(),
+                                      );
+                                    })
+                                    .toList(),
                               ),
                             ),
                           ),
@@ -272,11 +281,13 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                           child: isListView
                               ? _buildListView(
                                   lessonState.lessons,
+                                  strings: strings,
                                   useLegacyLightColors: useLegacyLightColors,
                                   isHighContrast: isHighContrast,
                                 )
                               : _buildGridView(
                                   lessonState.lessons,
+                                  strings: strings,
                                   useLegacyLightColors: useLegacyLightColors,
                                   isHighContrast: isHighContrast,
                                 ),
@@ -296,6 +307,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
 
 Widget _buildListView(
   List<Lesson> lessons, {
+  required AppStrings strings,
   required bool useLegacyLightColors,
   required bool isHighContrast,
 }) {
@@ -371,7 +383,7 @@ Widget _buildListView(
             child: AdaptiveImage(lesson.imagePath, fit: BoxFit.cover),
           ), // Lesson Image
           title: Text(
-            lesson.title,
+            strings.lessonTitleForDisplay(lesson.title),
             style: const TextStyle(fontWeight: FontWeight.w700),
           ),
           subtitle: Column(
@@ -380,13 +392,16 @@ Widget _buildListView(
               Row(
                 children: [
                   Text(
-                    "${lesson.count} Lessons",
+                    strings.lessonCountLabel(lesson.count),
                     style: TextStyle(color: countColor),
                   ),
                 ],
               ),
               const SizedBox(height: 5),
-              DifficultyBadge(level: lesson.level),
+              DifficultyBadge(
+                levelKey: lesson.level,
+                label: strings.difficultyLabelForKey(lesson.level),
+              ),
               const SizedBox(height: 5),
               ProgressBar(
                 percentage: lesson.progress,
@@ -455,6 +470,7 @@ class ProgressBar extends StatelessWidget {
 
 Widget _buildGridView(
   List<Lesson> lessons, {
+  required AppStrings strings,
   required bool useLegacyLightColors,
   required bool isHighContrast,
 }) {
@@ -534,21 +550,24 @@ Widget _buildGridView(
               ), // Lesson Icon
               const SizedBox(height: 10),
               Text(
-                lesson.title,
+                strings.lessonTitleForDisplay(lesson.title),
                 style: const TextStyle(fontWeight: FontWeight.w700),
                 overflow: TextOverflow.ellipsis, // Adds the "..."
                 maxLines: 1, // Limits to a single line
                 softWrap: false,
               ),
               Text(
-                "${lesson.count} Lessons",
+                strings.lessonCountLabel(lesson.count),
                 style: TextStyle(color: countColor),
                 overflow: TextOverflow.ellipsis, // Adds the "..."
                 maxLines: 1, // Limits to a single line
                 softWrap: false,
               ),
               const SizedBox(height: 7),
-              DifficultyBadge(level: lesson.level),
+              DifficultyBadge(
+                levelKey: lesson.level,
+                label: strings.difficultyLabelForKey(lesson.level),
+              ),
               const SizedBox(height: 10),
               ProgressBar(
                 percentage: lesson.progress,
@@ -564,21 +583,29 @@ Widget _buildGridView(
 }
 
 class DifficultyBadge extends StatelessWidget {
-  const DifficultyBadge({super.key, required this.level});
+  const DifficultyBadge({
+    super.key,
+    required this.levelKey,
+    required this.label,
+  });
 
-  final String level;
+  /// Stable difficulty key (EN) used for filtering + color mapping.
+  final String levelKey;
+
+  /// Localized label shown in the UI.
+  final String label;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 5),
       decoration: BoxDecoration(
-        color: getLevelColor(level),
+        color: getLevelColor(levelKey),
         borderRadius: BorderRadius.circular(5),
       ),
       child: Text(
-        level,
-        style: TextStyle(
+        label,
+        style: const TextStyle(
           color: Colors.white,
           fontSize: 11,
           fontWeight: FontWeight.w700,

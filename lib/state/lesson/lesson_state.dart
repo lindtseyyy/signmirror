@@ -8,7 +8,8 @@ class LessonsState {
   LessonsState({
     required this.lessons,
     this.query = '',
-    this.difficulty = 'Difficulty Level',
+    // Language-agnostic sentinel for "no difficulty filter".
+    this.difficulty = '',
   });
 
   // Helper to update only one piece of state at a time

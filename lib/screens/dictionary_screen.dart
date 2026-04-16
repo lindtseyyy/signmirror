@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signmirror_flutter/constants/route_names.dart';
+import 'package:signmirror_flutter/l10n/app_strings.dart';
 import 'package:signmirror_flutter/models/sign.dart';
 import 'package:signmirror_flutter/providers/providers.dart';
 import 'package:signmirror_flutter/providers/settings_provider.dart';
@@ -33,6 +34,7 @@ class _DictionaryScreenState extends ConsumerState<DictionaryScreen> {
   Widget build(BuildContext context) {
     final signs = ref.watch(signsProvider);
     final themeSettings = ref.watch(themeSettingsProvider);
+    final strings = AppStrings(ref.watch(languageProvider));
 
     final effectiveHighContrast =
         themeSettings.highContrast || MediaQuery.of(context).highContrast;
@@ -85,15 +87,15 @@ class _DictionaryScreenState extends ConsumerState<DictionaryScreen> {
                 title: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "Dictionary",
-                      style: TextStyle(
+                    Text(
+                      strings.dictionaryTitle,
+                      style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 22,
                       ),
                     ),
                     Text(
-                      "Learn new signs and improve your skills",
+                      strings.dictionarySubtitle,
                       style: TextStyle(
                         fontSize: 12,
                         color: useLegacyLightColors
@@ -115,7 +117,7 @@ class _DictionaryScreenState extends ConsumerState<DictionaryScreen> {
                         minHeight: 45.0,
                         maxHeight: 45.0,
                       ),
-                      hintText: "Search Signs",
+                      hintText: strings.dictionarySearchHint,
                       backgroundColor: WidgetStateProperty.all<Color>(
                         searchBackground,
                       ),
@@ -182,6 +184,8 @@ Widget _buildListView(
   required bool effectiveHighContrast,
   required bool useLegacyLightColors,
 }) {
+  final strings = AppStrings(ref.watch(languageProvider));
+
   final colorScheme = theme.colorScheme;
 
   final tileBackground = useLegacyLightColors
@@ -203,6 +207,11 @@ Widget _buildListView(
     itemCount: signs.length,
     itemBuilder: (context, index) {
       final sign = signs[index];
+
+      final titleFil = (sign.titleFil ?? '').trim();
+      final displayTitle = strings.isFilipino && titleFil.isNotEmpty
+          ? titleFil
+          : sign.title;
 
       return Container(
         margin: const EdgeInsets.only(bottom: 12),
@@ -230,7 +239,7 @@ Widget _buildListView(
             vertical: 0,
           ),
           title: Text(
-            sign.title,
+            displayTitle,
             style: TextStyle(fontWeight: FontWeight.w700, color: titleColor),
           ),
           subtitle: Column(
@@ -240,7 +249,7 @@ Widget _buildListView(
               Row(
                 children: [
                   Text(
-                    "${sign.category} Sign",
+                    strings.dictionaryCategorySubtitleForDisplay(sign.category),
                     style: TextStyle(color: subtitleColor),
                   ),
                 ],

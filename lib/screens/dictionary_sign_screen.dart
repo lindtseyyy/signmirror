@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:signmirror_flutter/l10n/app_strings.dart';
 import 'package:signmirror_flutter/models/sign.dart';
 import 'package:signmirror_flutter/providers/settings_provider.dart';
 import 'package:signmirror_flutter/screens/practice_mirror_screen.dart';
@@ -21,7 +22,7 @@ class DictionarySignScreen extends ConsumerWidget {
     return RegExp(r'^[a-zA-Z0-9_-]{11}$').hasMatch(v);
   }
 
-  void _practiceSign(BuildContext context) {
+  void _practiceSign(BuildContext context, String targetGestureName) {
     final videoUrl = sign.videoUrl?.trim();
     final videoId = sign.videoId?.trim();
     final referenceVideoUrl = (videoUrl != null && videoUrl.isNotEmpty)
@@ -36,7 +37,7 @@ class DictionarySignScreen extends ConsumerWidget {
       MaterialPageRoute(
         builder: (context) => PracticeMirrorScreen(
           referenceVideoUrl: referenceVideoUrl,
-          targetGestureName: sign.title,
+          targetGestureName: targetGestureName,
         ),
       ),
     );
@@ -47,6 +48,20 @@ class DictionarySignScreen extends ConsumerWidget {
     final settings = ref.watch(themeSettingsProvider);
     final effectiveHighContrast =
         settings.highContrast || MediaQuery.of(context).highContrast;
+
+    final language = ref.watch(languageProvider).trim();
+    final lowerLanguage = language.toLowerCase();
+    final normalizedLanguage =
+        (lowerLanguage == 'filipino' || lowerLanguage == 'tagalog')
+        ? 'fil'
+        : (lowerLanguage == 'english' ? 'en' : language);
+
+    final strings = AppStrings(normalizedLanguage);
+    final titleFil = sign.titleFil?.trim();
+    final displayTitle =
+        strings.isFilipino && titleFil != null && titleFil.isNotEmpty
+        ? titleFil
+        : sign.title;
 
     final resolvedTheme = AppTheme.resolve(
       mode: settings.mode,
@@ -98,7 +113,7 @@ class DictionarySignScreen extends ConsumerWidget {
 
           return Scaffold(
             appBar: AppBar(
-              title: Text(sign.title),
+              title: Text(displayTitle),
               backgroundColor: appBarBackground,
               foregroundColor: appBarForeground,
             ),
@@ -139,7 +154,7 @@ class DictionarySignScreen extends ConsumerWidget {
 
                     // 2. Sign Title & Instructions
                     Text(
-                      sign.title,
+                      displayTitle,
                       style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -167,7 +182,8 @@ class DictionarySignScreen extends ConsumerWidget {
                       children: [
                         Expanded(
                           child: ElevatedButton.icon(
-                            onPressed: () => _practiceSign(context),
+                            onPressed: () =>
+                                _practiceSign(context, displayTitle),
                             icon: const Icon(Icons.camera_alt, size: 18),
                             label: const Text(
                               "Practice",

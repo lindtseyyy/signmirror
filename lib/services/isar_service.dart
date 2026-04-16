@@ -567,18 +567,26 @@ class IsarService {
   Future<List<Lesson>> filterLessons({String? query, String? category}) async {
     final isar = await db;
 
+    final normalizedQuery = query?.trim() ?? '';
+    final normalizedCategory = category?.trim();
+
+    final hasQuery = normalizedQuery.isNotEmpty;
+    final hasCategory =
+        normalizedCategory != null &&
+        normalizedCategory.isNotEmpty &&
+        normalizedCategory.toLowerCase() != 'all';
+
     final results = await isar.lessons
         .filter()
         .optional(
-          query != null && query.isNotEmpty,
-          (q) => q.group((q) => q.titleContains(query!, caseSensitive: false)),
+          hasQuery,
+          (q) => q.group(
+            (q) => q.titleContains(normalizedQuery, caseSensitive: false),
+          ),
         )
         .optional(
-          category != null &&
-              category != "Difficulty Level" &&
-              category != "All" &&
-              category.isNotEmpty,
-          (q) => q.levelEqualTo(category!, caseSensitive: false),
+          hasCategory,
+          (q) => q.levelEqualTo(normalizedCategory!, caseSensitive: false),
         )
         .findAll();
 
