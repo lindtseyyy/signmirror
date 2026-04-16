@@ -1,150 +1,234 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:signmirror_flutter/providers/settings_provider.dart';
+import 'package:signmirror_flutter/theme/achievements_theme.dart';
+import 'package:signmirror_flutter/theme/app_theme.dart';
 
-class AchievementsScreen extends StatelessWidget {
+AchievementsTheme _fallbackAchievementsTheme(ThemeData theme) {
+  if (theme.brightness == Brightness.dark) {
+    return AchievementsTheme.dark();
+  }
+
+  return const AchievementsTheme(
+    cardBackgroundColor: Color(0xFFFFFFFF),
+    cardBorderColor: Color(0x00000000),
+    cardBorderWidth: 0.0,
+    showCardBorder: false,
+    mutedTextColor: Color(0x99000000),
+    lockedTextColor: Color(0x66000000),
+    progressTrackColor: Color(0xFFEEEEEE),
+    progressValueColor: Color(0xFF69B85E),
+    headerAccentTextColor: Color(0xFF304166),
+    useCardShadows: true,
+  );
+}
+
+class AchievementsScreen extends ConsumerWidget {
   const AchievementsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new,
-            color: Colors.white,
-            size: 20,
-          ),
-          onPressed: () {
-            Navigator.pop(context); // This performs the "Back" action
-          },
-        ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeSettings = ref.watch(themeSettingsProvider);
 
-        title: const Text(
-          "Achievements",
-          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 24),
-        ),
-      ),
-      body: SafeArea(
-        child: SizedBox(
-          width: double.infinity,
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
+    final platformHighContrast = MediaQuery.of(context).highContrast;
+    final effectiveHighContrast =
+        themeSettings.highContrast || platformHighContrast;
 
-                    child: Row(
+    final resolvedTheme = AppTheme.resolve(
+      mode: themeSettings.mode,
+      highContrast: effectiveHighContrast,
+    );
+
+    return Theme(
+      data: resolvedTheme,
+      child: Builder(
+        builder: (context) {
+          final theme = Theme.of(context);
+          final achievementsTheme =
+              theme.extension<AchievementsTheme>() ??
+              _fallbackAchievementsTheme(theme);
+
+          return Scaffold(
+            appBar: AppBar(
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+                onPressed: () {
+                  Navigator.pop(context); // This performs the "Back" action
+                },
+              ),
+              title: const Text(
+                "Achievements",
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 24),
+              ),
+            ),
+            body: SafeArea(
+              child: SizedBox(
+                width: double.infinity,
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        SizedBox(
-                          height: 120, // Increase this for a larger circle
-                          width: 120, // Keep height and width the same
-                          child: Stack(
-                            alignment: Alignment.center,
+                        Container(
+                          decoration: BoxDecoration(
+                            color: achievementsTheme.cardBackgroundColor,
+                            borderRadius: BorderRadius.circular(20),
+                            border: achievementsTheme.showCardBorder
+                                ? Border.all(
+                                    color: achievementsTheme.cardBorderColor,
+                                    width: achievementsTheme.cardBorderWidth,
+                                  )
+                                : null,
+                          ),
+                          child: Row(
                             children: [
-                              // 1. The Background Circle (the "track")
                               SizedBox(
-                                height: 80,
-                                width: 80,
-                                child: CircularProgressIndicator(
-                                  value: 1.0, // Full circle
-                                  strokeWidth: 12, // Thicker line
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.grey.shade200,
-                                  ),
-                                ),
-                              ),
-                              // 2. The Actual Progress
-                              SizedBox(
-                                height: 80,
-                                width: 80,
-                                child: CircularProgressIndicator(
-                                  value: 0.75, // 75% progress
-                                  strokeWidth: 12,
-                                  strokeCap: StrokeCap
-                                      .round, // ✅ This makes the end rounded
-                                  valueColor:
-                                      const AlwaysStoppedAnimation<Color>(
-                                        Color(0xff69B85E),
+                                height:
+                                    120, // Increase this for a larger circle
+                                width: 120, // Keep height and width the same
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    // 1. The Background Circle (the "track")
+                                    SizedBox(
+                                      height: 80,
+                                      width: 80,
+                                      child: CircularProgressIndicator(
+                                        value: 1.0, // Full circle
+                                        strokeWidth: 12, // Thicker line
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              achievementsTheme
+                                                  .progressTrackColor,
+                                            ),
                                       ),
+                                    ),
+                                    // 2. The Actual Progress
+                                    SizedBox(
+                                      height: 80,
+                                      width: 80,
+                                      child: CircularProgressIndicator(
+                                        value: 0.75, // 75% progress
+                                        strokeWidth: 12,
+                                        strokeCap: StrokeCap
+                                            .round, // ✅ This makes the end rounded
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              achievementsTheme
+                                                  .progressValueColor,
+                                            ),
+                                      ),
+                                    ),
+                                    // 3. The Percentage Text
+                                    Text(
+                                      "75%",
+                                      style: TextStyle(
+                                        fontSize:
+                                            20, // Larger font for a larger circle
+                                        fontWeight: FontWeight.bold,
+                                        color: achievementsTheme
+                                            .headerAccentTextColor,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              // 3. The Percentage Text
-                              const Text(
-                                "75%",
-                                style: TextStyle(
-                                  fontSize:
-                                      20, // Larger font for a larger circle
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xff304166),
+                              const Expanded(
+                                child: Text(
+                                  "Great job, Ping Pong! Complete your achievements to unlock more!",
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        Expanded(
-                          child: Text(
-                            "Great job, Ping Pong! Complete your achievements to unlock more!",
-                          ),
+                        const SizedBox(height: 20),
+                        Column(
+                          spacing: 10,
+                          children: const [
+                            AchievementUnlocked(
+                              title: "Studious",
+                              description:
+                                  "You completed the 'Master the Basics' challenge.",
+                              imagePath:
+                                  "assets/images/achievements/trophy_icon.png",
+                            ),
+                            AchievementUnlocked(
+                              title: "Quickie",
+                              description:
+                                  "You completed the 'Master the Basics' challenge.",
+                              imagePath:
+                                  "assets/images/achievements/time_icon.png",
+                            ),
+                            AchievementUnlocked(
+                              title: "Ambitious",
+                              description:
+                                  "You completed the 'Master the Basics' challenge.",
+                              imagePath:
+                                  "assets/images/achievements/medal_icon.png",
+                            ),
+                            AchievementUnlocked(
+                              title: "Perfectionist",
+                              description:
+                                  "You completed the 'Master the Basics' challenge.",
+                              imagePath:
+                                  "assets/images/achievements/star_icon.png",
+                            ),
+                            AchievementLocked(
+                              imagePath:
+                                  "assets/images/achievements/sunglasses_icon.png",
+                            ),
+                            AchievementLocked(
+                              imagePath:
+                                  "assets/images/achievements/sunglasses_icon.png",
+                            ),
+                            AchievementLocked(
+                              imagePath:
+                                  "assets/images/achievements/sunglasses_icon.png",
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  Column(
-                    spacing: 10,
-                    children: [
-                      AchievementUnlocked(
-                        title: "Studious",
-                        description:
-                            "You completed the 'Master the Basics' challenge.",
-                        imagePath: "assets/images/achievements/trophy_icon.png",
-                      ),
-                      AchievementUnlocked(
-                        title: "Quickie",
-                        description:
-                            "You completed the 'Master the Basics' challenge.",
-                        imagePath: "assets/images/achievements/time_icon.png",
-                      ),
-                      AchievementUnlocked(
-                        title: "Ambitious",
-                        description:
-                            "You completed the 'Master the Basics' challenge.",
-                        imagePath: "assets/images/achievements/medal_icon.png",
-                      ),
-                      AchievementUnlocked(
-                        title: "Perfectionist",
-                        description:
-                            "You completed the 'Master the Basics' challenge.",
-                        imagePath: "assets/images/achievements/star_icon.png",
-                      ),
-                      AchievementLocked(
-                        imagePath:
-                            "assets/images/achievements/sunglasses_icon.png",
-                      ),
-                      AchievementLocked(
-                        imagePath:
-                            "assets/images/achievements/sunglasses_icon.png",
-                      ),
-                      AchievementLocked(
-                        imagePath:
-                            "assets/images/achievements/sunglasses_icon.png",
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
+}
+
+BoxDecoration _achievementCardDecoration(
+  BuildContext context, {
+  required double borderRadius,
+}) {
+  final theme = Theme.of(context);
+  final achievementsTheme =
+      theme.extension<AchievementsTheme>() ?? _fallbackAchievementsTheme(theme);
+
+  return BoxDecoration(
+    color: achievementsTheme.cardBackgroundColor,
+    borderRadius: BorderRadius.circular(borderRadius),
+    border: achievementsTheme.showCardBorder
+        ? Border.all(
+            color: achievementsTheme.cardBorderColor,
+            width: achievementsTheme.cardBorderWidth,
+          )
+        : null,
+    boxShadow: achievementsTheme.useCardShadows
+        ? [
+            BoxShadow(
+              blurRadius: 1,
+              offset: const Offset(1, 1),
+              color: Colors.black.withOpacity(0.1), // Very subtle color
+            ),
+          ]
+        : null,
+  );
 }
 
 class AchievementUnlocked extends StatelessWidget {
@@ -160,19 +244,14 @@ class AchievementUnlocked extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final achievementsTheme =
+        theme.extension<AchievementsTheme>() ??
+        _fallbackAchievementsTheme(theme);
+
     return Container(
       padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 1,
-            offset: const Offset(1, 1),
-            color: Colors.black.withValues(alpha: 0.1), // Very subtle color
-          ),
-        ],
-      ),
+      decoration: _achievementCardDecoration(context, borderRadius: 10),
       child: Row(
         children: [
           CircleAvatar(
@@ -190,13 +269,16 @@ class AchievementUnlocked extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 Text(
                   description,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.black.withValues(alpha: 0.6),
+                    color: achievementsTheme.mutedTextColor,
                   ),
                 ),
               ],
@@ -214,19 +296,14 @@ class AchievementLocked extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final achievementsTheme =
+        theme.extension<AchievementsTheme>() ??
+        _fallbackAchievementsTheme(theme);
+
     return Container(
       padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 1,
-            offset: const Offset(1, 1),
-            color: Colors.black.withValues(alpha: 0.1), // Very subtle color
-          ),
-        ],
-      ),
+      decoration: _achievementCardDecoration(context, borderRadius: 10),
       child: Row(
         children: [
           CircleAvatar(
@@ -248,7 +325,7 @@ class AchievementLocked extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black.withValues(alpha: 0.4),
+                    color: achievementsTheme.lockedTextColor,
                   ),
                 ),
               ],

@@ -6,8 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signmirror_flutter/providers/settings_provider.dart';
 import 'package:signmirror_flutter/routes/routes.dart';
 import 'package:signmirror_flutter/services/settings_service.dart';
-import 'screens/personalization_screen.dart';
-import './theme/app_theme.dart';
+import 'package:signmirror_flutter/screens/personalization_screen.dart';
+import 'package:signmirror_flutter/theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
