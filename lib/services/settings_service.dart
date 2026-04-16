@@ -91,6 +91,13 @@ class SettingsService {
     await _prefsSync.setString('userName', value);
   }
 
+  // --- USER EMAIL ---
+  String get userEmail => _prefsSync.getString('userEmail') ?? '';
+
+  Future<void> setUserEmail(String value) async {
+    await _prefsSync.setString('userEmail', value);
+  }
+
   // --- USER PERSONALIZATION ---
   String get userPersonalization =>
       _prefsSync.getString('userPersonalization') ?? '';

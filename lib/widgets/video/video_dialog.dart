@@ -9,14 +9,23 @@ class VideoDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screen = MediaQuery.sizeOf(context);
+    final colorScheme = Theme.of(context).colorScheme;
+    final highContrast = MediaQuery.of(context).highContrast;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final maxDialogWidth = math.min(screen.width - 32.0, 720.0);
     final maxDialogHeight = math.min(
       screen.height - 48.0,
       screen.height * 0.85,
     );
 
+    // Preserve the existing light-mode look (semi-transparent white), while
+    // providing stronger contrast in dark mode and high contrast.
+    final dialogBgOpacity = highContrast ? 0.98 : (isDark ? 0.92 : 0.5);
+
     return Dialog(
-      backgroundColor: Colors.white.withValues(alpha: 0.5),
+      backgroundColor: colorScheme.surface.withOpacity(dialogBgOpacity),
+      surfaceTintColor: colorScheme.surfaceTint.withOpacity(0),
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: ConstrainedBox(
         constraints: BoxConstraints(
@@ -49,6 +58,7 @@ class VideoDialog extends StatelessWidget {
                         IconButton(
                           tooltip: 'Close',
                           onPressed: () => Navigator.of(context).pop(),
+                          color: colorScheme.onSurface,
                           icon: const Icon(Icons.close),
                         ),
                       ],
@@ -60,7 +70,8 @@ class VideoDialog extends StatelessWidget {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: ColoredBox(
-                        color: Colors.black,
+                        // Theme-driven “black” suitable for both light/dark.
+                        color: colorScheme.scrim,
                         child: Center(
                           child: VideoPlayerScreen(videoUrl: videoUrl),
                         ),

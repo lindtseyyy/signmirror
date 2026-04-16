@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:signmirror_flutter/theme/achievements_theme.dart';
+import 'package:signmirror_flutter/theme/community_theme.dart';
 import 'package:signmirror_flutter/theme/theme_settings.dart';
 import 'package:signmirror_flutter/constants/app_colors.dart';
 
@@ -73,6 +74,35 @@ class AppTheme {
         headerAccentTextColor: Color(0xFF304166),
         useCardShadows: true,
       ),
+      // Must match Community UI's current hard-coded light styling.
+      CommunityTheme(
+        pageBackgroundColor: Color(0xFFF2F3F4),
+        cardBackgroundColor: Color(0xFFFFFFFF),
+        cardSubsurfaceColor: Color(0xFFEEEEEE),
+        sheetBackgroundColor: Color(0xFFFFFFFF),
+        // Colors.white.withOpacity(0.5)
+        dialogBackgroundColor: Color(0x80FFFFFF),
+        searchFieldFillColor: Color(0xFFFFFFFF),
+        // Colors.grey.shade200
+        commentFieldFillColor: Color(0xFFEEEEEE),
+        // Approx. ThemeData default divider color in light mode.
+        outlineColor: Color(0x1F000000),
+        dividerColor: Color(0x1F000000),
+        // Colors.grey.shade400
+        sheetHandleColor: Color(0xFFBDBDBD),
+        // Colors.grey.shade200
+        badgeNeutralBackgroundColor: Color(0xFFEEEEEE),
+        // Colors.green.shade50
+        badgeApprovedBackgroundColor: Color(0xFFE8F5E9),
+        // Colors.green
+        badgeApprovedBorderColor: Color(0xFF4CAF50),
+        // Colors.green.shade800
+        badgeApprovedContentColor: Color(0xFF2E7D32),
+        // Colors.orange
+        badgePendingBorderColor: Color(0xFFFF9800),
+        // Colors.blue
+        primaryActionColor: Color(0xFF2196F3),
+      ),
     ],
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
@@ -131,6 +161,26 @@ class AppTheme {
         headerAccentTextColor: _darkColorScheme.onSurface,
         useCardShadows: false,
       ),
+      CommunityTheme(
+        pageBackgroundColor: Color(0xFF121212),
+        cardBackgroundColor: _darkColorScheme.surfaceVariant,
+        cardSubsurfaceColor: _darkColorScheme.surface,
+        sheetBackgroundColor: _darkColorScheme.surfaceVariant,
+        dialogBackgroundColor: _darkColorScheme.surfaceVariant.withOpacity(
+          0.92,
+        ),
+        searchFieldFillColor: _darkColorScheme.surfaceVariant,
+        commentFieldFillColor: _darkColorScheme.surfaceVariant,
+        outlineColor: _darkColorScheme.outline,
+        dividerColor: _darkColorScheme.outline.withOpacity(0.7),
+        sheetHandleColor: _darkColorScheme.outline.withOpacity(0.85),
+        badgeNeutralBackgroundColor: _darkColorScheme.surface,
+        badgeApprovedBackgroundColor: Color(0xFF163624),
+        badgeApprovedBorderColor: Color(0xFF66BB6A),
+        badgeApprovedContentColor: Color(0xFFA5D6A7),
+        badgePendingBorderColor: Color(0xFFFFB74D),
+        primaryActionColor: Color(0xFF64B5F6),
+      ),
     ],
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
@@ -173,8 +223,10 @@ class AppTheme {
     colorScheme: _highContrastLightColorScheme,
     extensions: [
       // Preserve any existing extensions from `lightTheme`, but override
-      // Achievements tokens for high-contrast.
-      ...lightTheme.extensions.values.where((e) => e is! AchievementsTheme),
+      // Achievements + Community tokens for high-contrast.
+      ...lightTheme.extensions.values.where(
+        (e) => e is! AchievementsTheme && e is! CommunityTheme,
+      ),
       AchievementsTheme(
         cardBackgroundColor: _highContrastLightColorScheme.surface,
         cardBorderColor: _highContrastLightColorScheme.primary,
@@ -186,6 +238,24 @@ class AppTheme {
         progressValueColor: _highContrastLightColorScheme.primary,
         headerAccentTextColor: _highContrastLightColorScheme.primary,
         useCardShadows: false,
+      ),
+      CommunityTheme(
+        pageBackgroundColor: const Color(0xFFF2F3F4),
+        cardBackgroundColor: _highContrastLightColorScheme.surface,
+        cardSubsurfaceColor: const Color(0xFFFFFFFF),
+        sheetBackgroundColor: _highContrastLightColorScheme.surface,
+        dialogBackgroundColor: const Color(0xCCFFFFFF),
+        searchFieldFillColor: const Color(0xFFFFFFFF),
+        commentFieldFillColor: const Color(0xFFFFFFFF),
+        outlineColor: _highContrastLightColorScheme.primary,
+        dividerColor: Colors.black,
+        sheetHandleColor: Colors.black54,
+        badgeNeutralBackgroundColor: const Color(0xFFFFFFFF),
+        badgeApprovedBackgroundColor: const Color(0xFFE8F5E9),
+        badgeApprovedBorderColor: const Color(0xFF1B5E20),
+        badgeApprovedContentColor: const Color(0xFF1B5E20),
+        badgePendingBorderColor: const Color(0xFFE65100),
+        primaryActionColor: _highContrastLightColorScheme.primary,
       ),
     ],
     filledButtonTheme: FilledButtonThemeData(
@@ -229,8 +299,10 @@ class AppTheme {
     colorScheme: _highContrastDarkColorScheme,
     extensions: [
       // Preserve any existing extensions from `darkTheme`, but override
-      // Achievements tokens for high-contrast.
-      ...darkTheme.extensions.values.where((e) => e is! AchievementsTheme),
+      // Achievements + Community tokens for high-contrast.
+      ...darkTheme.extensions.values.where(
+        (e) => e is! AchievementsTheme && e is! CommunityTheme,
+      ),
       AchievementsTheme(
         cardBackgroundColor: _highContrastDarkColorScheme.surfaceVariant,
         cardBorderColor: _highContrastDarkColorScheme.outline,
@@ -245,6 +317,25 @@ class AppTheme {
         progressValueColor: _highContrastDarkColorScheme.primary,
         headerAccentTextColor: _highContrastDarkColorScheme.onSurface,
         useCardShadows: false,
+      ),
+      CommunityTheme(
+        pageBackgroundColor: const Color(0xFF121212),
+        cardBackgroundColor: _highContrastDarkColorScheme.surfaceVariant,
+        cardSubsurfaceColor: _highContrastDarkColorScheme.surface,
+        sheetBackgroundColor: _highContrastDarkColorScheme.surfaceVariant,
+        dialogBackgroundColor: _highContrastDarkColorScheme.surfaceVariant
+            .withOpacity(0.96),
+        searchFieldFillColor: _highContrastDarkColorScheme.surfaceVariant,
+        commentFieldFillColor: _highContrastDarkColorScheme.surfaceVariant,
+        outlineColor: _highContrastDarkColorScheme.outline,
+        dividerColor: _highContrastDarkColorScheme.outline,
+        sheetHandleColor: _highContrastDarkColorScheme.outline,
+        badgeNeutralBackgroundColor: _highContrastDarkColorScheme.surface,
+        badgeApprovedBackgroundColor: const Color(0xFF0E3B24),
+        badgeApprovedBorderColor: const Color(0xFF00E676),
+        badgeApprovedContentColor: const Color(0xFF00E676),
+        badgePendingBorderColor: const Color(0xFFFFD54F),
+        primaryActionColor: _highContrastDarkColorScheme.primary,
       ),
     ],
     filledButtonTheme: FilledButtonThemeData(

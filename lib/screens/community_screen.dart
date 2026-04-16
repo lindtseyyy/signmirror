@@ -5,7 +5,10 @@ import 'package:signmirror_flutter/models/community_video.dart';
 import 'package:signmirror_flutter/widgets/video/video_dialog.dart';
 import 'package:signmirror_flutter/widgets/video/video_comments_sheet.dart';
 import 'package:signmirror_flutter/providers/providers.dart';
+import 'package:signmirror_flutter/providers/settings_provider.dart';
 import 'package:signmirror_flutter/constants/route_names.dart';
+import 'package:signmirror_flutter/theme/app_theme.dart';
+import 'package:signmirror_flutter/theme/community_theme.dart';
 
 class CommunityScreen extends ConsumerStatefulWidget {
   const CommunityScreen({super.key});
@@ -164,11 +167,14 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
   }
 
   Widget _buildUserUploadedPost(BuildContext context, CommunityVideo video) {
+    final communityTheme = Theme.of(context).extension<CommunityTheme>()!;
+
     final commentCount = (video.id < 0)
         ? (_mockVideoComments[video.id]?.length ?? video.comments.length)
         : video.comments.length;
 
     return Card(
+      color: communityTheme.cardBackgroundColor,
       margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       elevation: 0.5,
@@ -193,7 +199,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
+                    color: communityTheme.badgeNeutralBackgroundColor,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -218,7 +224,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(5),
-                color: Colors.grey.shade200,
+                color: communityTheme.cardSubsurfaceColor,
               ),
               margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
@@ -255,125 +261,170 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
     final communityVideos = ref.watch(communityVideoProvider);
     final uploaderNamesAsync = ref.watch(uploaderNamesProvider);
 
-    final colorScheme = Theme.of(context).colorScheme;
+    final themeSettings = ref.watch(themeSettingsProvider);
+    final effectiveHighContrast =
+        themeSettings.highContrast || MediaQuery.of(context).highContrast;
+    final resolvedTheme = AppTheme.resolve(
+      mode: themeSettings.mode,
+      highContrast: effectiveHighContrast,
+    );
 
     final uploaderNames = uploaderNamesAsync.maybeWhen(
       data: (value) => value,
       orElse: () => <int, String>{},
     );
 
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          backgroundColor: colorScheme.primary,
-          foregroundColor: colorScheme.onPrimary,
-          title: const Text(
-            'Community',
-            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22),
-          ),
-          actions: [
-            IconButton(
-              tooltip: 'Upload',
-              icon: const Icon(Icons.add),
-              onPressed: () {
-                Navigator.of(context).pushNamed(RouteNames.communityUpload);
-              },
-            ),
-          ],
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(104),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-                  child: SizedBox(
-                    height: 44,
-                    child: TextField(
-                      controller: _searchController,
-                      onChanged: (value) => setState(() => _query = value),
-                      textInputAction: TextInputAction.search,
-                      style: const TextStyle(color: Colors.black87),
-                      cursorColor: Colors.black87,
-                      decoration: InputDecoration(
-                        hintText: 'Search by title or uploader',
-                        filled: true,
-                        fillColor: Colors.white,
-                        prefixIcon: const Icon(Icons.search),
-                        prefixIconColor: Colors.black54,
-                        hintStyle: const TextStyle(color: Colors.black54),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 10,
+    return Theme(
+      data: resolvedTheme,
+      child: Builder(
+        builder: (context) {
+          final colorScheme = Theme.of(context).colorScheme;
+          final communityTheme = Theme.of(context).extension<CommunityTheme>()!;
+
+          final searchTextColor = colorScheme.onSurface.withOpacity(0.87);
+          final searchHintColor = colorScheme.onSurface.withOpacity(0.54);
+
+          return DefaultTabController(
+            length: 3,
+            child: Scaffold(
+              backgroundColor: communityTheme.pageBackgroundColor,
+              appBar: AppBar(
+                automaticallyImplyLeading: false,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
+                title: const Text(
+                  'Community',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22),
+                ),
+                actions: [
+                  IconButton(
+                    tooltip: 'Upload',
+                    icon: const Icon(Icons.add),
+                    onPressed: () {
+                      Navigator.of(
+                        context,
+                      ).pushNamed(RouteNames.communityUpload);
+                    },
+                  ),
+                ],
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(104),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                        child: SizedBox(
+                          height: 44,
+                          child: TextField(
+                            controller: _searchController,
+                            onChanged: (value) =>
+                                setState(() => _query = value),
+                            textInputAction: TextInputAction.search,
+                            style: TextStyle(color: searchTextColor),
+                            cursorColor: searchTextColor,
+                            decoration: InputDecoration(
+                              hintText: 'Search by title or uploader',
+                              filled: true,
+                              fillColor: communityTheme.searchFieldFillColor,
+                              prefixIcon: const Icon(Icons.search),
+                              prefixIconColor: searchHintColor,
+                              hintStyle: TextStyle(color: searchHintColor),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              enabledBorder: effectiveHighContrast
+                                  ? OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(
+                                        color: colorScheme.onSurface,
+                                        width: 2,
+                                      ),
+                                    )
+                                  : null,
+                              focusedBorder: effectiveHighContrast
+                                  ? OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(
+                                        color: colorScheme.onSurface,
+                                        width: 3,
+                                      ),
+                                    )
+                                  : null,
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      TabBar(
+                        labelColor: colorScheme.onPrimary,
+                        unselectedLabelColor: colorScheme.onPrimary.withOpacity(
+                          0.75,
+                        ),
+                        indicatorColor: colorScheme.onPrimary,
+                        tabs: [
+                          Tab(
+                            icon: Tooltip(
+                              message: 'Unapproved Videos',
+                              child: Icon(
+                                Icons.pending_actions,
+                                semanticLabel: 'Unapproved Videos',
+                              ),
+                            ),
+                          ),
+                          Tab(
+                            icon: Tooltip(
+                              message: 'Approved Videos',
+                              child: Icon(
+                                Icons.verified,
+                                semanticLabel: 'Approved Videos',
+                              ),
+                            ),
+                          ),
+                          Tab(
+                            icon: Tooltip(
+                              message: 'User Uploaded Videos',
+                              child: Icon(
+                                Icons.cloud_upload_outlined,
+                                semanticLabel: 'User Uploaded Videos',
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                TabBar(
-                  labelColor: colorScheme.onPrimary,
-                  unselectedLabelColor: colorScheme.onPrimary.withOpacity(0.75),
-                  indicatorColor: colorScheme.onPrimary,
-                  tabs: [
-                    Tab(
-                      icon: Tooltip(
-                        message: 'Unapproved Videos',
-                        child: Icon(
-                          Icons.pending_actions,
-                          semanticLabel: 'Unapproved Videos',
-                        ),
-                      ),
-                    ),
-                    Tab(
-                      icon: Tooltip(
-                        message: 'Approved Videos',
-                        child: Icon(
-                          Icons.verified,
-                          semanticLabel: 'Approved Videos',
-                        ),
-                      ),
-                    ),
-                    Tab(
-                      icon: Tooltip(
-                        message: 'User Uploaded Videos',
-                        child: Icon(
-                          Icons.cloud_upload_outlined,
-                          semanticLabel: 'User Uploaded Videos',
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              ),
+              body: TabBarView(
+                children: [
+                  _buildVideoList(
+                    videos: communityVideos,
+                    uploaderNames: uploaderNames,
+                    tabFilter: (video) =>
+                        video.approves < 3 &&
+                        video.uploaderId != _currentUserId,
+                  ),
+                  _buildVideoList(
+                    videos: communityVideos,
+                    uploaderNames: uploaderNames,
+                    tabFilter: (video) =>
+                        video.approves >= 3 &&
+                        video.uploaderId != _currentUserId,
+                  ),
+                  _buildUserUploadedVideosTab(
+                    videos: communityVideos,
+                    uploaderNames: uploaderNames,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ),
-        body: TabBarView(
-          children: [
-            _buildVideoList(
-              videos: communityVideos,
-              uploaderNames: uploaderNames,
-              tabFilter: (video) =>
-                  video.approves < 3 && video.uploaderId != _currentUserId,
-            ),
-            _buildVideoList(
-              videos: communityVideos,
-              uploaderNames: uploaderNames,
-              tabFilter: (video) =>
-                  video.approves >= 3 && video.uploaderId != _currentUserId,
-            ),
-            _buildUserUploadedVideosTab(
-              videos: communityVideos,
-              uploaderNames: uploaderNames,
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -402,6 +453,8 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
+        final communityTheme = Theme.of(context).extension<CommunityTheme>()!;
+
         return SizedBox(
           height: MediaQuery.of(context).size.height * 0.75,
           child: StatefulBuilder(
@@ -422,9 +475,11 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
               }
 
               return Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                decoration: BoxDecoration(
+                  color: communityTheme.sheetBackgroundColor,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
                 ),
                 padding: EdgeInsets.only(
                   bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -436,7 +491,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade400,
+                        color: communityTheme.sheetHandleColor,
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
@@ -448,7 +503,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                         fontSize: 16,
                       ),
                     ),
-                    const Divider(),
+                    Divider(color: communityTheme.dividerColor),
                     Expanded(
                       child: initial.isEmpty
                           ? const Center(
@@ -479,7 +534,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                               },
                             ),
                     ),
-                    const Divider(height: 1),
+                    Divider(color: communityTheme.dividerColor, height: 1),
                     Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
@@ -497,7 +552,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                                   borderSide: BorderSide.none,
                                 ),
                                 filled: true,
-                                fillColor: Colors.grey.shade200,
+                                fillColor: communityTheme.commentFieldFillColor,
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 20,
                                   vertical: 10,
@@ -509,7 +564,10 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                           ),
                           const SizedBox(width: 8),
                           IconButton(
-                            icon: const Icon(Icons.send, color: Colors.blue),
+                            icon: Icon(
+                              Icons.send,
+                              color: communityTheme.primaryActionColor,
+                            ),
                             onPressed: submit,
                           ),
                         ],
@@ -531,9 +589,19 @@ Widget _buildVideoThumbnail(
   String thumbnailUrl,
   String videoUrl,
 ) {
+  final theme = Theme.of(context);
+  final colorScheme = theme.colorScheme;
+  final isDark = theme.brightness == Brightness.dark;
+
+  final playBackgroundColor = isDark
+      ? colorScheme.onSurface.withOpacity(0.7)
+      : colorScheme.surface.withOpacity(0.7);
+  final playForegroundColor = isDark
+      ? colorScheme.surface
+      : colorScheme.onSurface;
+
   return GestureDetector(
-    onTap: () =>
-        _openVideoPlayer(context, videoUrl), // Logic to open the player
+    onTap: () => _openVideoPlayer(context, videoUrl),
     behavior: HitTestBehavior.opaque,
     child: Stack(
       alignment: Alignment.center,
@@ -552,15 +620,15 @@ Widget _buildVideoThumbnail(
         Container(
           height: 200,
           decoration: BoxDecoration(
-            color: Colors.black26,
+            color: colorScheme.scrim.withOpacity(0.26),
             borderRadius: BorderRadius.circular(12),
           ),
         ),
         // 3. The Play Icon
-        const CircleAvatar(
+        CircleAvatar(
           radius: 30,
-          backgroundColor: Colors.white70,
-          child: Icon(Icons.play_arrow, size: 40, color: Colors.black),
+          backgroundColor: playBackgroundColor,
+          child: Icon(Icons.play_arrow, size: 40, color: playForegroundColor),
         ),
       ],
     ),
@@ -581,10 +649,14 @@ Widget _buildCommunityPost(
   CommunityVideo video,
   String uploaderName,
 ) {
+  final communityTheme = Theme.of(context).extension<CommunityTheme>()!;
+
   final hasDescription = video.description?.trim().isNotEmpty == true;
   final isMock = video.id < 0;
+  final isTopApproved = video.approves >= 3;
 
   return Card(
+    color: communityTheme.cardBackgroundColor,
     margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
     elevation: 0.5,
@@ -615,11 +687,13 @@ Widget _buildCommunityPost(
           trailing: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: video.approves >= 3
-                  ? Colors.green.shade50
+              color: isTopApproved
+                  ? communityTheme.badgeApprovedBackgroundColor
                   : Colors.transparent,
               border: Border.all(
-                color: video.approves >= 3 ? Colors.green : Colors.orange,
+                color: isTopApproved
+                    ? communityTheme.badgeApprovedBorderColor
+                    : communityTheme.badgePendingBorderColor,
               ),
               borderRadius: BorderRadius.circular(20),
             ),
@@ -630,23 +704,29 @@ Widget _buildCommunityPost(
                   const Icon(Icons.science_outlined, size: 14),
                   const SizedBox(width: 4),
                 ],
-                if (video.approves >= 3)
-                  const Padding(
-                    padding: EdgeInsets.only(right: 4.0),
-                    child: Icon(Icons.verified, color: Colors.green, size: 14),
+                if (isTopApproved)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 4.0),
+                    child: Icon(
+                      Icons.verified,
+                      color: communityTheme.badgeApprovedBorderColor,
+                      size: 14,
+                    ),
                   ),
                 Text(
                   isMock
                       ? 'Mock Video'
-                      : video.approves >= 3
+                      : isTopApproved
                       ? 'Top Approved (${video.approves})'
                       : '${video.approves}/3 Approved',
                   style: TextStyle(
                     fontSize: 11,
-                    fontWeight: video.approves >= 3
+                    fontWeight: isTopApproved
                         ? FontWeight.bold
                         : FontWeight.normal,
-                    color: video.approves >= 3 ? Colors.green.shade800 : null,
+                    color: isTopApproved
+                        ? communityTheme.badgeApprovedContentColor
+                        : null,
                   ),
                 ),
               ],
@@ -657,7 +737,7 @@ Widget _buildCommunityPost(
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(5),
-              color: Colors.grey.shade200,
+              color: communityTheme.cardSubsurfaceColor,
             ),
             margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
             padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
