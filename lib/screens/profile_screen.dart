@@ -39,7 +39,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     ref.watch(practiceTimeProvider);
 
     // Get the pretty version from your Notifier.
-    final displayTime = ref.read(practiceTimeProvider.notifier).getDisplayTime();
+    final displayTime = ref
+        .read(practiceTimeProvider.notifier)
+        .getDisplayTime();
     final language = ref.watch(languageProvider);
     final userName = ref.watch(userNameProvider);
     final personalization = ref.watch(personalizationProvider);
@@ -221,7 +223,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       Achievement(
                                         imagePath:
                                             "assets/images/achievements/trophy_icon.png",
-                                        title: strings.profileAchievementStudious,
+                                        title:
+                                            strings.profileAchievementStudious,
                                         useLegacyLightColors:
                                             useLegacyLightColors,
                                         isHighContrast: isHighContrastMode,
@@ -229,7 +232,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       Achievement(
                                         imagePath:
                                             "assets/images/achievements/time_icon.png",
-                                        title: strings.profileAchievementQuickie,
+                                        title:
+                                            strings.profileAchievementQuickie,
                                         useLegacyLightColors:
                                             useLegacyLightColors,
                                         isHighContrast: isHighContrastMode,
@@ -237,7 +241,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       Achievement(
                                         imagePath:
                                             "assets/images/achievements/star_icon.png",
-                                        title: strings.profileAchievementAmbitious,
+                                        title:
+                                            strings.profileAchievementAmbitious,
                                         useLegacyLightColors:
                                             useLegacyLightColors,
                                         isHighContrast: isHighContrastMode,
@@ -323,7 +328,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       horizontal: -4,
                                       vertical: -4,
                                     ), // 2. Squeezes the internal space
-                                    title: Text(strings.profileOfflineDownloadingLabel),
+                                    title: Text(
+                                      strings.profileOfflineDownloadingLabel,
+                                    ),
                                     secondary: Icon(
                                       isOfflineDownloading
                                           ? Icons.download_for_offline
@@ -370,7 +377,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       horizontal: -4,
                                       vertical: -4,
                                     ), // 2. Squeezes the internal space
-                                    title: Text(strings.profileHighContrastLabel),
+                                    title: Text(
+                                      strings.profileHighContrastLabel,
+                                    ),
                                     secondary: Icon(
                                       isHighContrastSetting
                                           ? Icons.contrast
@@ -458,7 +467,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                               },
                                               child: Text(
                                                 strings.languageEnglishLabel,
-                                                style: const TextStyle(fontSize: 16),
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                ),
                                               ),
                                             ),
                                             SimpleDialogOption(
@@ -472,7 +483,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                               },
                                               child: Text(
                                                 strings.languageFilipinoLabel,
-                                                style: const TextStyle(fontSize: 16),
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                ),
                                               ),
                                             ),
                                           ],
@@ -490,7 +503,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                         8, // Removes the gap between icon and text
                                     minLeadingWidth: 0,
                                     leading: const Icon(Icons.alarm),
-                                    title: Text(strings.profileDailyPracticeReminderLabel),
+                                    title: Text(
+                                      strings.profileDailyPracticeReminderLabel,
+                                    ),
                                     subtitle: Text(
                                       displayTime,
                                     ), // e.g., "08:30 PM"
@@ -499,7 +514,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       color: trailingIconColor,
                                       size: 15,
                                     ),
-                                    onTap: () => _showTimePicker(context, ref, strings),
+                                    onTap: () =>
+                                        _showTimePicker(context, ref, strings),
                                   ),
                                   const SizedBox(height: 10),
                                   FilledButton(
