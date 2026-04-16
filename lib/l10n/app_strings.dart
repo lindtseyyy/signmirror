@@ -52,6 +52,35 @@ class AppStrings {
   bool get isFilipino => langCode == _fil;
 
   // ---------------------------
+  // Sign in strings
+  // ---------------------------
+
+  String get signinWelcomeTitle => _t('signinWelcomeTitle');
+  String get signinWelcomeSubtitle => _t('signinWelcomeSubtitle');
+
+  String get signinEmailLabel => _t('signinEmailLabel');
+  String get signinEmailHint => _t('signinEmailHint');
+
+  String get signinPasswordLabel => _t('signinPasswordLabel');
+  String get signinPasswordHint => _t('signinPasswordHint');
+
+  String get signinLoginButtonLabel => _t('signinLoginButtonLabel');
+  String get signinDividerLabel => _t('signinDividerLabel');
+
+  String get signinFooterNoAccountLabel => _t('signinFooterNoAccountLabel');
+  String get signinFooterSignUpLabel => _t('signinFooterSignUpLabel');
+
+  String get signinLoadingLoggingInLabel => _t('signinLoadingLoggingInLabel');
+  String get signinLoadingPreparingDashboardLabel =>
+      _t('signinLoadingPreparingDashboardLabel');
+
+  String get signinErrorEmailRequired => _t('signinErrorEmailRequired');
+  String get signinErrorEmailInvalid => _t('signinErrorEmailInvalid');
+  String get signinErrorPasswordRequired => _t('signinErrorPasswordRequired');
+  String get signinErrorInvalidCredentials =>
+      _t('signinErrorInvalidCredentials');
+
+  // ---------------------------
   // Dashboard strings
   // ---------------------------
 
@@ -732,6 +761,24 @@ class AppStrings {
 
   static const Map<String, Map<String, String>> _strings = {
     _en: {
+      // Sign in
+      'signinWelcomeTitle': 'Welcome Back!',
+      'signinWelcomeSubtitle': 'Good to see you again!',
+      'signinEmailLabel': 'Email Address',
+      'signinEmailHint': 'Enter email',
+      'signinPasswordLabel': 'Password',
+      'signinPasswordHint': 'Enter password',
+      'signinLoginButtonLabel': 'Login',
+      'signinDividerLabel': 'or sign up with',
+      'signinFooterNoAccountLabel': "Don't have an account?",
+      'signinFooterSignUpLabel': 'Sign up',
+      'signinLoadingLoggingInLabel': 'Logging in',
+      'signinLoadingPreparingDashboardLabel': 'Preparing your Dashboard',
+      'signinErrorEmailRequired': 'Email is required',
+      'signinErrorEmailInvalid': 'Enter a valid email address',
+      'signinErrorPasswordRequired': 'Password is required',
+      'signinErrorInvalidCredentials': 'Invalid credentials. Please try again.',
+
       // Dashboard
       'dashboardTitle': 'Dashboard',
 
@@ -1020,6 +1067,25 @@ class AppStrings {
       'achievementsChallengeGet100Accuracy': 'Get 100% Accuracy',
     },
     _fil: {
+      // Sign in
+      'signinWelcomeTitle': 'Maligayang pagbabalik!',
+      'signinWelcomeSubtitle': 'Masayang makita ka ulit!',
+      'signinEmailLabel': 'Email Address',
+      'signinEmailHint': 'Ilagay ang email',
+      'signinPasswordLabel': 'Password',
+      'signinPasswordHint': 'Ilagay ang password',
+      'signinLoginButtonLabel': 'Mag-login',
+      'signinDividerLabel': 'o mag-sign up sa',
+      'signinFooterNoAccountLabel': 'Wala ka pang account?',
+      'signinFooterSignUpLabel': 'Mag-sign up',
+      'signinLoadingLoggingInLabel': 'Nagla-log in',
+      'signinLoadingPreparingDashboardLabel': 'Inihahanda ang iyong Dashboard',
+      'signinErrorEmailRequired': 'Kailangan ang email',
+      'signinErrorEmailInvalid': 'Maglagay ng wastong email address',
+      'signinErrorPasswordRequired': 'Kailangan ang password',
+      'signinErrorInvalidCredentials':
+          'Maling email o password. Pakisubukan muli.',
+
       // Dashboard
       'dashboardTitle': 'Dashboard',
 
