@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:signmirror_flutter/utils/snackbar_utils.dart';
 import 'package:signmirror_flutter/widgets/loading_screen.dart';
+import 'package:signmirror_flutter/widgets/signmirror_input_decoration.dart';
 import 'package:signmirror_flutter/constants/app_colors.dart';
 import '../constants/route_names.dart';
 
@@ -212,11 +213,11 @@ class _SigninScreenState extends State<SigninScreen> {
                                 }
                               },
                               keyboardType: TextInputType.emailAddress,
-                              decoration: _inputStyle(
-                                'Email Address',
-                                'Enter email',
-                                colors,
-                                _emailError,
+                              decoration: signMirrorInputDecoration(
+                                label: 'Email Address',
+                                hint: 'Enter email',
+                                colors: colors,
+                                errorText: _emailError,
                               ),
                             ),
                             const SizedBox(height: 20),
@@ -233,24 +234,22 @@ class _SigninScreenState extends State<SigninScreen> {
                                   });
                                 }
                               },
-                              decoration:
-                                  _inputStyle(
-                                    'Password',
-                                    'Enter password',
-                                    colors,
-                                    _passwordError,
-                                  ).copyWith(
-                                    suffixIcon: IconButton(
-                                      icon: Icon(
-                                        _isObscured
-                                            ? Icons.visibility_off
-                                            : Icons.visibility,
-                                      ),
-                                      onPressed: () => setState(
-                                        () => _isObscured = !_isObscured,
-                                      ),
-                                    ),
+                              decoration: signMirrorInputDecoration(
+                                label: 'Password',
+                                hint: 'Enter password',
+                                colors: colors,
+                                errorText: _passwordError,
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _isObscured
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
                                   ),
+                                  onPressed: () => setState(
+                                    () => _isObscured = !_isObscured,
+                                  ),
+                                ),
+                              ),
                             ),
                             const SizedBox(height: 20),
 
@@ -396,39 +395,6 @@ class _SigninScreenState extends State<SigninScreen> {
           if (_isLoginValid)
             LoadingScreenWidget(label: "Preparing your dashboard..."),
         ],
-      ),
-    );
-  }
-
-  // Helper to keep code clean
-  InputDecoration _inputStyle(
-    String label,
-    String hint,
-    ColorScheme colors,
-    String? errorText,
-  ) {
-    return InputDecoration(
-      labelText: label,
-      hintText: hint,
-      errorText: errorText, // Add this line here!
-      floatingLabelBehavior: FloatingLabelBehavior.always,
-      hintStyle: const TextStyle(color: Color(0xffB3B3B3)),
-      enabledBorder: OutlineInputBorder(
-        borderSide: const BorderSide(color: Colors.grey, width: 1.0),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: colors.primary, width: 1.5),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      // Add these two for the red error borders
-      errorBorder: OutlineInputBorder(
-        borderSide: const BorderSide(color: Colors.red, width: 1.0),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderSide: const BorderSide(color: Colors.red, width: 1.5),
-        borderRadius: BorderRadius.circular(10),
       ),
     );
   }

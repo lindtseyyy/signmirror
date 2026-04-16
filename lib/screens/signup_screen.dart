@@ -4,8 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signmirror_flutter/utils/snackbar_utils.dart';
 import 'package:signmirror_flutter/providers/settings_provider.dart';
 import 'package:signmirror_flutter/constants/app_colors.dart';
-import '../constants/route_names.dart';
 import 'package:signmirror_flutter/widgets/loading_screen.dart';
+import 'package:signmirror_flutter/widgets/signmirror_input_decoration.dart';
+import '../constants/route_names.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -223,11 +224,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                   });
                                 }
                               },
-                              decoration: _inputStyle(
-                                'Name',
-                                'Enter name',
-                                colors,
-                                _nameError,
+                              decoration: signMirrorInputDecoration(
+                                label: 'Name',
+                                hint: 'Enter name',
+                                colors: colors,
+                                errorText: _nameError,
                               ),
                             ),
                             const SizedBox(height: 20),
@@ -244,11 +245,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                 }
                               },
                               keyboardType: TextInputType.emailAddress,
-                              decoration: _inputStyle(
-                                'Email Address',
-                                'Enter email',
-                                colors,
-                                _emailError,
+                              decoration: signMirrorInputDecoration(
+                                label: 'Email Address',
+                                hint: 'Enter email',
+                                colors: colors,
+                                errorText: _emailError,
                               ),
                             ),
                             const SizedBox(height: 20),
@@ -265,24 +266,22 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                   });
                                 }
                               },
-                              decoration:
-                                  _inputStyle(
-                                    'Password',
-                                    'Enter password',
-                                    colors,
-                                    _passwordError,
-                                  ).copyWith(
-                                    suffixIcon: IconButton(
-                                      icon: Icon(
-                                        _isObscured
-                                            ? Icons.visibility_off
-                                            : Icons.visibility,
-                                      ),
-                                      onPressed: () => setState(
-                                        () => _isObscured = !_isObscured,
-                                      ),
-                                    ),
+                              decoration: signMirrorInputDecoration(
+                                label: 'Password',
+                                hint: 'Enter password',
+                                colors: colors,
+                                errorText: _passwordError,
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _isObscured
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
                                   ),
+                                  onPressed: () => setState(
+                                    () => _isObscured = !_isObscured,
+                                  ),
+                                ),
+                              ),
                             ),
                             Padding(
                               padding: const EdgeInsets.only(top: 8, left: 2),
@@ -474,39 +473,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           ), // 2. The Loading Overlay
           if (_isLoading) LoadingScreenWidget(label: "Creating account..."),
         ],
-      ),
-    );
-  }
-
-  // Helper to keep code clean
-  InputDecoration _inputStyle(
-    String label,
-    String hint,
-    ColorScheme colors,
-    String? errorText,
-  ) {
-    return InputDecoration(
-      labelText: label,
-      hintText: hint,
-      errorText: errorText, // Add this line here!
-      floatingLabelBehavior: FloatingLabelBehavior.always,
-      hintStyle: const TextStyle(color: Color(0xffB3B3B3)),
-      enabledBorder: OutlineInputBorder(
-        borderSide: const BorderSide(color: Colors.grey, width: 1.0),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: colors.primary, width: 1.5),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      // Add these two for the red error borders
-      errorBorder: OutlineInputBorder(
-        borderSide: const BorderSide(color: Colors.red, width: 1.0),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderSide: const BorderSide(color: Colors.red, width: 1.5),
-        borderRadius: BorderRadius.circular(10),
       ),
     );
   }
