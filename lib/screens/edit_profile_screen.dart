@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signmirror_flutter/providers/settings_provider.dart';
+import 'package:signmirror_flutter/theme/app_theme.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -68,49 +69,63 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         ? _selectedPersonalization
         : '';
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Edit Profile')),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              TextField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'User name'),
-                textInputAction: TextInputAction.next,
-                onChanged: (_) {
-                  _nameDirty = true;
-                },
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: effectivePersonalization,
-                items: options
-                    .map(
-                      (value) => DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value.isEmpty ? 'None' : value),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedPersonalization = value ?? '';
-                    _personalizationDirty = true;
-                  });
-                },
-                decoration: const InputDecoration(labelText: 'Personalization'),
-              ),
-              const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => _save(currentPersonalization),
-                  child: const Text('Save'),
+    final themeSettings = ref.watch(themeSettingsProvider);
+    final platformHighContrast = MediaQuery.of(context).highContrast;
+    final effectiveHighContrast =
+        themeSettings.highContrast || platformHighContrast;
+
+    final resolvedTheme = AppTheme.resolve(
+      mode: themeSettings.mode,
+      highContrast: effectiveHighContrast,
+    );
+
+    return Theme(
+      data: resolvedTheme,
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Edit Profile')),
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                TextField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(labelText: 'User name'),
+                  textInputAction: TextInputAction.next,
+                  onChanged: (_) {
+                    _nameDirty = true;
+                  },
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: effectivePersonalization,
+                  items: options
+                      .map(
+                        (value) => DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value.isEmpty ? 'None' : value),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedPersonalization = value ?? '';
+                      _personalizationDirty = true;
+                    });
+                  },
+                  decoration:
+                      const InputDecoration(labelText: 'Personalization'),
+                ),
+                const Spacer(),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => _save(currentPersonalization),
+                    child: const Text('Save'),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signmirror_flutter/constants/route_names.dart';
 import 'package:signmirror_flutter/providers/settings_provider.dart';
+import 'package:signmirror_flutter/theme/app_theme.dart';
 import 'package:signmirror_flutter/theme/theme_settings.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -20,7 +21,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final themeSettings = ref.watch(themeSettingsProvider);
     final isDarkMode = themeSettings.mode == AppThemeMode.dark;
     final isOfflineDownloading = ref.watch(offlineDownloadProvider);
-    final isHighContrast = themeSettings.highContrast;
+    final isHighContrastSetting = themeSettings.highContrast;
+
+    final platformHighContrast = MediaQuery.of(context).highContrast;
+    final effectiveHighContrast = isHighContrastSetting || platformHighContrast;
+
+    final resolvedTheme = AppTheme.resolve(
+      mode: themeSettings.mode,
+      highContrast: effectiveHighContrast,
+    );
+
     final time = ref.watch(practiceTimeProvider);
     // 2. GET the pretty version from your Notifier
     final displayTime = ref
@@ -30,8 +40,59 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final userName = ref.watch(userNameProvider);
     final personalization = ref.watch(personalizationProvider);
 
-    return Scaffold(
-      appBar: PreferredSize(
+    return Theme(
+      data: resolvedTheme,
+      child: Builder(
+        builder: (context) {
+          final theme = Theme.of(context);
+          final colorScheme = theme.colorScheme;
+
+          final isHighContrastMode = effectiveHighContrast;
+          final isDark = theme.brightness == Brightness.dark;
+          final useLegacyLightColors = !isDark && !isHighContrastMode;
+
+          final cardBackground = useLegacyLightColors
+              ? const Color(0xffffffff)
+              : colorScheme.surface;
+          final cardBorder = useLegacyLightColors
+              ? null
+              : Border.all(
+                  color: isHighContrastMode
+                      ? colorScheme.onSurface.withOpacity(0.9)
+                      : colorScheme.outline,
+                  width: isHighContrastMode ? 1.2 : 0.8,
+                );
+
+          final dividerColor = useLegacyLightColors
+              ? Colors.grey
+              : (isHighContrastMode
+                    ? colorScheme.onSurface.withOpacity(0.9)
+                    : colorScheme.outline);
+
+          final mutedIconColor = useLegacyLightColors
+              ? Colors.black.withOpacity(0.6)
+              : (isHighContrastMode
+                    ? colorScheme.onSurface
+                    : colorScheme.onSurfaceVariant);
+
+          final trailingIconColor = useLegacyLightColors
+              ? Colors.grey
+              : (isHighContrastMode
+                    ? colorScheme.onSurface
+                    : colorScheme.onSurfaceVariant);
+
+          final inactiveSwitchOutlineColor = useLegacyLightColors
+              ? Colors.black
+              : (isHighContrastMode ? colorScheme.onSurface : colorScheme.outline);
+
+          final avatarBorderColor = useLegacyLightColors
+              ? Colors.black
+              : colorScheme.onSurface.withOpacity(
+                  isHighContrastMode ? 1.0 : 0.7,
+                );
+
+          return Scaffold(
+            appBar: PreferredSize(
         preferredSize: Size.fromHeight(50.0),
         child: AppBar(
           automaticallyImplyLeading: false,
@@ -67,14 +128,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: const Color(0xffffffff),
+                          color: cardBackground,
                           borderRadius: BorderRadius.circular(15),
+                          border: cardBorder,
                         ),
                         child: Column(
                           children: [
                             CircleAvatar(
                               radius: 51,
-                              backgroundColor: Colors.black,
+                              backgroundColor: avatarBorderColor,
                               child: const CircleAvatar(
                                 radius: 50,
                                 backgroundImage: AssetImage(
@@ -101,11 +163,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               ),
                             ),
                             const SizedBox(height: 10),
-                            const Divider(
-                              color: Colors.grey, // Line color
-                              thickness: 1, // The actual thickness of the line
-                              // indent: 20,
-                              // endIndent: 20,
+                            Divider(
+                              color: dividerColor,
+                              thickness: isHighContrastMode ? 1.2 : 1,
                             ),
                             const SizedBox(height: 10),
                             Row(
@@ -129,7 +189,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   ),
                                   icon: Icon(
                                     Icons.double_arrow,
-                                    color: Colors.black.withOpacity(0.6),
+                                    color: mutedIconColor,
                                   ),
                                   onPressed: () {
                                     Navigator.pushNamed(
@@ -149,16 +209,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   imagePath:
                                       "assets/images/achievements/trophy_icon.png",
                                   title: "Studious",
+                                  useLegacyLightColors: useLegacyLightColors,
+                                  isHighContrast: isHighContrastMode,
                                 ),
                                 Achievement(
                                   imagePath:
                                       "assets/images/achievements/time_icon.png",
                                   title: "Quickie",
+                                  useLegacyLightColors: useLegacyLightColors,
+                                  isHighContrast: isHighContrastMode,
                                 ),
                                 Achievement(
                                   imagePath:
                                       "assets/images/achievements/star_icon.png",
                                   title: "Ambitious",
+                                  useLegacyLightColors: useLegacyLightColors,
+                                  isHighContrast: isHighContrastMode,
                                 ),
                               ],
                             ),
@@ -171,8 +237,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       Container(
                         padding: const EdgeInsetsGeometry.all(20),
                         decoration: BoxDecoration(
-                          color: const Color(0xffffffff),
+                          color: cardBackground,
                           borderRadius: BorderRadius.circular(15),
+                          border: cardBorder,
                         ),
                         child: Column(
                           children: [
@@ -191,7 +258,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                               // 1. Change the shape/size of the track
                               trackOutlineColor: MaterialStateProperty.all(
-                                isDarkMode ? Colors.transparent : Colors.black,
+                                isDarkMode
+                                    ? Colors.transparent
+                                    : inactiveSwitchOutlineColor,
                               ),
 
                               // 2. Put an icon INSIDE the moving circle
@@ -245,7 +314,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               trackOutlineColor: MaterialStateProperty.all(
                                 isOfflineDownloading
                                     ? Colors.transparent
-                                    : Colors.black,
+                                    : inactiveSwitchOutlineColor,
                               ),
 
                               // 2. Put an icon INSIDE the moving circle
@@ -281,17 +350,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               ), // 2. Squeezes the internal space
                               title: const Text("High Contrast"),
                               secondary: Icon(
-                                isHighContrast
+                                isHighContrastSetting
                                     ? Icons.contrast
                                     : Icons.contrast_outlined,
                               ),
-                              value: isHighContrast,
+                              value: isHighContrastSetting,
 
                               // 1. Change the shape/size of the track
                               trackOutlineColor: MaterialStateProperty.all(
-                                isHighContrast
+                                isHighContrastSetting
                                     ? Colors.transparent
-                                    : Colors.black,
+                                    : inactiveSwitchOutlineColor,
                               ),
 
                               // 2. Put an icon INSIDE the moving circle
@@ -332,10 +401,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               subtitle: Text(
                                 language == 'en' ? "English" : "Filipino",
                               ),
-                              trailing: const Icon(
+                              trailing: Icon(
                                 Icons.arrow_forward_ios,
                                 size: 16,
-                                color: Colors.grey,
+                                color: trailingIconColor,
                               ),
                               onTap: () {
                                 showDialog(
@@ -390,7 +459,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               subtitle: Text(displayTime), // e.g., "08:30 PM"
                               trailing: Icon(
                                 Icons.arrow_forward_ios,
-                                color: Colors.grey,
+                                color: trailingIconColor,
                                 size: 15,
                               ),
                               onTap: () => _showTimePicker(context, ref),
@@ -406,6 +475,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   ),
                                 ),
                                 backgroundColor: const Color(0xffFF4646),
+                                foregroundColor: Colors.white,
                                 minimumSize: const Size(double.infinity, 50),
                               ),
                               child: const Text(
@@ -429,21 +499,50 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
       ),
     );
+        },
+      ),
+    );
   }
 }
 
 class Achievement extends StatelessWidget {
   final String imagePath;
   final String title;
-  const Achievement({super.key, required this.imagePath, required this.title});
+  final bool useLegacyLightColors;
+  final bool isHighContrast;
+
+  const Achievement({
+    super.key,
+    required this.imagePath,
+    required this.title,
+    this.useLegacyLightColors = true,
+    this.isHighContrast = false,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final backgroundColor = useLegacyLightColors
+        ? const Color(0xffE2E8F0)
+        : colorScheme.surfaceVariant;
+
+    final border = useLegacyLightColors
+        ? null
+        : Border.all(
+            color: isHighContrast
+                ? colorScheme.onSurface.withOpacity(0.9)
+                : colorScheme.outline,
+            width: isHighContrast ? 1.2 : 0.8,
+          );
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
       decoration: BoxDecoration(
-        color: Color(0xffE2E8F0),
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(10),
+        border: border,
       ),
       child: Column(
         children: [
@@ -458,7 +557,7 @@ class Achievement extends StatelessWidget {
           SizedBox(height: 3),
           Text(
             title,
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
           ),
         ],
       ),
