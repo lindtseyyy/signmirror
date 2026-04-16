@@ -7,6 +7,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:signmirror_flutter/providers/providers.dart';
+import 'package:signmirror_flutter/providers/settings_provider.dart';
+import 'package:signmirror_flutter/theme/app_theme.dart';
+import 'package:signmirror_flutter/theme/theme_settings.dart';
 import 'package:signmirror_flutter/widgets/video/adaptive_video_player.dart';
 
 class PracticeMirrorScreen extends ConsumerStatefulWidget {
@@ -266,49 +269,104 @@ class _PracticeMirrorScreenState extends ConsumerState<PracticeMirrorScreen>
 
   @override
   Widget build(BuildContext context) {
-    final detected = _predictions.first;
-    final detectedConfidence = detected.confidence;
-    final performanceLabel = _performanceLabel(detectedConfidence);
-    final performanceColor = _performanceColor(context, detectedConfidence);
+    final themeSettings = ref.watch(themeSettingsProvider);
+    final isDark = themeSettings.mode == AppThemeMode.dark;
+    final isHighContrast = themeSettings.highContrast;
+    final useLegacyLightColors = !isDark && !isHighContrast;
 
-    final isLowLight = _luminance < PracticeMirrorScreen.lowLightThreshold;
+    final resolvedTheme = AppTheme.resolve(
+      mode: themeSettings.mode,
+      highContrast: isHighContrast,
+    );
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Practice & Feedback'),
-        backgroundColor: const Color(0xff304166),
-        foregroundColor: Colors.white,
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: _ReferencePanel(
-                videoUrl: widget.referenceVideoUrl,
-                targetGestureName: widget.targetGestureName,
+    return Theme(
+      data: resolvedTheme,
+      child: _PracticeModeTheme(
+        useLegacyLightColors: useLegacyLightColors,
+        isHighContrast: isHighContrast,
+        child: Builder(
+          builder: (context) {
+            final detected = _predictions.first;
+            final detectedConfidence = detected.confidence;
+            final performanceLabel = _performanceLabel(detectedConfidence);
+            final performanceColor = _performanceColor(
+              context,
+              detectedConfidence,
+            );
+
+            final isLowLight =
+                _luminance < PracticeMirrorScreen.lowLightThreshold;
+
+            final scheme = Theme.of(context).colorScheme;
+
+            return Scaffold(
+              appBar: AppBar(
+                title: const Text('Practice & Feedback'),
+                backgroundColor: useLegacyLightColors
+                    ? const Color(0xff304166)
+                    : scheme.primary,
+                foregroundColor: useLegacyLightColors
+                    ? Colors.white
+                    : scheme.onPrimary,
               ),
-            ),
-            const Divider(height: 1),
-            Expanded(
-              child: _MirrorPanel(
-                isLowLight: isLowLight,
-                scoringPaused: _scoringPaused,
-                detectedGestureLabel: detected.name,
-                detectedConfidence: detectedConfidence,
-                performanceLabel: performanceLabel,
-                performanceColor: performanceColor,
-                pulse: _lowConfidencePulse,
-                pulseAnimation: _pulseController,
-                cameraController: _cameraController,
-                cameraInit: _cameraInit,
-                cameraPermissionDenied: _cameraPermissionDenied,
-                cameraError: _cameraError,
+              body: SafeArea(
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: _ReferencePanel(
+                        videoUrl: widget.referenceVideoUrl,
+                        targetGestureName: widget.targetGestureName,
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    Expanded(
+                      child: _MirrorPanel(
+                        isLowLight: isLowLight,
+                        scoringPaused: _scoringPaused,
+                        detectedGestureLabel: detected.name,
+                        detectedConfidence: detectedConfidence,
+                        performanceLabel: performanceLabel,
+                        performanceColor: performanceColor,
+                        pulse: _lowConfidencePulse,
+                        pulseAnimation: _pulseController,
+                        cameraController: _cameraController,
+                        cameraInit: _cameraInit,
+                        cameraPermissionDenied: _cameraPermissionDenied,
+                        cameraError: _cameraError,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
+  }
+}
+
+class _PracticeModeTheme extends InheritedWidget {
+  final bool useLegacyLightColors;
+  final bool isHighContrast;
+
+  const _PracticeModeTheme({
+    required this.useLegacyLightColors,
+    required this.isHighContrast,
+    required super.child,
+  });
+
+  static _PracticeModeTheme of(BuildContext context) {
+    final result = context
+        .dependOnInheritedWidgetOfExactType<_PracticeModeTheme>();
+    assert(result != null, 'No _PracticeModeTheme found in context');
+    return result!;
+  }
+
+  @override
+  bool updateShouldNotify(_PracticeModeTheme oldWidget) {
+    return useLegacyLightColors != oldWidget.useLegacyLightColors ||
+        isHighContrast != oldWidget.isHighContrast;
   }
 }
 
@@ -323,6 +381,16 @@ class _ReferencePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cfg = _PracticeModeTheme.of(context);
+    final scheme = Theme.of(context).colorScheme;
+
+    final panelBg = cfg.useLegacyLightColors
+        ? Colors.black12
+        : scheme.surfaceVariant;
+    final panelBorder = (!cfg.useLegacyLightColors && cfg.isHighContrast)
+        ? Border.all(color: scheme.outline, width: 1.5)
+        : null;
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: ClipRRect(
@@ -330,8 +398,12 @@ class _ReferencePanel extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            const DecoratedBox(
-              decoration: BoxDecoration(color: Colors.black12),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: panelBg,
+                borderRadius: BorderRadius.circular(16),
+                border: panelBorder,
+              ),
             ),
             AdaptiveVideoPlayer(videoUrl: videoUrl),
             Positioned(
@@ -382,6 +454,10 @@ class _MirrorPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cfg = _PracticeModeTheme.of(context);
+
+    final lowLightOverlayOpacity = cfg.isHighContrast ? 0.46 : 0.35;
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: ClipRRect(
@@ -398,7 +474,9 @@ class _MirrorPanel extends StatelessWidget {
 
             // Darken when low light.
             if (isLowLight)
-              Container(color: Colors.black.withValues(alpha: 0.35)),
+              Container(
+                color: Colors.black.withOpacity(lowLightOverlayOpacity),
+              ),
 
             Positioned(
               left: 12,
@@ -517,10 +595,19 @@ class _CameraPreviewCover extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cfg = _PracticeModeTheme.of(context);
+    final scheme = Theme.of(context).colorScheme;
     final aspect = controller.value.aspectRatio;
 
+    final bg = cfg.useLegacyLightColors
+        ? Colors.black12
+        : scheme.surfaceVariant;
+    final border = (!cfg.useLegacyLightColors && cfg.isHighContrast)
+        ? Border.all(color: scheme.outline, width: 1.5)
+        : null;
+
     return DecoratedBox(
-      decoration: const BoxDecoration(color: Colors.black12),
+      decoration: BoxDecoration(color: bg, border: border),
       child: Center(
         child: AspectRatio(
           aspectRatio: aspect > 0 ? aspect : 3 / 4,
@@ -546,8 +633,25 @@ class _CameraMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cfg = _PracticeModeTheme.of(context);
+    final scheme = Theme.of(context).colorScheme;
+
+    final bg = cfg.useLegacyLightColors
+        ? Colors.black12
+        : scheme.surfaceVariant;
+    final border = (!cfg.useLegacyLightColors && cfg.isHighContrast)
+        ? Border.all(color: scheme.outline, width: 1.5)
+        : null;
+
+    final iconColor = cfg.useLegacyLightColors
+        ? Colors.black54
+        : scheme.onSurfaceVariant;
+    final subtitleColor = cfg.useLegacyLightColors
+        ? Colors.black.withOpacity(0.65)
+        : scheme.onSurfaceVariant.withOpacity(cfg.isHighContrast ? 1.0 : 0.85);
+
     return DecoratedBox(
-      decoration: const BoxDecoration(color: Colors.black12),
+      decoration: BoxDecoration(color: bg, border: border),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 320),
@@ -564,18 +668,21 @@ class _CameraMessage extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                 ] else ...[
-                  Icon(icon, size: 30, color: Colors.black54),
+                  Icon(icon, size: 30, color: iconColor),
                   const SizedBox(height: 10),
                 ],
                 Text(
                   title,
-                  style: const TextStyle(fontWeight: FontWeight.w800),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: cfg.useLegacyLightColors ? null : scheme.onSurface,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 6),
                 Text(
                   subtitle,
-                  style: TextStyle(color: Colors.black.withValues(alpha: 0.65)),
+                  style: TextStyle(color: subtitleColor),
                   textAlign: TextAlign.center,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
@@ -594,18 +701,25 @@ class _FpsBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cfg = _PracticeModeTheme.of(context);
+    final scheme = Theme.of(context).colorScheme;
+
+    final bgOpacity = cfg.useLegacyLightColors
+        ? 0.12
+        : (cfg.isHighContrast ? 0.22 : 0.16);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+        color: scheme.primary.withOpacity(bgOpacity),
         borderRadius: BorderRadius.circular(999),
+        border: (!cfg.useLegacyLightColors && cfg.isHighContrast)
+            ? Border.all(color: scheme.primary.withOpacity(0.9), width: 1.5)
+            : null,
       ),
       child: Text(
         '15 FPS',
-        style: TextStyle(
-          color: Theme.of(context).colorScheme.primary,
-          fontWeight: FontWeight.w700,
-        ),
+        style: TextStyle(color: scheme.primary, fontWeight: FontWeight.w700),
       ),
     );
   }
@@ -619,11 +733,18 @@ class _PanelHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cfg = _PracticeModeTheme.of(context);
+
+    final scrimOpacity = cfg.isHighContrast ? 0.42 : 0.30;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.30),
+        color: Colors.black.withOpacity(scrimOpacity),
         borderRadius: BorderRadius.circular(12),
+        border: cfg.isHighContrast
+            ? Border.all(color: Colors.white.withOpacity(0.65), width: 1.0)
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -641,7 +762,9 @@ class _PanelHeader extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             subtitle,
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.85)),
+            style: TextStyle(
+              color: Colors.white.withOpacity(cfg.isHighContrast ? 0.95 : 0.85),
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -672,12 +795,35 @@ class _ScoreHud extends StatelessWidget {
         final percentSize = isNarrow ? 20.0 : 24.0;
         final chipFontSize = isNarrow ? 11.0 : 12.0;
 
+        final cfg = _PracticeModeTheme.of(context);
+        final scheme = Theme.of(context).colorScheme;
+
+        final hudBg = cfg.useLegacyLightColors
+            ? Colors.white.withOpacity(0.92)
+            : scheme.surface.withOpacity(cfg.isHighContrast ? 0.96 : 0.90);
+
+        final hudBorderColor = cfg.useLegacyLightColors
+            ? Colors.black.withOpacity(0.06)
+            : scheme.outline.withOpacity(cfg.isHighContrast ? 0.90 : 0.45);
+
+        final hudBorderWidth = (!cfg.useLegacyLightColors && cfg.isHighContrast)
+            ? 1.5
+            : 1.0;
+
+        final chipBgOpacity = cfg.useLegacyLightColors
+            ? 0.16
+            : (cfg.isHighContrast ? 0.32 : 0.22);
+
+        final chipBorder = (!cfg.useLegacyLightColors && cfg.isHighContrast)
+            ? Border.all(color: performanceColor.withOpacity(0.85), width: 1.0)
+            : null;
+
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.92),
+            color: hudBg,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
+            border: Border.all(color: hudBorderColor, width: hudBorderWidth),
           ),
           child: Row(
             children: [
@@ -699,8 +845,9 @@ class _ScoreHud extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: performanceColor.withValues(alpha: 0.16),
+                        color: performanceColor.withOpacity(chipBgOpacity),
                         borderRadius: BorderRadius.circular(999),
+                        border: chipBorder,
                       ),
                       child: Text(
                         performanceLabel,
@@ -738,17 +885,38 @@ class _ProcessingPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = scoringPaused
-        ? const Color(0xffF9A825).withValues(alpha: 0.20)
-        : Colors.black.withValues(alpha: 0.24);
+    final cfg = _PracticeModeTheme.of(context);
+    final scheme = Theme.of(context).colorScheme;
 
-    final fg = scoringPaused ? const Color(0xffF9A825) : Colors.white;
+    final Color bg;
+    final Color fg;
+    BoxBorder? border;
+
+    if (cfg.useLegacyLightColors) {
+      bg = scoringPaused
+          ? const Color(0xffF9A825).withOpacity(0.20)
+          : Colors.black.withOpacity(0.24);
+      fg = scoringPaused ? const Color(0xffF9A825) : Colors.white;
+    } else {
+      bg = scheme.surface.withOpacity(cfg.isHighContrast ? 0.96 : 0.82);
+      fg = scoringPaused ? const Color(0xffF9A825) : scheme.onSurface;
+
+      if (cfg.isHighContrast) {
+        border = Border.all(
+          color: scoringPaused ? const Color(0xffF9A825) : scheme.outline,
+          width: 1.5,
+        );
+      } else if (scoringPaused) {
+        border = Border.all(color: const Color(0xffF9A825));
+      }
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(999),
+        border: border,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -780,23 +948,38 @@ class _LowLightBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cfg = _PracticeModeTheme.of(context);
+
+    final bgOpacity = cfg.useLegacyLightColors
+        ? 0.16
+        : (cfg.isHighContrast ? 0.28 : 0.20);
+
+    final borderWidth = (!cfg.useLegacyLightColors && cfg.isHighContrast)
+        ? 2.0
+        : 1.0;
+
+    final textColor = cfg.useLegacyLightColors ? null : Colors.black;
+    final iconColor = cfg.useLegacyLightColors
+        ? const Color(0xffF9A825)
+        : Colors.black;
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xffF9A825).withValues(alpha: 0.16),
+        color: const Color(0xffF9A825).withOpacity(bgOpacity),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xffF9A825)),
+        border: Border.all(color: const Color(0xffF9A825), width: borderWidth),
       ),
       child: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded, color: Color(0xffF9A825)),
+          Icon(Icons.warning_amber_rounded, color: iconColor),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               scoringPaused
                   ? 'Low light detected. Scoring paused.'
                   : 'Low light detected. Improve lighting for better scoring.',
-              style: const TextStyle(fontWeight: FontWeight.w700),
+              style: TextStyle(fontWeight: FontWeight.w700, color: textColor),
             ),
           ),
         ],
@@ -813,16 +996,36 @@ class _HapticIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cfg = _PracticeModeTheme.of(context);
+    final scheme = Theme.of(context).colorScheme;
+
     if (!enabled) {
+      final bg = cfg.useLegacyLightColors
+          ? Colors.black.withOpacity(0.18)
+          : scheme.surface.withOpacity(cfg.isHighContrast ? 0.92 : 0.75);
+      final fg = cfg.useLegacyLightColors ? Colors.white : scheme.onSurface;
+      final border = (!cfg.useLegacyLightColors && cfg.isHighContrast)
+          ? Border.all(color: scheme.outline, width: 1.5)
+          : null;
+
       return Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.18),
+          color: bg,
           borderRadius: BorderRadius.circular(12),
+          border: border,
         ),
-        child: const Icon(Icons.vibration, color: Colors.white, size: 20),
+        child: Icon(Icons.vibration, color: fg, size: 20),
       );
     }
+
+    final bg = cfg.useLegacyLightColors
+        ? const Color(0xffF9A825).withOpacity(0.25)
+        : scheme.surface.withOpacity(cfg.isHighContrast ? 0.94 : 0.82);
+
+    final borderWidth = (!cfg.useLegacyLightColors && cfg.isHighContrast)
+        ? 2.0
+        : 1.0;
 
     return AnimatedBuilder(
       animation: animation,
@@ -833,11 +1036,14 @@ class _HapticIndicator extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: const Color(0xffF9A825).withValues(alpha: 0.25),
+          color: bg,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xffF9A825)),
+          border: Border.all(
+            color: const Color(0xffF9A825),
+            width: borderWidth,
+          ),
         ),
-        child: const Icon(Icons.vibration, color: Color(0xffF9A825), size: 20),
+        child: Icon(Icons.vibration, color: const Color(0xffF9A825), size: 20),
       ),
     );
   }
