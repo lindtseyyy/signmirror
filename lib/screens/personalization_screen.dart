@@ -9,6 +9,8 @@ class PersonalizationScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
+    final highContrast = MediaQuery.of(context).highContrast;
+
     return Scaffold(
       body: SafeArea(
         child: SizedBox(
@@ -50,7 +52,7 @@ class PersonalizationScreen extends ConsumerWidget {
                                 Text(
                                   'Which user are you?',
                                   style: TextStyle(
-                                    color: Colors.white,
+                                    color: colors.onPrimary,
                                     fontFamily: 'Inter',
                                     fontWeight: FontWeight.bold,
                                     fontSize: 32,
@@ -59,7 +61,9 @@ class PersonalizationScreen extends ConsumerWidget {
                                 Text(
                                   "We'll tailor the FSL curriculum to your specific needs.",
                                   style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.6),
+                                    color: highContrast
+                                        ? colors.onPrimary
+                                        : colors.onPrimary.withOpacity(0.75),
                                     fontFamily: 'Inter',
                                     fontSize: 16,
                                   ),
@@ -150,19 +154,25 @@ class PersonalizationChoice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final highContrast = MediaQuery.of(context).highContrast;
+
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         // Vertical and Horizontal padding
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         // Background color
-        backgroundColor: Color(0xffFFFFFF),
+        backgroundColor: colors.surface,
         // Text color
-        foregroundColor: Color(0xff000000),
+        foregroundColor: colors.onSurface,
         // Border Radius (Rounded Corners)
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        side: const BorderSide(color: Colors.black, width: 0.1),
+        side: BorderSide(
+          color: highContrast ? colors.onSurface : colors.outline,
+          width: highContrast ? 2.0 : 1.0,
+        ),
         elevation: 5, // Higher number = larger shadow
-        shadowColor: Colors.black, // Make it darker
+        shadowColor: colors.shadow,
       ),
       onPressed: onPressed,
 
@@ -181,6 +191,7 @@ class PersonalizationChoice extends StatelessWidget {
                     fontFamily: "Inter",
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
+                    color: colors.onSurface,
                   ),
                 ),
 
@@ -189,8 +200,12 @@ class PersonalizationChoice extends StatelessWidget {
                   style: TextStyle(
                     fontFamily: "Inter",
                     fontSize: 12,
-                    fontWeight: FontWeight.w300,
-                    color: Colors.black.withValues(alpha: 0.6),
+                    fontWeight: highContrast
+                        ? FontWeight.w400
+                        : FontWeight.w300,
+                    color: highContrast
+                        ? colors.onSurface
+                        : colors.onSurfaceVariant,
                   ),
                 ),
               ],
