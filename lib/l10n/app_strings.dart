@@ -510,6 +510,116 @@ class AppStrings {
 
   String get profileSelectTimeTitle => _t('profileSelectTimeTitle');
   String get commonDoneLabel => _t('commonDoneLabel');
+  String get commonNoneLabel => _t('commonNoneLabel');
+
+  // ---------------------------
+  // Edit Profile strings
+  // ---------------------------
+
+  // App bar
+  String get editProfileTitle => _t('editProfileTitle');
+
+  // Section titles / descriptions
+  String get editProfileSectionProfileTitle =>
+      _t('editProfileSectionProfileTitle');
+  String get editProfileSectionProfileDescription =>
+      _t('editProfileSectionProfileDescription');
+
+  String get editProfileSectionEmailTitle => _t('editProfileSectionEmailTitle');
+  String get editProfileSectionEmailDescription =>
+      _t('editProfileSectionEmailDescription');
+
+  String get editProfileSectionPasswordTitle =>
+      _t('editProfileSectionPasswordTitle');
+  String get editProfileSectionPasswordDescription =>
+      _t('editProfileSectionPasswordDescription');
+
+  // Labels / hints / buttons
+  String get editProfileUserNameLabel => _t('editProfileUserNameLabel');
+  String get editProfileUserNameHint => _t('editProfileUserNameHint');
+
+  String get editProfilePersonalizationLabel =>
+      _t('editProfilePersonalizationLabel');
+  String get editProfilePersonalizationHint =>
+      _t('editProfilePersonalizationHint');
+
+  String get editProfileSaveProfileButton => _t('editProfileSaveProfileButton');
+
+  // Email
+  String get editProfileCurrentEmailPrefix =>
+      _t('editProfileCurrentEmailPrefix');
+  String get editProfileNewEmailLabel => _t('editProfileNewEmailLabel');
+  String get editProfileNewEmailHint => _t('editProfileNewEmailHint');
+  String get editProfileUpdateEmailButton => _t('editProfileUpdateEmailButton');
+
+  // Password
+  String get editProfileCurrentPasswordLabel =>
+      _t('editProfileCurrentPasswordLabel');
+  String get editProfileCurrentPasswordHint =>
+      _t('editProfileCurrentPasswordHint');
+  String get editProfileNewPasswordLabel => _t('editProfileNewPasswordLabel');
+  String get editProfileNewPasswordHint => _t('editProfileNewPasswordHint');
+  String get editProfileConfirmNewPasswordLabel =>
+      _t('editProfileConfirmNewPasswordLabel');
+  String get editProfileConfirmNewPasswordHint =>
+      _t('editProfileConfirmNewPasswordHint');
+  String get editProfileChangePasswordButton =>
+      _t('editProfileChangePasswordButton');
+
+  // Tooltips
+  String get editProfileShowPasswordTooltip =>
+      _t('editProfileShowPasswordTooltip');
+  String get editProfileHidePasswordTooltip =>
+      _t('editProfileHidePasswordTooltip');
+
+  // Snackbars
+  String get editProfileSnackbarProfileUpdated =>
+      _t('editProfileSnackbarProfileUpdated');
+  String get editProfileSnackbarEmailUpdated =>
+      _t('editProfileSnackbarEmailUpdated');
+  String get editProfileSnackbarPasswordNotConnected =>
+      _t('editProfileSnackbarPasswordNotConnected');
+
+  // Validation errors
+  String get editProfileErrorEmailEmpty => _t('editProfileErrorEmailEmpty');
+  String get editProfileErrorEmailInvalid => _t('editProfileErrorEmailInvalid');
+  String get editProfileErrorNewPasswordEmpty =>
+      _t('editProfileErrorNewPasswordEmpty');
+  String get editProfileErrorConfirmPasswordEmpty =>
+      _t('editProfileErrorConfirmPasswordEmpty');
+  String get editProfileErrorPasswordsDoNotMatch =>
+      _t('editProfileErrorPasswordsDoNotMatch');
+
+  // Personalization option labels (display-only)
+  String get personalizationSelfLearningLabel =>
+      _t('personalizationSelfLearningLabel');
+  String get personalizationTeachingLabel => _t('personalizationTeachingLabel');
+  String get personalizationParentSupportLabel =>
+      _t('personalizationParentSupportLabel');
+
+  /// Maps persisted personalization keys to localized labels for display.
+  ///
+  /// Persisted values must remain stable and language-agnostic:
+  /// '', 'Self-Learning', 'Teaching', 'Parent Support'.
+  ///
+  /// Fallback behavior:
+  /// - empty/whitespace → [commonNoneLabel]
+  /// - unknown keys → trimmed key
+  String personalizationLabelForKey(String key) {
+    final normalized = key.trim();
+    if (normalized.isEmpty) return commonNoneLabel;
+
+    switch (normalized.toLowerCase()) {
+      case 'self-learning':
+        return personalizationSelfLearningLabel;
+      case 'teaching':
+        return personalizationTeachingLabel;
+      case 'parent support':
+        return personalizationParentSupportLabel;
+      default:
+        return normalized;
+    }
+  }
 
   // ---------------------------
   // Achievements strings
@@ -740,6 +850,60 @@ class AppStrings {
       'profileNotSetLabel': 'Not set',
       'profileSelectTimeTitle': 'Select Time',
       'commonDoneLabel': 'Done',
+      'commonNoneLabel': 'None',
+
+      // Edit Profile
+      'editProfileTitle': 'Edit Profile',
+
+      'editProfileSectionProfileTitle': 'Profile',
+      'editProfileSectionProfileDescription':
+          'Update your name and personalization settings.',
+
+      'editProfileSectionEmailTitle': 'Email',
+      'editProfileSectionEmailDescription': 'Update your email address.',
+
+      'editProfileSectionPasswordTitle': 'Password',
+      'editProfileSectionPasswordDescription': 'Change your password.',
+
+      'editProfileUserNameLabel': 'User name',
+      'editProfileUserNameHint': 'Enter your name',
+
+      'editProfilePersonalizationLabel': 'Personalization',
+      'editProfilePersonalizationHint': 'Select an option',
+
+      'editProfileSaveProfileButton': 'Save profile',
+
+      'editProfileCurrentEmailPrefix': 'Current: ',
+      'editProfileNewEmailLabel': 'New email',
+      'editProfileNewEmailHint': 'Enter new email address',
+      'editProfileUpdateEmailButton': 'Update email',
+
+      'editProfileCurrentPasswordLabel': 'Current password',
+      'editProfileCurrentPasswordHint': 'Enter current password',
+      'editProfileNewPasswordLabel': 'New password',
+      'editProfileNewPasswordHint': 'Enter a new password',
+      'editProfileConfirmNewPasswordLabel': 'Confirm new password',
+      'editProfileConfirmNewPasswordHint': 'Re-enter the new password',
+      'editProfileChangePasswordButton': 'Change password',
+
+      'editProfileShowPasswordTooltip': 'Show password',
+      'editProfileHidePasswordTooltip': 'Hide password',
+
+      'editProfileSnackbarProfileUpdated': 'Profile updated.',
+      'editProfileSnackbarEmailUpdated': 'Email updated.',
+      'editProfileSnackbarPasswordNotConnected':
+          'Password change is not connected to the backend yet.',
+
+      'editProfileErrorEmailEmpty': 'Email cannot be empty.',
+      'editProfileErrorEmailInvalid': 'Enter a valid email address.',
+      'editProfileErrorNewPasswordEmpty': 'New password cannot be empty.',
+      'editProfileErrorConfirmPasswordEmpty':
+          'Please confirm the new password.',
+      'editProfileErrorPasswordsDoNotMatch': 'Passwords do not match.',
+
+      'personalizationSelfLearningLabel': 'Self-Learning',
+      'personalizationTeachingLabel': 'Teaching',
+      'personalizationParentSupportLabel': 'Parent Support',
 
       // Achievements screen
       'achievementsTitle': 'Achievements',
@@ -948,6 +1112,62 @@ class AppStrings {
       'profileNotSetLabel': 'Hindi nakatakda',
       'profileSelectTimeTitle': 'Pumili ng Oras',
       'commonDoneLabel': 'Tapos',
+      'commonNoneLabel': 'Wala',
+
+      // Edit Profile
+      'editProfileTitle': 'I-edit ang Profile',
+
+      'editProfileSectionProfileTitle': 'Profile',
+      'editProfileSectionProfileDescription':
+          'I-update ang iyong pangalan at mga setting ng personalisasyon.',
+
+      'editProfileSectionEmailTitle': 'Email',
+      'editProfileSectionEmailDescription': 'I-update ang iyong email address.',
+
+      'editProfileSectionPasswordTitle': 'Password',
+      'editProfileSectionPasswordDescription': 'Palitan ang iyong password.',
+
+      'editProfileUserNameLabel': 'Pangalan ng gumagamit',
+      'editProfileUserNameHint': 'Ilagay ang iyong pangalan',
+
+      'editProfilePersonalizationLabel': 'Personalisasyon',
+      'editProfilePersonalizationHint': 'Pumili ng opsyon',
+
+      'editProfileSaveProfileButton': 'I-save ang profile',
+
+      'editProfileCurrentEmailPrefix': 'Kasalukuyan: ',
+      'editProfileNewEmailLabel': 'Bagong email',
+      'editProfileNewEmailHint': 'Ilagay ang bagong email address',
+      'editProfileUpdateEmailButton': 'I-update ang email',
+
+      'editProfileCurrentPasswordLabel': 'Kasalukuyang password',
+      'editProfileCurrentPasswordHint': 'Ilagay ang kasalukuyang password',
+      'editProfileNewPasswordLabel': 'Bagong password',
+      'editProfileNewPasswordHint': 'Ilagay ang bagong password',
+      'editProfileConfirmNewPasswordLabel': 'Kumpirmahin ang bagong password',
+      'editProfileConfirmNewPasswordHint': 'Ilagay muli ang bagong password',
+      'editProfileChangePasswordButton': 'Palitan ang password',
+
+      'editProfileShowPasswordTooltip': 'Ipakita ang password',
+      'editProfileHidePasswordTooltip': 'Itago ang password',
+
+      'editProfileSnackbarProfileUpdated': 'Na-update ang profile.',
+      'editProfileSnackbarEmailUpdated': 'Na-update ang email.',
+      'editProfileSnackbarPasswordNotConnected':
+          'Hindi pa nakakonekta sa backend ang pagpapalit ng password.',
+
+      'editProfileErrorEmailEmpty': 'Hindi maaaring walang laman ang email.',
+      'editProfileErrorEmailInvalid': 'Maglagay ng wastong email address.',
+      'editProfileErrorNewPasswordEmpty':
+          'Hindi maaaring walang laman ang bagong password.',
+      'editProfileErrorConfirmPasswordEmpty':
+          'Pakikumpirma ang bagong password.',
+      'editProfileErrorPasswordsDoNotMatch':
+          'Hindi magkapareho ang mga password.',
+
+      'personalizationSelfLearningLabel': 'Sariling Pagkatuto',
+      'personalizationTeachingLabel': 'Pagtuturo',
+      'personalizationParentSupportLabel': 'Suporta ng Magulang',
 
       // Achievements screen
       'achievementsTitle': 'Mga Tagumpay',
