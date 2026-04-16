@@ -201,16 +201,22 @@ class PracticeStatsNotifier extends StateNotifier<AsyncValue<PracticeStats>> {
   Future<void> recordAttempt({
     required String signTitle,
     required double accuracyRate,
-  }) async {
-    try {
-      state = const AsyncValue.loading();
-      final stats = await _service.recordAttempt(
-        signTitle: signTitle,
-        accuracyRate: accuracyRate,
-      );
-      state = AsyncValue.data(stats);
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-    }
+  }) {
+    // If this gets triggered by a widget lifecycle (e.g. dispose), updating
+    // `state` synchronously can throw: "Tried to modify a provider while the
+    // widget tree was building".
+    // Scheduling the mutation avoids that class of errors.
+    return Future(() async {
+      try {
+        state = const AsyncValue.loading();
+        final stats = await _service.recordAttempt(
+          signTitle: signTitle,
+          accuracyRate: accuracyRate,
+        );
+        state = AsyncValue.data(stats);
+      } catch (e, st) {
+        state = AsyncValue.error(e, st);
+      }
+    });
   }
 }

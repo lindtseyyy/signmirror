@@ -58,11 +58,14 @@ class _PracticeMirrorScreenState extends ConsumerState<PracticeMirrorScreen>
   bool _cameraPermissionDenied = false;
   String? _cameraError;
 
+  late final PracticeStatsNotifier _practiceStatsNotifier;
+
   @override
   void initState() {
     super.initState();
     _random = Random(DateTime.now().millisecondsSinceEpoch);
     _predictions = _initialPredictions(target: widget.targetGestureName);
+    _practiceStatsNotifier = ref.read(practiceStatsProvider.notifier);
 
     _pulseController = AnimationController(
       vsync: this,
@@ -80,12 +83,16 @@ class _PracticeMirrorScreenState extends ConsumerState<PracticeMirrorScreen>
     final accuracyRate = _predictions.isNotEmpty
         ? _predictions.first.confidence
         : 0.0;
-    ref
-        .read(practiceStatsProvider.notifier)
-        .recordAttempt(
-          signTitle: widget.targetGestureName,
-          accuracyRate: accuracyRate,
-        );
+
+    // Avoid modifying providers during widget lifecycle teardown.
+    // Schedule the write for the next event-loop turn.
+    Future(() {
+      _practiceStatsNotifier.recordAttempt(
+        signTitle: widget.targetGestureName,
+        accuracyRate: accuracyRate,
+      );
+    });
+
     _timer?.cancel();
     _pulseController.dispose();
     _cameraController?.dispose();
