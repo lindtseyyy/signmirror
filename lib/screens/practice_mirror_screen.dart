@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:signmirror_flutter/l10n/app_strings.dart';
+import 'package:signmirror_flutter/l10n/app_strings_provider.dart';
 import 'package:signmirror_flutter/providers/providers.dart';
 import 'package:signmirror_flutter/providers/settings_provider.dart';
 import 'package:signmirror_flutter/theme/app_theme.dart';
@@ -115,8 +117,9 @@ class _PracticeMirrorScreenState extends ConsumerState<PracticeMirrorScreen>
       if (!mounted) return;
 
       if (cameras.isEmpty) {
+        final strings = ref.read(appStringsProvider);
         setState(() {
-          _cameraError = 'No cameras available on this device.';
+          _cameraError = strings.practiceMirrorNoCamerasAvailableError;
         });
         return;
       }
@@ -261,10 +264,10 @@ class _PracticeMirrorScreenState extends ConsumerState<PracticeMirrorScreen>
     return updated;
   }
 
-  String _performanceLabel(double confidence) {
-    if (confidence >= 80) return 'Correct';
-    if (confidence >= 60) return 'Almost';
-    return 'Incorrect';
+  String _performanceLabel(AppStrings strings, double confidence) {
+    if (confidence >= 80) return strings.practiceMirrorPerformanceCorrect;
+    if (confidence >= 60) return strings.practiceMirrorPerformanceAlmost;
+    return strings.practiceMirrorPerformanceIncorrect;
   }
 
   Color _performanceColor(BuildContext context, double confidence) {
@@ -276,6 +279,7 @@ class _PracticeMirrorScreenState extends ConsumerState<PracticeMirrorScreen>
 
   @override
   Widget build(BuildContext context) {
+    final strings = ref.watch(appStringsProvider);
     final themeSettings = ref.watch(themeSettingsProvider);
     final isDark = themeSettings.mode == AppThemeMode.dark;
     final isHighContrast = themeSettings.highContrast;
@@ -288,65 +292,71 @@ class _PracticeMirrorScreenState extends ConsumerState<PracticeMirrorScreen>
 
     return Theme(
       data: resolvedTheme,
-      child: _PracticeModeTheme(
-        useLegacyLightColors: useLegacyLightColors,
-        isHighContrast: isHighContrast,
-        child: Builder(
-          builder: (context) {
-            final detected = _predictions.first;
-            final detectedConfidence = detected.confidence;
-            final performanceLabel = _performanceLabel(detectedConfidence);
-            final performanceColor = _performanceColor(
-              context,
-              detectedConfidence,
-            );
+      child: _PracticeMirrorStringsScope(
+        strings: strings,
+        child: _PracticeModeTheme(
+          useLegacyLightColors: useLegacyLightColors,
+          isHighContrast: isHighContrast,
+          child: Builder(
+            builder: (context) {
+              final detected = _predictions.first;
+              final detectedConfidence = detected.confidence;
+              final performanceLabel = _performanceLabel(
+                strings,
+                detectedConfidence,
+              );
+              final performanceColor = _performanceColor(
+                context,
+                detectedConfidence,
+              );
 
-            final isLowLight =
-                _luminance < PracticeMirrorScreen.lowLightThreshold;
+              final isLowLight =
+                  _luminance < PracticeMirrorScreen.lowLightThreshold;
 
-            final scheme = Theme.of(context).colorScheme;
+              final scheme = Theme.of(context).colorScheme;
 
-            return Scaffold(
-              appBar: AppBar(
-                title: const Text('Practice & Feedback'),
-                backgroundColor: useLegacyLightColors
-                    ? const Color(0xff304166)
-                    : scheme.primary,
-                foregroundColor: useLegacyLightColors
-                    ? Colors.white
-                    : scheme.onPrimary,
-              ),
-              body: SafeArea(
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: _ReferencePanel(
-                        videoUrl: widget.referenceVideoUrl,
-                        targetGestureName: widget.targetGestureName,
-                      ),
-                    ),
-                    const Divider(height: 1),
-                    Expanded(
-                      child: _MirrorPanel(
-                        isLowLight: isLowLight,
-                        scoringPaused: _scoringPaused,
-                        detectedGestureLabel: detected.name,
-                        detectedConfidence: detectedConfidence,
-                        performanceLabel: performanceLabel,
-                        performanceColor: performanceColor,
-                        pulse: _lowConfidencePulse,
-                        pulseAnimation: _pulseController,
-                        cameraController: _cameraController,
-                        cameraInit: _cameraInit,
-                        cameraPermissionDenied: _cameraPermissionDenied,
-                        cameraError: _cameraError,
-                      ),
-                    ),
-                  ],
+              return Scaffold(
+                appBar: AppBar(
+                  title: Text(strings.practiceMirrorTitle),
+                  backgroundColor: useLegacyLightColors
+                      ? const Color(0xff304166)
+                      : scheme.primary,
+                  foregroundColor: useLegacyLightColors
+                      ? Colors.white
+                      : scheme.onPrimary,
                 ),
-              ),
-            );
-          },
+                body: SafeArea(
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: _ReferencePanel(
+                          videoUrl: widget.referenceVideoUrl,
+                          targetGestureName: widget.targetGestureName,
+                        ),
+                      ),
+                      const Divider(height: 1),
+                      Expanded(
+                        child: _MirrorPanel(
+                          isLowLight: isLowLight,
+                          scoringPaused: _scoringPaused,
+                          detectedGestureLabel: detected.name,
+                          detectedConfidence: detectedConfidence,
+                          performanceLabel: performanceLabel,
+                          performanceColor: performanceColor,
+                          pulse: _lowConfidencePulse,
+                          pulseAnimation: _pulseController,
+                          cameraController: _cameraController,
+                          cameraInit: _cameraInit,
+                          cameraPermissionDenied: _cameraPermissionDenied,
+                          cameraError: _cameraError,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
@@ -374,6 +384,27 @@ class _PracticeModeTheme extends InheritedWidget {
   bool updateShouldNotify(_PracticeModeTheme oldWidget) {
     return useLegacyLightColors != oldWidget.useLegacyLightColors ||
         isHighContrast != oldWidget.isHighContrast;
+  }
+}
+
+class _PracticeMirrorStringsScope extends InheritedWidget {
+  final AppStrings strings;
+
+  const _PracticeMirrorStringsScope({
+    required this.strings,
+    required super.child,
+  });
+
+  static AppStrings of(BuildContext context) {
+    final result = context
+        .dependOnInheritedWidgetOfExactType<_PracticeMirrorStringsScope>();
+    assert(result != null, 'No _PracticeMirrorStringsScope found in context');
+    return result!.strings;
+  }
+
+  @override
+  bool updateShouldNotify(_PracticeMirrorStringsScope oldWidget) {
+    return strings != oldWidget.strings;
   }
 }
 
@@ -418,8 +449,12 @@ class _ReferencePanel extends StatelessWidget {
               right: 12,
               top: 12,
               child: _PanelHeader(
-                title: 'Reference Tutorial',
-                subtitle: 'Target: $targetGestureName',
+                title: _PracticeMirrorStringsScope.of(
+                  context,
+                ).practiceMirrorReferenceHeader,
+                subtitle: _PracticeMirrorStringsScope.of(
+                  context,
+                ).practiceMirrorReferenceTargetSubtitle(targetGestureName),
               ),
             ),
           ],
@@ -551,27 +586,29 @@ class _LiveCameraLayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = _PracticeMirrorStringsScope.of(context);
+
     if (permissionDenied) {
-      return const _CameraMessage(
+      return _CameraMessage(
         icon: Icons.no_photography,
-        title: 'Camera permission needed',
-        subtitle: 'Enable camera access to show live practice feed.',
+        title: strings.practiceMirrorCameraPermissionTitle,
+        subtitle: strings.practiceMirrorCameraPermissionSubtitle,
       );
     }
 
     if (error != null) {
       return _CameraMessage(
         icon: Icons.error_outline,
-        title: 'Camera unavailable',
+        title: strings.practiceMirrorCameraUnavailableTitle,
         subtitle: error!,
       );
     }
 
     if (controller == null || init == null) {
-      return const _CameraMessage(
+      return _CameraMessage(
         icon: Icons.camera_alt,
-        title: 'Starting camera…',
-        subtitle: 'Preparing live preview.',
+        title: strings.practiceMirrorStartingCameraTitle,
+        subtitle: strings.practiceMirrorStartingCameraSubtitle,
         showSpinner: true,
       );
     }
@@ -581,10 +618,10 @@ class _LiveCameraLayer extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done ||
             !controller!.value.isInitialized) {
-          return const _CameraMessage(
+          return _CameraMessage(
             icon: Icons.camera_alt,
-            title: 'Starting camera…',
-            subtitle: 'Preparing live preview.',
+            title: strings.practiceMirrorStartingCameraTitle,
+            subtitle: strings.practiceMirrorStartingCameraSubtitle,
             showSpinner: true,
           );
         }
@@ -725,7 +762,7 @@ class _FpsBadge extends StatelessWidget {
             : null,
       ),
       child: Text(
-        '15 FPS',
+        _PracticeMirrorStringsScope.of(context).practiceMirrorFpsBadge(15),
         style: TextStyle(color: scheme.primary, fontWeight: FontWeight.w700),
       ),
     );
@@ -839,7 +876,9 @@ class _ScoreHud extends StatelessWidget {
                   children: [
                     Flexible(
                       child: Text(
-                        'Detected: $detectedGestureLabel',
+                        _PracticeMirrorStringsScope.of(
+                          context,
+                        ).practiceMirrorDetectedLabel(detectedGestureLabel),
                         style: const TextStyle(fontWeight: FontWeight.w800),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -935,7 +974,13 @@ class _ProcessingPill extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           Text(
-            scoringPaused ? 'Paused' : 'Processing',
+            scoringPaused
+                ? _PracticeMirrorStringsScope.of(
+                    context,
+                  ).practiceMirrorPausedLabel
+                : _PracticeMirrorStringsScope.of(
+                    context,
+                  ).practiceMirrorProcessingLabel,
             style: TextStyle(
               color: fg,
               fontWeight: FontWeight.w700,
@@ -984,8 +1029,12 @@ class _LowLightBanner extends StatelessWidget {
           Expanded(
             child: Text(
               scoringPaused
-                  ? 'Low light detected. Scoring paused.'
-                  : 'Low light detected. Improve lighting for better scoring.',
+                  ? _PracticeMirrorStringsScope.of(
+                      context,
+                    ).practiceMirrorLowLightPausedMessage
+                  : _PracticeMirrorStringsScope.of(
+                      context,
+                    ).practiceMirrorLowLightImproveMessage,
               style: TextStyle(fontWeight: FontWeight.w700, color: textColor),
             ),
           ),

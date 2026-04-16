@@ -263,6 +263,79 @@ class AppStrings {
   String get nextLabel => _t('nextLabel');
   String get practiceLabel => _t('practiceLabel');
 
+  // ---------------------------
+  // Practice Mirror strings
+  // ---------------------------
+
+  // App bar
+  String get practiceMirrorTitle => _t('practiceMirrorTitle');
+
+  // Reference panel
+  String get practiceMirrorReferenceHeader =>
+      _t('practiceMirrorReferenceHeader');
+
+  /// Builds the reference panel subtitle.
+  ///
+  /// Example (EN): "Target: Hello".
+  String practiceMirrorReferenceTargetSubtitle(String targetGestureName) {
+    return _template('practiceMirrorReferenceTargetSubtitle', {
+      'targetGestureName': targetGestureName,
+    });
+  }
+
+  // Camera message states
+  String get practiceMirrorCameraPermissionTitle =>
+      _t('practiceMirrorCameraPermissionTitle');
+  String get practiceMirrorCameraPermissionSubtitle =>
+      _t('practiceMirrorCameraPermissionSubtitle');
+
+  String get practiceMirrorCameraUnavailableTitle =>
+      _t('practiceMirrorCameraUnavailableTitle');
+
+  String get practiceMirrorStartingCameraTitle =>
+      _t('practiceMirrorStartingCameraTitle');
+  String get practiceMirrorStartingCameraSubtitle =>
+      _t('practiceMirrorStartingCameraSubtitle');
+
+  /// Builds the FPS badge label.
+  ///
+  /// Example (EN): "15 FPS".
+  String practiceMirrorFpsBadge(num fps) {
+    return _template('practiceMirrorFpsBadge', {'fps': _formatNumber(fps)});
+  }
+
+  /// Builds the HUD label for the currently detected gesture.
+  ///
+  /// Example (EN): "Detected: A".
+  String practiceMirrorDetectedLabel(String detectedGestureLabel) {
+    return _template('practiceMirrorDetectedLabel', {
+      'detectedGestureLabel': detectedGestureLabel,
+    });
+  }
+
+  // Processing pill labels
+  String get practiceMirrorPausedLabel => _t('practiceMirrorPausedLabel');
+  String get practiceMirrorProcessingLabel =>
+      _t('practiceMirrorProcessingLabel');
+
+  // Low light banner messages
+  String get practiceMirrorLowLightPausedMessage =>
+      _t('practiceMirrorLowLightPausedMessage');
+  String get practiceMirrorLowLightImproveMessage =>
+      _t('practiceMirrorLowLightImproveMessage');
+
+  // Performance labels
+  String get practiceMirrorPerformanceCorrect =>
+      _t('practiceMirrorPerformanceCorrect');
+  String get practiceMirrorPerformanceAlmost =>
+      _t('practiceMirrorPerformanceAlmost');
+  String get practiceMirrorPerformanceIncorrect =>
+      _t('practiceMirrorPerformanceIncorrect');
+
+  // Errors
+  String get practiceMirrorNoCamerasAvailableError =>
+      _t('practiceMirrorNoCamerasAvailableError');
+
   /// Builds a localized progress label for lesson signs.
   ///
   /// Example (EN): "Sign 2 of 10".
@@ -722,6 +795,35 @@ class AppStrings {
       'nextLabel': 'Next',
       'practiceLabel': 'Practice',
 
+      // Practice Mirror
+      'practiceMirrorTitle': 'Practice & Feedback',
+      'practiceMirrorReferenceHeader': 'Reference Tutorial',
+      'practiceMirrorReferenceTargetSubtitle': 'Target: {targetGestureName}',
+
+      'practiceMirrorCameraPermissionTitle': 'Camera permission needed',
+      'practiceMirrorCameraPermissionSubtitle':
+          'Enable camera access to show live practice feed.',
+      'practiceMirrorCameraUnavailableTitle': 'Camera unavailable',
+      'practiceMirrorStartingCameraTitle': 'Starting camera…',
+      'practiceMirrorStartingCameraSubtitle': 'Preparing live preview.',
+
+      'practiceMirrorFpsBadge': '{fps} FPS',
+      'practiceMirrorDetectedLabel': 'Detected: {detectedGestureLabel}',
+      'practiceMirrorPausedLabel': 'Paused',
+      'practiceMirrorProcessingLabel': 'Processing',
+
+      'practiceMirrorLowLightPausedMessage':
+          'Low light detected. Scoring paused.',
+      'practiceMirrorLowLightImproveMessage':
+          'Low light detected. Improve lighting for better scoring.',
+
+      'practiceMirrorPerformanceCorrect': 'Correct',
+      'practiceMirrorPerformanceAlmost': 'Almost',
+      'practiceMirrorPerformanceIncorrect': 'Incorrect',
+
+      'practiceMirrorNoCamerasAvailableError':
+          'No cameras available on this device.',
+
       // Progress (used by lessonSignProgressLabel(current,total))
       'lessonSignProgressLabel': 'Sign {current} of {total}',
 
@@ -982,6 +1084,36 @@ class AppStrings {
       'prevLabel': 'Nakaraan',
       'nextLabel': 'Susunod',
       'practiceLabel': 'Magpraktis',
+
+      // Practice Mirror
+      'practiceMirrorTitle': 'Praktis at Feedback',
+      'practiceMirrorReferenceHeader': 'Sanggunian na Tutorial',
+      'practiceMirrorReferenceTargetSubtitle': 'Target: {targetGestureName}',
+
+      'practiceMirrorCameraPermissionTitle':
+          'Kailangan ng pahintulot sa camera',
+      'practiceMirrorCameraPermissionSubtitle':
+          'I-enable ang access sa camera para maipakita ang live na feed ng praktis.',
+      'practiceMirrorCameraUnavailableTitle': 'Hindi available ang camera',
+      'practiceMirrorStartingCameraTitle': 'Sinisimulan ang camera…',
+      'practiceMirrorStartingCameraSubtitle': 'Inihahanda ang live na preview.',
+
+      'practiceMirrorFpsBadge': '{fps} FPS',
+      'practiceMirrorDetectedLabel': 'Nadetect: {detectedGestureLabel}',
+      'practiceMirrorPausedLabel': 'Naka-pause',
+      'practiceMirrorProcessingLabel': 'Pinoproseso',
+
+      'practiceMirrorLowLightPausedMessage':
+          'Nadetect ang mababang liwanag. Naka-pause ang pag-iskor.',
+      'practiceMirrorLowLightImproveMessage':
+          'Nadetect ang mababang liwanag. Pagandahin ang ilaw para mas maayos ang pag-iskor.',
+
+      'practiceMirrorPerformanceCorrect': 'Tama',
+      'practiceMirrorPerformanceAlmost': 'Halos Tama',
+      'practiceMirrorPerformanceIncorrect': 'Mali',
+
+      'practiceMirrorNoCamerasAvailableError':
+          'Walang available na camera sa device na ito.',
 
       // Progress (used by lessonSignProgressLabel(current,total))
       'lessonSignProgressLabel': 'Sign {current} sa {total}',
