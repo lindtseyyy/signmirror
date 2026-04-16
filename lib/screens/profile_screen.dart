@@ -83,7 +83,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
           final inactiveSwitchOutlineColor = useLegacyLightColors
               ? Colors.black
-              : (isHighContrastMode ? colorScheme.onSurface : colorScheme.outline);
+              : (isHighContrastMode
+                    ? colorScheme.onSurface
+                    : colorScheme.outline);
 
           final avatarBorderColor = useLegacyLightColors
               ? Colors.black
@@ -93,412 +95,446 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
           return Scaffold(
             appBar: PreferredSize(
-        preferredSize: Size.fromHeight(50.0),
-        child: AppBar(
-          automaticallyImplyLeading: false,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () {
-                Navigator.pushNamed(context, RouteNames.editProfile);
-              },
-            ),
-          ],
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text(
-                "Profile",
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22),
-              ),
-            ],
-          ),
-        ),
-      ),
-      body: SafeArea(
-        child: SizedBox(
-          width: double.infinity,
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsetsGeometry.fromLTRB(15, 15, 15, 15),
-              child: Column(
-                children: [
-                  Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: cardBackground,
-                          borderRadius: BorderRadius.circular(15),
-                          border: cardBorder,
-                        ),
-                        child: Column(
-                          children: [
-                            CircleAvatar(
-                              radius: 51,
-                              backgroundColor: avatarBorderColor,
-                              child: const CircleAvatar(
-                                radius: 50,
-                                backgroundImage: AssetImage(
-                                  'assets/images/profile_picture.jpeg',
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              userName.trim().isNotEmpty ? userName : 'User',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 3),
-                            Text(
-                              personalization.trim().isNotEmpty
-                                  ? personalization
-                                  : 'Not set',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w300,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Divider(
-                              color: dividerColor,
-                              thickness: isHighContrastMode ? 1.2 : 1,
-                            ),
-                            const SizedBox(height: 10),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-                              children: [
-                                const Text(
-                                  "ACHIEVEMENTS",
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                IconButton(
-                                  iconSize: 18,
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                  style: const ButtonStyle(
-                                    tapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap, //
-                                  ),
-                                  icon: Icon(
-                                    Icons.double_arrow,
-                                    color: mutedIconColor,
-                                  ),
-                                  onPressed: () {
-                                    Navigator.pushNamed(
-                                      context,
-                                      RouteNames.achievements,
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-                              children: [
-                                Achievement(
-                                  imagePath:
-                                      "assets/images/achievements/trophy_icon.png",
-                                  title: "Studious",
-                                  useLegacyLightColors: useLegacyLightColors,
-                                  isHighContrast: isHighContrastMode,
-                                ),
-                                Achievement(
-                                  imagePath:
-                                      "assets/images/achievements/time_icon.png",
-                                  title: "Quickie",
-                                  useLegacyLightColors: useLegacyLightColors,
-                                  isHighContrast: isHighContrastMode,
-                                ),
-                                Achievement(
-                                  imagePath:
-                                      "assets/images/achievements/star_icon.png",
-                                  title: "Ambitious",
-                                  useLegacyLightColors: useLegacyLightColors,
-                                  isHighContrast: isHighContrastMode,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+              preferredSize: Size.fromHeight(50.0),
+              child: AppBar(
+                automaticallyImplyLeading: false,
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () {
+                      Navigator.pushNamed(context, RouteNames.editProfile);
+                    },
+                  ),
+                ],
+                title: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      "Profile",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 22,
                       ),
-
-                      const SizedBox(height: 10),
-
-                      Container(
-                        padding: const EdgeInsetsGeometry.all(20),
-                        decoration: BoxDecoration(
-                          color: cardBackground,
-                          borderRadius: BorderRadius.circular(15),
-                          border: cardBorder,
-                        ),
-                        child: Column(
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            body: SafeArea(
+              child: SizedBox(
+                width: double.infinity,
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsetsGeometry.fromLTRB(15, 15, 15, 15),
+                    child: Column(
+                      children: [
+                        Column(
                           children: [
-                            SwitchListTile(
-                              contentPadding: EdgeInsets
-                                  .zero, // 1. Removes the outer 16px gap
-                              visualDensity: const VisualDensity(
-                                horizontal: -4,
-                                vertical: -4,
-                              ), // 2. Squeezes the internal space
-                              title: const Text("Dark Mode"),
-                              secondary: Icon(
-                                isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                            Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: cardBackground,
+                                borderRadius: BorderRadius.circular(15),
+                                border: cardBorder,
                               ),
-                              value: isDarkMode,
-
-                              // 1. Change the shape/size of the track
-                              trackOutlineColor: MaterialStateProperty.all(
-                                isDarkMode
-                                    ? Colors.transparent
-                                    : inactiveSwitchOutlineColor,
-                              ),
-
-                              // 2. Put an icon INSIDE the moving circle
-                              thumbIcon:
-                                  MaterialStateProperty.resolveWith<Icon?>((
-                                    states,
-                                  ) {
-                                    if (states.contains(
-                                      MaterialState.selected,
-                                    )) {
-                                      return const Icon(
-                                        Icons.check,
-                                        color: Color(0xff2D68FF),
-                                      );
-                                    }
-                                    return const Icon(
-                                      Icons.close,
-                                      color: Colors.white,
-                                    );
-                                  }),
-
-                              onChanged: (value) {
-                                unawaited(
-                                  ref
-                                      .read(themeSettingsProvider.notifier)
-                                      .setMode(
-                                        value
-                                            ? AppThemeMode.dark
-                                            : AppThemeMode.light,
-                                      ),
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 10),
-                            SwitchListTile(
-                              contentPadding: EdgeInsets
-                                  .zero, // 1. Removes the outer 16px gap
-                              visualDensity: const VisualDensity(
-                                horizontal: -4,
-                                vertical: -4,
-                              ), // 2. Squeezes the internal space
-                              title: const Text("Offline Downloading"),
-                              secondary: Icon(
-                                isOfflineDownloading
-                                    ? Icons.download_for_offline
-                                    : Icons.download_for_offline_outlined,
-                              ),
-                              value: isOfflineDownloading,
-
-                              // 1. Change the shape/size of the track
-                              trackOutlineColor: MaterialStateProperty.all(
-                                isOfflineDownloading
-                                    ? Colors.transparent
-                                    : inactiveSwitchOutlineColor,
-                              ),
-
-                              // 2. Put an icon INSIDE the moving circle
-                              thumbIcon:
-                                  MaterialStateProperty.resolveWith<Icon?>((
-                                    states,
-                                  ) {
-                                    if (states.contains(
-                                      MaterialState.selected,
-                                    )) {
-                                      return const Icon(
-                                        Icons.download,
-                                        color: Color(0xff2D68FF),
-                                      );
-                                    }
-                                    return const Icon(
-                                      Icons.close,
-                                      color: Colors.white,
-                                    );
-                                  }),
-
-                              onChanged: (value) => ref
-                                  .read(offlineDownloadProvider.notifier)
-                                  .toggle(),
-                            ),
-                            const SizedBox(height: 10),
-                            SwitchListTile(
-                              contentPadding: EdgeInsets
-                                  .zero, // 1. Removes the outer 16px gap
-                              visualDensity: const VisualDensity(
-                                horizontal: -4,
-                                vertical: -4,
-                              ), // 2. Squeezes the internal space
-                              title: const Text("High Contrast"),
-                              secondary: Icon(
-                                isHighContrastSetting
-                                    ? Icons.contrast
-                                    : Icons.contrast_outlined,
-                              ),
-                              value: isHighContrastSetting,
-
-                              // 1. Change the shape/size of the track
-                              trackOutlineColor: MaterialStateProperty.all(
-                                isHighContrastSetting
-                                    ? Colors.transparent
-                                    : inactiveSwitchOutlineColor,
-                              ),
-
-                              // 2. Put an icon INSIDE the moving circle
-                              thumbIcon:
-                                  MaterialStateProperty.resolveWith<Icon?>((
-                                    states,
-                                  ) {
-                                    if (states.contains(
-                                      MaterialState.selected,
-                                    )) {
-                                      return const Icon(
-                                        Icons.contrast,
-                                        color: Color(0xff2D68FF),
-                                      );
-                                    }
-                                    return const Icon(
-                                      Icons.close,
-                                      color: Colors.white,
-                                    );
-                                  }),
-
-                              onChanged: (value) {
-                                unawaited(
-                                  ref
-                                      .read(themeSettingsProvider.notifier)
-                                      .setHighContrast(value),
-                                );
-                              },
-                            ),
-                            ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              horizontalTitleGap:
-                                  8, // Removes the gap between icon and text
-                              visualDensity: const VisualDensity(vertical: -4),
-                              minLeadingWidth: 0,
-                              leading: const Icon(Icons.language),
-                              title: const Text("Language"),
-                              subtitle: Text(
-                                language == 'en' ? "English" : "Filipino",
-                              ),
-                              trailing: Icon(
-                                Icons.arrow_forward_ios,
-                                size: 16,
-                                color: trailingIconColor,
-                              ),
-                              onTap: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => SimpleDialog(
-                                    title: const Text(
-                                      "Select Language",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
+                              child: Column(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 51,
+                                    backgroundColor: avatarBorderColor,
+                                    child: const CircleAvatar(
+                                      radius: 50,
+                                      backgroundImage: AssetImage(
+                                        'assets/images/profile_picture.jpeg',
                                       ),
                                     ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    userName.trim().isNotEmpty
+                                        ? userName
+                                        : 'User',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    personalization.trim().isNotEmpty
+                                        ? personalization
+                                        : 'Not set',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w300,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Divider(
+                                    color: dividerColor,
+                                    thickness: isHighContrastMode ? 1.2 : 1,
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+
                                     children: [
-                                      SimpleDialogOption(
-                                        onPressed: () {
-                                          ref
-                                              .read(languageProvider.notifier)
-                                              .setLanguage('en');
-                                          Navigator.pop(context);
-                                        },
-                                        child: const Text(
-                                          "English",
-                                          style: TextStyle(fontSize: 16),
+                                      const Text(
+                                        "ACHIEVEMENTS",
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w700,
                                         ),
                                       ),
-                                      SimpleDialogOption(
-                                        onPressed: () {
-                                          ref
-                                              .read(languageProvider.notifier)
-                                              .setLanguage('fil');
-                                          Navigator.pop(context);
-                                        },
-                                        child: const Text(
-                                          "Filipino",
-                                          style: TextStyle(fontSize: 16),
+                                      IconButton(
+                                        iconSize: 18,
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                        style: const ButtonStyle(
+                                          tapTargetSize: MaterialTapTargetSize
+                                              .shrinkWrap, //
                                         ),
+                                        icon: Icon(
+                                          Icons.double_arrow,
+                                          color: mutedIconColor,
+                                        ),
+                                        onPressed: () {
+                                          Navigator.pushNamed(
+                                            context,
+                                            RouteNames.achievements,
+                                          );
+                                        },
                                       ),
                                     ],
                                   ),
-                                );
-                              },
-                            ),
-                            ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              visualDensity: const VisualDensity(vertical: -4),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
 
-                              horizontalTitleGap:
-                                  8, // Removes the gap between icon and text
-                              minLeadingWidth: 0,
-                              leading: const Icon(Icons.alarm),
-                              title: const Text("Daily Practice Reminder"),
-                              subtitle: Text(displayTime), // e.g., "08:30 PM"
-                              trailing: Icon(
-                                Icons.arrow_forward_ios,
-                                color: trailingIconColor,
-                                size: 15,
-                              ),
-                              onTap: () => _showTimePicker(context, ref),
-                            ),
-                            const SizedBox(height: 10),
-                            FilledButton(
-                              onPressed: () {},
-
-                              style: FilledButton.styleFrom(
-                                shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadiusGeometry.all(
-                                    Radius.circular(10),
+                                    children: [
+                                      Achievement(
+                                        imagePath:
+                                            "assets/images/achievements/trophy_icon.png",
+                                        title: "Studious",
+                                        useLegacyLightColors:
+                                            useLegacyLightColors,
+                                        isHighContrast: isHighContrastMode,
+                                      ),
+                                      Achievement(
+                                        imagePath:
+                                            "assets/images/achievements/time_icon.png",
+                                        title: "Quickie",
+                                        useLegacyLightColors:
+                                            useLegacyLightColors,
+                                        isHighContrast: isHighContrastMode,
+                                      ),
+                                      Achievement(
+                                        imagePath:
+                                            "assets/images/achievements/star_icon.png",
+                                        title: "Ambitious",
+                                        useLegacyLightColors:
+                                            useLegacyLightColors,
+                                        isHighContrast: isHighContrastMode,
+                                      ),
+                                    ],
                                   ),
-                                ),
-                                backgroundColor: const Color(0xffFF4646),
-                                foregroundColor: Colors.white,
-                                minimumSize: const Size(double.infinity, 50),
+                                ],
                               ),
-                              child: const Text(
-                                "Logout",
-                                style: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 1.0,
-                                ),
+                            ),
+
+                            const SizedBox(height: 10),
+
+                            Container(
+                              padding: const EdgeInsetsGeometry.all(20),
+                              decoration: BoxDecoration(
+                                color: cardBackground,
+                                borderRadius: BorderRadius.circular(15),
+                                border: cardBorder,
+                              ),
+                              child: Column(
+                                children: [
+                                  SwitchListTile(
+                                    contentPadding: EdgeInsets
+                                        .zero, // 1. Removes the outer 16px gap
+                                    visualDensity: const VisualDensity(
+                                      horizontal: -4,
+                                      vertical: -4,
+                                    ), // 2. Squeezes the internal space
+                                    title: const Text("Dark Mode"),
+                                    secondary: Icon(
+                                      isDarkMode
+                                          ? Icons.dark_mode
+                                          : Icons.light_mode,
+                                    ),
+                                    value: isDarkMode,
+
+                                    // 1. Change the shape/size of the track
+                                    trackOutlineColor:
+                                        MaterialStateProperty.all(
+                                          isDarkMode
+                                              ? Colors.transparent
+                                              : inactiveSwitchOutlineColor,
+                                        ),
+
+                                    // 2. Put an icon INSIDE the moving circle
+                                    thumbIcon:
+                                        MaterialStateProperty.resolveWith<
+                                          Icon?
+                                        >((states) {
+                                          if (states.contains(
+                                            MaterialState.selected,
+                                          )) {
+                                            return const Icon(
+                                              Icons.check,
+                                              color: Color(0xff2D68FF),
+                                            );
+                                          }
+                                          return const Icon(
+                                            Icons.close,
+                                            color: Colors.white,
+                                          );
+                                        }),
+
+                                    onChanged: (value) {
+                                      unawaited(
+                                        ref
+                                            .read(
+                                              themeSettingsProvider.notifier,
+                                            )
+                                            .setMode(
+                                              value
+                                                  ? AppThemeMode.dark
+                                                  : AppThemeMode.light,
+                                            ),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 10),
+                                  SwitchListTile(
+                                    contentPadding: EdgeInsets
+                                        .zero, // 1. Removes the outer 16px gap
+                                    visualDensity: const VisualDensity(
+                                      horizontal: -4,
+                                      vertical: -4,
+                                    ), // 2. Squeezes the internal space
+                                    title: const Text("Offline Downloading"),
+                                    secondary: Icon(
+                                      isOfflineDownloading
+                                          ? Icons.download_for_offline
+                                          : Icons.download_for_offline_outlined,
+                                    ),
+                                    value: isOfflineDownloading,
+
+                                    // 1. Change the shape/size of the track
+                                    trackOutlineColor:
+                                        MaterialStateProperty.all(
+                                          isOfflineDownloading
+                                              ? Colors.transparent
+                                              : inactiveSwitchOutlineColor,
+                                        ),
+
+                                    // 2. Put an icon INSIDE the moving circle
+                                    thumbIcon:
+                                        MaterialStateProperty.resolveWith<
+                                          Icon?
+                                        >((states) {
+                                          if (states.contains(
+                                            MaterialState.selected,
+                                          )) {
+                                            return const Icon(
+                                              Icons.download,
+                                              color: Color(0xff2D68FF),
+                                            );
+                                          }
+                                          return const Icon(
+                                            Icons.close,
+                                            color: Colors.white,
+                                          );
+                                        }),
+
+                                    onChanged: (value) => ref
+                                        .read(offlineDownloadProvider.notifier)
+                                        .toggle(),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  SwitchListTile(
+                                    contentPadding: EdgeInsets
+                                        .zero, // 1. Removes the outer 16px gap
+                                    visualDensity: const VisualDensity(
+                                      horizontal: -4,
+                                      vertical: -4,
+                                    ), // 2. Squeezes the internal space
+                                    title: const Text("High Contrast"),
+                                    secondary: Icon(
+                                      isHighContrastSetting
+                                          ? Icons.contrast
+                                          : Icons.contrast_outlined,
+                                    ),
+                                    value: isHighContrastSetting,
+
+                                    // 1. Change the shape/size of the track
+                                    trackOutlineColor:
+                                        MaterialStateProperty.all(
+                                          isHighContrastSetting
+                                              ? Colors.transparent
+                                              : inactiveSwitchOutlineColor,
+                                        ),
+
+                                    // 2. Put an icon INSIDE the moving circle
+                                    thumbIcon:
+                                        MaterialStateProperty.resolveWith<
+                                          Icon?
+                                        >((states) {
+                                          if (states.contains(
+                                            MaterialState.selected,
+                                          )) {
+                                            return const Icon(
+                                              Icons.contrast,
+                                              color: Color(0xff2D68FF),
+                                            );
+                                          }
+                                          return const Icon(
+                                            Icons.close,
+                                            color: Colors.white,
+                                          );
+                                        }),
+
+                                    onChanged: (value) {
+                                      unawaited(
+                                        ref
+                                            .read(
+                                              themeSettingsProvider.notifier,
+                                            )
+                                            .setHighContrast(value),
+                                      );
+                                    },
+                                  ),
+                                  ListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    horizontalTitleGap:
+                                        8, // Removes the gap between icon and text
+                                    visualDensity: const VisualDensity(
+                                      vertical: -4,
+                                    ),
+                                    minLeadingWidth: 0,
+                                    leading: const Icon(Icons.language),
+                                    title: const Text("Language"),
+                                    subtitle: Text(
+                                      language == 'en' ? "English" : "Filipino",
+                                    ),
+                                    trailing: Icon(
+                                      Icons.arrow_forward_ios,
+                                      size: 16,
+                                      color: trailingIconColor,
+                                    ),
+                                    onTap: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => SimpleDialog(
+                                          title: const Text(
+                                            "Select Language",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          children: [
+                                            SimpleDialogOption(
+                                              onPressed: () {
+                                                ref
+                                                    .read(
+                                                      languageProvider.notifier,
+                                                    )
+                                                    .setLanguage('en');
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text(
+                                                "English",
+                                                style: TextStyle(fontSize: 16),
+                                              ),
+                                            ),
+                                            SimpleDialogOption(
+                                              onPressed: () {
+                                                ref
+                                                    .read(
+                                                      languageProvider.notifier,
+                                                    )
+                                                    .setLanguage('fil');
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text(
+                                                "Filipino",
+                                                style: TextStyle(fontSize: 16),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  ListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    visualDensity: const VisualDensity(
+                                      vertical: -4,
+                                    ),
+
+                                    horizontalTitleGap:
+                                        8, // Removes the gap between icon and text
+                                    minLeadingWidth: 0,
+                                    leading: const Icon(Icons.alarm),
+                                    title: const Text(
+                                      "Daily Practice Reminder",
+                                    ),
+                                    subtitle: Text(
+                                      displayTime,
+                                    ), // e.g., "08:30 PM"
+                                    trailing: Icon(
+                                      Icons.arrow_forward_ios,
+                                      color: trailingIconColor,
+                                      size: 15,
+                                    ),
+                                    onTap: () => _showTimePicker(context, ref),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  FilledButton(
+                                    onPressed: () {},
+
+                                    style: FilledButton.styleFrom(
+                                      shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadiusGeometry.all(
+                                          Radius.circular(10),
+                                        ),
+                                      ),
+                                      backgroundColor: const Color(0xffFF4646),
+                                      foregroundColor: Colors.white,
+                                      minimumSize: const Size(
+                                        double.infinity,
+                                        50,
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      "Logout",
+                                      style: TextStyle(
+                                        fontFamily: 'Inter',
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 1.0,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ],
+                ),
               ),
             ),
-          ),
-        ),
-      ),
-    );
+          );
         },
       ),
     );

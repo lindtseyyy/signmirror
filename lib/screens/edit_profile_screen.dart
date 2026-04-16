@@ -113,8 +113,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       _personalizationDirty = true;
                     });
                   },
-                  decoration:
-                      const InputDecoration(labelText: 'Personalization'),
+                  decoration: const InputDecoration(
+                    labelText: 'Personalization',
+                  ),
                 ),
                 const Spacer(),
                 SizedBox(
