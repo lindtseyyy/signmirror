@@ -26,6 +26,20 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
   final Map<int, List<Comment>> _mockVideoComments = <int, List<Comment>>{};
 
   @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      if (!mounted) return;
+      ref
+          .read(communityVideoProvider.notifier)
+          .ensureFallbackUnapprovedVideo(
+            threshold: 3,
+            excludeUploaderId: _currentUserId,
+          );
+    });
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
@@ -33,33 +47,6 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
 
   String _resolveUploaderName(Map<int, String> uploaderNames, int uploaderId) {
     return uploaderNames[uploaderId] ?? 'User $uploaderId';
-  }
-
-  List<CommunityVideo> _createMockUnapprovedVideos() {
-    CommunityVideo mockVideo({
-      required int id,
-      required String title,
-      required String description,
-    }) {
-      return CommunityVideo()
-        ..id = id
-        ..title = title
-        ..description = description
-        ..videoUrl = 'assets/videos/sample_portrait_video.mp4'
-        ..comments = <Comment>[]
-        ..approves = 0
-        ..uploaderId = 2
-        ..isApprovedByCurrentUser = false;
-    }
-
-    return <CommunityVideo>[
-      mockVideo(
-        id: -101,
-        title: 'Beginner Practice Clip (Mock)',
-        description:
-            'Example community video shown while there are no uploads.',
-      ),
-    ];
   }
 
   Widget _buildVideoList({
@@ -80,12 +67,6 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
       return video.title.toLowerCase().contains(queryLower) ||
           uploaderName.toLowerCase().contains(queryLower);
     }).toList();
-
-    if (filtered.isEmpty &&
-        queryLower.isEmpty &&
-        tabFilter(_createMockUnapprovedVideos().first)) {
-      filtered = _createMockUnapprovedVideos();
-    }
 
     return ListView.builder(
       padding: const EdgeInsets.all(2.0),

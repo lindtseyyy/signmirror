@@ -159,6 +159,30 @@ class CommunityVideoNotifier extends StateNotifier<List<CommunityVideo>> {
     await loadAll();
   }
 
+  Future<void> ensureFallbackUnapprovedVideo({
+    required int threshold,
+    required int excludeUploaderId,
+  }) {
+    // If this is triggered from a widget build/lifecycle, mutating `state`
+    // synchronously can throw. Scheduling avoids that class of errors.
+    return Future(() async {
+      try {
+        await _service.ensureFallbackUnapprovedCommunityVideoExists(
+          threshold: threshold,
+          excludeUploaderId: excludeUploaderId,
+        );
+      } catch (_) {
+        // Best-effort: don't crash the UI if seeding fails.
+      }
+
+      try {
+        await loadAll();
+      } catch (_) {
+        // Ignore refresh failures for the same reason.
+      }
+    });
+  }
+
   Future<void> deleteVideo(int videoId) async {
     await _service.deleteCommunityVideo(videoId);
     await loadAll();

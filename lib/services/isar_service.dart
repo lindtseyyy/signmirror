@@ -342,6 +342,123 @@ class IsarService {
     return await isar.communityVideos.where().findAll();
   }
 
+  /// Community videos that are still pending approval.
+  ///
+  /// Predicate: `approves < threshold` AND `uploaderId != excludeUploaderId`.
+  Future<List<CommunityVideo>> getUnapprovedCommunityVideos({
+    required int threshold,
+    required int excludeUploaderId,
+  }) async {
+    final isar = await db;
+
+    final lower = await isar.communityVideos
+        .filter()
+        .approvesLessThan(threshold)
+        .uploaderIdLessThan(excludeUploaderId)
+        .findAll();
+
+    final higher = await isar.communityVideos
+        .filter()
+        .approvesLessThan(threshold)
+        .uploaderIdGreaterThan(excludeUploaderId)
+        .findAll();
+
+    return [...lower, ...higher];
+  }
+
+  /// Ensures there is at least one pending-approval community video available
+  /// for the Unapproved tab to show.
+  ///
+  /// If none exist (using the same predicate as `getUnapprovedCommunityVideos`),
+  /// inserts a single stable sample record into Isar.
+  Future<void> ensureFallbackUnapprovedCommunityVideoExists({
+    required int threshold,
+    required int excludeUploaderId,
+  }) async {
+    final isar = await db;
+
+    // Fast existence check using the same predicate.
+    final anyLower = await isar.communityVideos
+        .filter()
+        .approvesLessThan(threshold)
+        .uploaderIdLessThan(excludeUploaderId)
+        .limit(1)
+        .findAll();
+
+    if (anyLower.isNotEmpty) return;
+
+    final anyHigher = await isar.communityVideos
+        .filter()
+        .approvesLessThan(threshold)
+        .uploaderIdGreaterThan(excludeUploaderId)
+        .limit(1)
+        .findAll();
+
+    if (anyHigher.isNotEmpty) return;
+
+    // Stable signature: title + uploaderId.
+    const fallbackTitle = '[Sample] Pending approval';
+    const fallbackVideoUrl = 'assets/videos/sample_portrait_video.mp4';
+    const fallbackDescription =
+        'Sample community video inserted locally so the Unapproved tab is not empty.';
+
+    // Ensure the fallback uploader is never the excluded uploader.
+    final fallbackUploaderId = excludeUploaderId == 9999 ? 9998 : 9999;
+    final desiredApproves = threshold > 0 ? threshold - 1 : 0;
+
+    final existingFallback = await isar.communityVideos
+        .filter()
+        .titleEqualTo(fallbackTitle)
+        .uploaderIdEqualTo(fallbackUploaderId)
+        .limit(1)
+        .findFirst();
+
+    await isar.writeTxn(() async {
+      if (existingFallback == null) {
+        final fallback = CommunityVideo()
+          ..title = fallbackTitle
+          ..description = fallbackDescription
+          ..videoUrl = fallbackVideoUrl
+          ..comments = <Comment>[]
+          ..approves = desiredApproves
+          ..uploaderId = fallbackUploaderId
+          ..isApprovedByCurrentUser = false;
+
+        await isar.communityVideos.put(fallback);
+        return;
+      }
+
+      // If the fallback exists but was modified (e.g., user approved it),
+      // normalize it back to a "pending" state.
+      var needsUpdate = false;
+
+      if (existingFallback.videoUrl != fallbackVideoUrl) {
+        existingFallback.videoUrl = fallbackVideoUrl;
+        needsUpdate = true;
+      }
+      if (existingFallback.description != fallbackDescription) {
+        existingFallback.description = fallbackDescription;
+        needsUpdate = true;
+      }
+      if (existingFallback.comments.isNotEmpty) {
+        existingFallback.comments = <Comment>[];
+        needsUpdate = true;
+      }
+      if (existingFallback.approves != desiredApproves) {
+        existingFallback.approves = desiredApproves;
+        needsUpdate = true;
+      }
+      if (existingFallback.isApprovedByCurrentUser != false) {
+        existingFallback.isApprovedByCurrentUser = false;
+        needsUpdate = true;
+      }
+
+      if (needsUpdate) {
+        await isar.communityVideos.put(existingFallback);
+      }
+    });
+  }
+
   // Search signs by title (Case Insensitive)
   Future<List<Sign>> searchSigns(String query) async {
     final isar = await db;
