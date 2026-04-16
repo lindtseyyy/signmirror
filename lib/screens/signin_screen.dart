@@ -314,6 +314,7 @@ class _SigninScreenState extends State<SigninScreen> {
                                       ),
                                     ),
                                     minimumSize: const Size(130, 50),
+                                    foregroundColor: colors.onSurface,
                                   ),
                                   child: Row(
                                     children: [
@@ -338,6 +339,7 @@ class _SigninScreenState extends State<SigninScreen> {
                                       ),
                                     ),
                                     minimumSize: const Size(130, 50),
+                                    foregroundColor: colors.onSurface,
                                   ),
                                   child: Row(
                                     children: [
@@ -359,8 +361,7 @@ class _SigninScreenState extends State<SigninScreen> {
                             RichText(
                               text: TextSpan(
                                 style:
-                                    (textTheme.bodyMedium ??
-                                            const TextStyle())
+                                    (textTheme.bodyMedium ?? const TextStyle())
                                         .copyWith(
                                           color: colors.onSurface,
                                           fontSize: 14,

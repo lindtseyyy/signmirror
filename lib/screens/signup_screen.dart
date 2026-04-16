@@ -394,6 +394,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                       ),
                                     ),
                                     minimumSize: const Size(130, 50),
+                                    foregroundColor: colors.onSurface,
                                   ),
                                   child: Row(
                                     children: [
@@ -418,6 +419,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                       ),
                                     ),
                                     minimumSize: const Size(130, 50),
+                                    foregroundColor: colors.onSurface,
                                   ),
                                   child: Row(
                                     children: [
@@ -439,8 +441,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                             RichText(
                               text: TextSpan(
                                 style:
-                                    (textTheme.bodyMedium ??
-                                            const TextStyle())
+                                    (textTheme.bodyMedium ?? const TextStyle())
                                         .copyWith(
                                           color: colors.onSurface,
                                           fontSize: 14,
