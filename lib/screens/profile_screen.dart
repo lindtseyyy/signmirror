@@ -1,12 +1,14 @@
 import 'dart:async' show unawaited;
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signmirror_flutter/constants/route_names.dart';
+import 'package:signmirror_flutter/l10n/app_strings.dart';
+import 'package:signmirror_flutter/l10n/app_strings_provider.dart';
 import 'package:signmirror_flutter/providers/settings_provider.dart';
 import 'package:signmirror_flutter/theme/app_theme.dart';
 import 'package:signmirror_flutter/theme/theme_settings.dart';
-import 'package:flutter/cupertino.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -18,6 +20,8 @@ class ProfileScreen extends ConsumerStatefulWidget {
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
+    final strings = ref.watch(appStringsProvider);
+
     final themeSettings = ref.watch(themeSettingsProvider);
     final isDarkMode = themeSettings.mode == AppThemeMode.dark;
     final isOfflineDownloading = ref.watch(offlineDownloadProvider);
@@ -31,11 +35,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       highContrast: effectiveHighContrast,
     );
 
-    final time = ref.watch(practiceTimeProvider);
-    // 2. GET the pretty version from your Notifier
-    final displayTime = ref
-        .read(practiceTimeProvider.notifier)
-        .getDisplayTime();
+    // Watch for changes so the UI updates when the saved time changes.
+    ref.watch(practiceTimeProvider);
+
+    // Get the pretty version from your Notifier.
+    final displayTime = ref.read(practiceTimeProvider.notifier).getDisplayTime();
     final language = ref.watch(languageProvider);
     final userName = ref.watch(userNameProvider);
     final personalization = ref.watch(personalizationProvider);
@@ -108,10 +112,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ],
                 title: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
-                      "Profile",
-                      style: TextStyle(
+                      strings.profileTitle,
+                      style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 22,
                       ),
@@ -153,8 +157,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   Text(
                                     userName.trim().isNotEmpty
                                         ? userName
-                                        : 'User',
-                                    style: TextStyle(
+                                        : strings.profileDefaultUserLabel,
+                                    style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -163,8 +167,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   Text(
                                     personalization.trim().isNotEmpty
                                         ? personalization
-                                        : 'Not set',
-                                    style: TextStyle(
+                                        : strings.profileNotSetLabel,
+                                    style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w300,
                                     ),
@@ -180,9 +184,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                         MainAxisAlignment.spaceBetween,
 
                                     children: [
-                                      const Text(
-                                        "ACHIEVEMENTS",
-                                        style: TextStyle(
+                                      Text(
+                                        strings.profileAchievementsHeader,
+                                        style: const TextStyle(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w700,
                                         ),
@@ -217,7 +221,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       Achievement(
                                         imagePath:
                                             "assets/images/achievements/trophy_icon.png",
-                                        title: "Studious",
+                                        title: strings.profileAchievementStudious,
                                         useLegacyLightColors:
                                             useLegacyLightColors,
                                         isHighContrast: isHighContrastMode,
@@ -225,7 +229,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       Achievement(
                                         imagePath:
                                             "assets/images/achievements/time_icon.png",
-                                        title: "Quickie",
+                                        title: strings.profileAchievementQuickie,
                                         useLegacyLightColors:
                                             useLegacyLightColors,
                                         isHighContrast: isHighContrastMode,
@@ -233,7 +237,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       Achievement(
                                         imagePath:
                                             "assets/images/achievements/star_icon.png",
-                                        title: "Ambitious",
+                                        title: strings.profileAchievementAmbitious,
                                         useLegacyLightColors:
                                             useLegacyLightColors,
                                         isHighContrast: isHighContrastMode,
@@ -262,7 +266,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       horizontal: -4,
                                       vertical: -4,
                                     ), // 2. Squeezes the internal space
-                                    title: const Text("Dark Mode"),
+                                    title: Text(strings.profileDarkModeLabel),
                                     secondary: Icon(
                                       isDarkMode
                                           ? Icons.dark_mode
@@ -319,7 +323,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       horizontal: -4,
                                       vertical: -4,
                                     ), // 2. Squeezes the internal space
-                                    title: const Text("Offline Downloading"),
+                                    title: Text(strings.profileOfflineDownloadingLabel),
                                     secondary: Icon(
                                       isOfflineDownloading
                                           ? Icons.download_for_offline
@@ -366,7 +370,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       horizontal: -4,
                                       vertical: -4,
                                     ), // 2. Squeezes the internal space
-                                    title: const Text("High Contrast"),
+                                    title: Text(strings.profileHighContrastLabel),
                                     secondary: Icon(
                                       isHighContrastSetting
                                           ? Icons.contrast
@@ -420,9 +424,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     ),
                                     minLeadingWidth: 0,
                                     leading: const Icon(Icons.language),
-                                    title: const Text("Language"),
+                                    title: Text(strings.profileLanguageLabel),
                                     subtitle: Text(
-                                      language == 'en' ? "English" : "Filipino",
+                                      language == 'en'
+                                          ? strings.languageEnglishLabel
+                                          : strings.languageFilipinoLabel,
                                     ),
                                     trailing: Icon(
                                       Icons.arrow_forward_ios,
@@ -433,9 +439,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       showDialog(
                                         context: context,
                                         builder: (context) => SimpleDialog(
-                                          title: const Text(
-                                            "Select Language",
-                                            style: TextStyle(
+                                          title: Text(
+                                            strings.profileSelectLanguageTitle,
+                                            style: const TextStyle(
                                               fontWeight: FontWeight.bold,
                                               fontSize: 16,
                                             ),
@@ -450,9 +456,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                                     .setLanguage('en');
                                                 Navigator.pop(context);
                                               },
-                                              child: const Text(
-                                                "English",
-                                                style: TextStyle(fontSize: 16),
+                                              child: Text(
+                                                strings.languageEnglishLabel,
+                                                style: const TextStyle(fontSize: 16),
                                               ),
                                             ),
                                             SimpleDialogOption(
@@ -464,9 +470,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                                     .setLanguage('fil');
                                                 Navigator.pop(context);
                                               },
-                                              child: const Text(
-                                                "Filipino",
-                                                style: TextStyle(fontSize: 16),
+                                              child: Text(
+                                                strings.languageFilipinoLabel,
+                                                style: const TextStyle(fontSize: 16),
                                               ),
                                             ),
                                           ],
@@ -484,9 +490,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                         8, // Removes the gap between icon and text
                                     minLeadingWidth: 0,
                                     leading: const Icon(Icons.alarm),
-                                    title: const Text(
-                                      "Daily Practice Reminder",
-                                    ),
+                                    title: Text(strings.profileDailyPracticeReminderLabel),
                                     subtitle: Text(
                                       displayTime,
                                     ), // e.g., "08:30 PM"
@@ -495,7 +499,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       color: trailingIconColor,
                                       size: 15,
                                     ),
-                                    onTap: () => _showTimePicker(context, ref),
+                                    onTap: () => _showTimePicker(context, ref, strings),
                                   ),
                                   const SizedBox(height: 10),
                                   FilledButton(
@@ -514,9 +518,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                         50,
                                       ),
                                     ),
-                                    child: const Text(
-                                      "Logout",
-                                      style: TextStyle(
+                                    child: Text(
+                                      strings.profileLogoutLabel,
+                                      style: const TextStyle(
                                         fontFamily: 'Inter',
                                         fontWeight: FontWeight.w700,
                                         letterSpacing: 1.0,
@@ -601,8 +605,8 @@ class Achievement extends StatelessWidget {
   }
 }
 
-void _showTimePicker(BuildContext context, WidgetRef ref) {
-  // 1. Get current saved time and convert to DateTime for the wheel
+void _showTimePicker(BuildContext context, WidgetRef ref, AppStrings strings) {
+  // Get current saved time and convert to DateTime for the wheel.
   final savedTime = ref.read(practiceTimeProvider); // e.g. "20:00"
   final parts = savedTime.split(':');
   final now = DateTime.now();
@@ -623,12 +627,14 @@ void _showTimePicker(BuildContext context, WidgetRef ref) {
         top: false,
         child: Column(
           children: [
-            // Using your helper header but adding the logic to the Done button
-            _buildPickerHeader(context, ref, () {
-              final pickedTime = TimeOfDay.fromDateTime(tempDateTime);
-              ref.read(practiceTimeProvider.notifier).setTime(pickedTime);
-              Navigator.pop(context);
-            }),
+            _buildPickerHeader(
+              strings: strings,
+              onDone: () {
+                final pickedTime = TimeOfDay.fromDateTime(tempDateTime);
+                ref.read(practiceTimeProvider.notifier).setTime(pickedTime);
+                Navigator.pop(context);
+              },
+            ),
             Expanded(
               child: CupertinoDatePicker(
                 mode: CupertinoDatePickerMode.time,
@@ -646,12 +652,10 @@ void _showTimePicker(BuildContext context, WidgetRef ref) {
   );
 }
 
-// Updated Header to accept the Done action
-Widget _buildPickerHeader(
-  BuildContext context,
-  WidgetRef ref,
-  VoidCallback onDone,
-) {
+Widget _buildPickerHeader({
+  required AppStrings strings,
+  required VoidCallback onDone,
+}) {
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
     decoration: const BoxDecoration(
@@ -662,16 +666,16 @@ Widget _buildPickerHeader(
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          "Select Time",
-          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+        Text(
+          strings.profileSelectTimeTitle,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
         ),
         CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: onDone,
-          child: const Text(
-            "Done",
-            style: TextStyle(
+          child: Text(
+            strings.commonDoneLabel,
+            style: const TextStyle(
               color: Color(0xff2D68FF),
               fontWeight: FontWeight.bold,
             ),

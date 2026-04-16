@@ -480,6 +480,36 @@ class AppStrings {
       _t('communityUploadFailureSnackbar');
 
   // ---------------------------
+  // Profile strings
+  // ---------------------------
+
+  String get profileTitle => _t('profileTitle');
+  String get profileAchievementsHeader => _t('profileAchievementsHeader');
+  String get profileAchievementStudious => _t('profileAchievementStudious');
+  String get profileAchievementQuickie => _t('profileAchievementQuickie');
+  String get profileAchievementAmbitious => _t('profileAchievementAmbitious');
+
+  String get profileDarkModeLabel => _t('profileDarkModeLabel');
+  String get profileOfflineDownloadingLabel =>
+      _t('profileOfflineDownloadingLabel');
+  String get profileHighContrastLabel => _t('profileHighContrastLabel');
+
+  String get profileLanguageLabel => _t('profileLanguageLabel');
+  String get profileSelectLanguageTitle => _t('profileSelectLanguageTitle');
+  String get languageEnglishLabel => _t('languageEnglishLabel');
+  String get languageFilipinoLabel => _t('languageFilipinoLabel');
+
+  String get profileDailyPracticeReminderLabel =>
+      _t('profileDailyPracticeReminderLabel');
+  String get profileLogoutLabel => _t('profileLogoutLabel');
+
+  String get profileDefaultUserLabel => _t('profileDefaultUserLabel');
+  String get profileNotSetLabel => _t('profileNotSetLabel');
+
+  String get profileSelectTimeTitle => _t('profileSelectTimeTitle');
+  String get commonDoneLabel => _t('commonDoneLabel');
+
+  // ---------------------------
   // Internals
   // ---------------------------
 
@@ -660,6 +690,26 @@ class AppStrings {
       'communityUploadChooseVideoFilePrompt': 'Please choose a video file.',
       'communityUploadSuccessSnackbar': 'Upload successful.',
       'communityUploadFailureSnackbar': 'Upload failed. Please try again.',
+
+      // Profile
+      'profileTitle': 'Profile',
+      'profileAchievementsHeader': 'ACHIEVEMENTS',
+      'profileAchievementStudious': 'Studious',
+      'profileAchievementQuickie': 'Quickie',
+      'profileAchievementAmbitious': 'Ambitious',
+      'profileDarkModeLabel': 'Dark Mode',
+      'profileOfflineDownloadingLabel': 'Offline Downloading',
+      'profileHighContrastLabel': 'High Contrast',
+      'profileLanguageLabel': 'Language',
+      'profileSelectLanguageTitle': 'Select Language',
+      'languageEnglishLabel': 'English',
+      'languageFilipinoLabel': 'Filipino',
+      'profileDailyPracticeReminderLabel': 'Daily Practice Reminder',
+      'profileLogoutLabel': 'Logout',
+      'profileDefaultUserLabel': 'User',
+      'profileNotSetLabel': 'Not set',
+      'profileSelectTimeTitle': 'Select Time',
+      'commonDoneLabel': 'Done',
     },
     _fil: {
       // Dashboard
@@ -835,6 +885,26 @@ class AppStrings {
       'communityUploadSuccessSnackbar': 'Matagumpay ang pag-upload.',
       'communityUploadFailureSnackbar':
           'Hindi natuloy ang pag-upload. Pakisubukan muli.',
+
+      // Profile
+      'profileTitle': 'Profile',
+      'profileAchievementsHeader': 'MGA TAGUMPAY',
+      'profileAchievementStudious': 'Masipag',
+      'profileAchievementQuickie': 'Mabilis',
+      'profileAchievementAmbitious': 'Mapaglayon',
+      'profileDarkModeLabel': 'Madilim na Mode',
+      'profileOfflineDownloadingLabel': 'Pag-download offline',
+      'profileHighContrastLabel': 'Mataas na Kontrast',
+      'profileLanguageLabel': 'Wika',
+      'profileSelectLanguageTitle': 'Pumili ng Wika',
+      'languageEnglishLabel': 'Ingles',
+      'languageFilipinoLabel': 'Filipino',
+      'profileDailyPracticeReminderLabel': 'Paalala sa Araw-araw na Praktis',
+      'profileLogoutLabel': 'Mag-logout',
+      'profileDefaultUserLabel': 'Gumagamit',
+      'profileNotSetLabel': 'Hindi nakatakda',
+      'profileSelectTimeTitle': 'Pumili ng Oras',
+      'commonDoneLabel': 'Tapos',
     },
   };
 
