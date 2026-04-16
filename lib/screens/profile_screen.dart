@@ -519,7 +519,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   ),
                                   const SizedBox(height: 10),
                                   FilledButton(
-                                    onPressed: () {},
+                                    onPressed: () async {
+                                      await ref
+                                          .read(settingsServiceProvider)
+                                          .clearAuthenticatedUserSession();
+
+                                      // Clear/refresh in-memory state so stale values don't linger.
+                                      ref.invalidate(userNameProvider);
+                                      ref.invalidate(userEmailProvider);
+                                      ref.invalidate(personalizationProvider);
+
+                                      if (!mounted) return;
+                                      Navigator.pushNamedAndRemoveUntil(
+                                        context,
+                                        RouteNames.signin,
+                                        (route) => false,
+                                      );
+                                    },
 
                                     style: FilledButton.styleFrom(
                                       shape: const RoundedRectangleBorder(

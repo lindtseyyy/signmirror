@@ -111,4 +111,15 @@ class SettingsService {
   Future<void> setUserPersonalization(String value) async {
     await _prefsSync.setString('userPersonalization', value);
   }
+
+  // --- SESSION ---
+  /// Clears the authenticated user session from local storage.
+  ///
+  /// Only user-specific keys are removed. Other settings (theme, language,
+  /// offline downloading, practice time, and high contrast) remain intact.
+  Future<void> clearAuthenticatedUserSession() async {
+    await _prefsSync.remove('userName');
+    await _prefsSync.remove('userEmail');
+    await _prefsSync.remove('userPersonalization');
+  }
 }
