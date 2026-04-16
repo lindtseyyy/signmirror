@@ -8,6 +8,17 @@ import 'package:signmirror_flutter/models/community_video.dart';
 import 'package:signmirror_flutter/models/lesson.dart';
 import 'package:signmirror_flutter/models/sign.dart';
 
+/// Thrown when attempting to register with an email that already exists.
+class EmailAlreadyExistsException implements Exception {
+  final String email;
+
+  EmailAlreadyExistsException(this.email);
+
+  @override
+  String toString() =>
+      'EmailAlreadyExistsException: A user with this email already exists ($email)';
+}
+
 class IsarService {
   late Future<Isar> db;
 
@@ -751,6 +762,78 @@ class IsarService {
   Future<User?> getUserById(int userId) async {
     final isar = await db;
     return await isar.users.get(userId);
+  }
+
+  // --- Authentication / registration (Isar-backed) ---
+
+  String _normalizeEmail(String email) => email.trim().toLowerCase();
+
+  /// Finds a user by email (trimmed + lowercased).
+  ///
+  /// Returns null when email is blank or no user is found.
+  Future<User?> getUserByEmail(String email) async {
+    final normalizedEmail = _normalizeEmail(email);
+    if (normalizedEmail.isEmpty) return null;
+
+    final isar = await db;
+    return await isar.users
+        .filter()
+        .emailEqualTo(normalizedEmail, caseSensitive: false)
+        .findFirst();
+  }
+
+  /// Registers a new user and persists it.
+  ///
+  /// - Email is normalized (trim/lowercase).
+  /// - Throws [EmailAlreadyExistsException] if email already exists.
+  Future<User> registerUser(String name, String email, String password) async {
+    final normalizedEmail = _normalizeEmail(email);
+    final normalizedName = name.trim();
+
+    if (normalizedEmail.isEmpty) {
+      throw ArgumentError.value(email, 'email', 'Email must not be empty');
+    }
+    if (normalizedName.isEmpty) {
+      throw ArgumentError.value(name, 'name', 'Name must not be empty');
+    }
+
+    final isar = await db;
+
+    return await isar.writeTxn<User>(() async {
+      final existing = await isar.users
+          .filter()
+          .emailEqualTo(normalizedEmail, caseSensitive: false)
+          .findFirst();
+      if (existing != null) {
+        throw EmailAlreadyExistsException(normalizedEmail);
+      }
+
+      final user = User()
+        ..name = normalizedName
+        ..email = normalizedEmail
+        ..password = password;
+
+      await isar.users.put(user);
+      return user;
+    });
+  }
+
+  /// Authenticates a user by email + password.
+  ///
+  /// Returns the matching [User] when valid, otherwise null.
+  Future<User?> authenticateUser(String email, String password) async {
+    final normalizedEmail = _normalizeEmail(email);
+    if (normalizedEmail.isEmpty) return null;
+
+    final isar = await db;
+    final user = await isar.users
+        .filter()
+        .emailEqualTo(normalizedEmail, caseSensitive: false)
+        .findFirst();
+
+    if (user == null) return null;
+    if (user.password != password) return null;
+    return user;
   }
 
   // Batch fetch uploader names for the given ids.

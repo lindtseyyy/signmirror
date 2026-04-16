@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:signmirror_flutter/providers/providers.dart';
+import 'package:signmirror_flutter/providers/settings_provider.dart';
 import 'package:signmirror_flutter/utils/snackbar_utils.dart';
 import 'package:signmirror_flutter/widgets/loading_screen.dart';
 import 'package:signmirror_flutter/widgets/signmirror_input_decoration.dart';
 import 'package:signmirror_flutter/constants/app_colors.dart';
 import '../constants/route_names.dart';
 
-class SigninScreen extends StatefulWidget {
+class SigninScreen extends ConsumerStatefulWidget {
   const SigninScreen({super.key});
 
   @override
-  State<SigninScreen> createState() => _SigninScreenState();
+  ConsumerState<SigninScreen> createState() => _SigninScreenState();
 }
 
-class _SigninScreenState extends State<SigninScreen> {
+class _SigninScreenState extends ConsumerState<SigninScreen> {
   // 1. Declare the recognizer here
   late TapGestureRecognizer _signUpRecognizer;
 
@@ -84,39 +87,66 @@ class _SigninScreenState extends State<SigninScreen> {
   }
 
   void _handleLogin() async {
-    if (_validateAndSubmit()) {
-      setState(() {
-        _isLoading = true; // Start loading
-      });
+    if (!_validateAndSubmit()) return;
 
-      // For invalid login later
-      // SnackBarUtils.show(
-      //   context,
-      //   message: "Invalid credentials. Please try again.",
-      //   isError: true,
-      //   position: SnackBarPosition.top,
-      // );
+    setState(() {
+      _isLoading = true; // Start loading
+      _isLoginValid = false;
+    });
 
-      // Simulate a network delay (e.g., 2 seconds)
-      await Future.delayed(const Duration(seconds: 2));
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
 
-      if (mounted) {
+    try {
+      final user = await ref
+          .read(isarServiceProvider)
+          .authenticateUser(email, password);
+
+      if (!mounted) return;
+
+      if (user == null) {
         setState(() {
           _isLoading = false; // Stop loading
-          _isLoginValid = true;
         });
 
-        await Future.delayed(const Duration(seconds: 1));
-
-        setState(() {
-          _isLoginValid = true;
-        });
-
-        // Redirect to Personalization instead of Login (Onboarding)
-        if (mounted) {
-          Navigator.pushReplacementNamed(context, RouteNames.personalization);
-        }
+        SnackBarUtils.show(
+          context,
+          message: "Invalid credentials. Please try again.",
+          isError: true,
+          position: SnackBarPosition.top,
+        );
+        return;
       }
+
+      // Persist signed-in user details for later use
+      ref.read(userNameProvider.notifier).setUserName(user.name);
+      ref.read(userEmailProvider.notifier).setUserEmail(user.email);
+
+      setState(() {
+        _isLoading = false; // Stop loading
+        _isLoginValid = true;
+      });
+
+      await Future.delayed(const Duration(seconds: 1));
+
+      // Redirect to Personalization instead of Login (Onboarding)
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, RouteNames.personalization);
+      }
+    } catch (_) {
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false; // Stop loading
+        _isLoginValid = false;
+      });
+
+      SnackBarUtils.show(
+        context,
+        message: "Invalid credentials. Please try again.",
+        isError: true,
+        position: SnackBarPosition.top,
+      );
     }
   }
 

@@ -1,11 +1,14 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:signmirror_flutter/utils/snackbar_utils.dart';
-import 'package:signmirror_flutter/providers/settings_provider.dart';
 import 'package:signmirror_flutter/constants/app_colors.dart';
+import 'package:signmirror_flutter/providers/providers.dart';
+import 'package:signmirror_flutter/providers/settings_provider.dart';
+import 'package:signmirror_flutter/services/isar_service.dart';
+import 'package:signmirror_flutter/utils/snackbar_utils.dart';
 import 'package:signmirror_flutter/widgets/loading_screen.dart';
 import 'package:signmirror_flutter/widgets/signmirror_input_decoration.dart';
+
 import '../constants/route_names.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
@@ -95,40 +98,69 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   }
 
   void _handleCreateAccount() async {
-    if (_validateAndSubmit()) {
+    if (!_validateAndSubmit()) return;
+
+    setState(() {
+      _isLoading = true; // Start loading
+    });
+
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    try {
+      final isarService = ref.read(isarServiceProvider);
+      final createdUser = await isarService.registerUser(name, email, password);
+
+      if (!mounted) return;
       setState(() {
-        _isLoading = true; // Start loading
+        _isLoading = false;
       });
 
-      // Simulate a network delay (e.g., 2 seconds)
-      await Future.delayed(const Duration(seconds: 2));
+      // Show success message
+      SnackBarUtils.show(
+        context,
+        message: "Account created successfully!",
+        isError: false,
+        position: SnackBarPosition.top,
+      );
 
+      // Persist to SharedPreferences-backed settings providers
+      // (use normalized values from the saved user)
+      ref.read(userNameProvider.notifier).setUserName(createdUser.name);
+      ref.read(userEmailProvider.notifier).setUserEmail(createdUser.email);
+
+      // Wait a tiny bit so they can read the success message
+      await Future.delayed(const Duration(milliseconds: 1500));
+
+      // Redirect to Login (SignIn)
       if (mounted) {
-        setState(() {
-          _isLoading = false; // Stop loading
-        });
-
-        // Show success message
-        SnackBarUtils.show(
-          context,
-          message: "Account created successfully!",
-          isError: false,
-          position: SnackBarPosition.top,
-        );
-
-        // Persist the entered name for later use
-        ref
-            .read(userNameProvider.notifier)
-            .setUserName(_nameController.text.trim());
-
-        // Wait a tiny bit so they can read the success message
-        await Future.delayed(const Duration(milliseconds: 1500));
-
-        // Redirect to Login (SignIn)
-        if (mounted) {
-          Navigator.pushReplacementNamed(context, RouteNames.signin);
-        }
+        Navigator.pushReplacementNamed(context, RouteNames.signin);
       }
+    } on EmailAlreadyExistsException {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+
+      SnackBarUtils.show(
+        context,
+        message: "An account with that email already exists.",
+        isError: true,
+        position: SnackBarPosition.top,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+
+      SnackBarUtils.show(
+        context,
+        message: "Could not create account. Please try again.",
+        isError: true,
+        position: SnackBarPosition.top,
+      );
     }
   }
 
