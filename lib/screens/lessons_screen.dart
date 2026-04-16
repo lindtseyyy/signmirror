@@ -387,7 +387,7 @@ Widget _buildListView(
               ),
               const SizedBox(height: 5),
               DifficultyBadge(level: lesson.level),
-              const SizedBox(height: 1),
+              const SizedBox(height: 5),
               ProgressBar(
                 percentage: lesson.progress,
                 useLegacyLightColors: useLegacyLightColors,
