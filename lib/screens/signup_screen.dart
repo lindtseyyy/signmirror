@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signmirror_flutter/utils/snackbar_utils.dart';
 import 'package:signmirror_flutter/providers/settings_provider.dart';
+import 'package:signmirror_flutter/constants/app_colors.dart';
 import '../constants/route_names.dart';
 import 'package:signmirror_flutter/widgets/loading_screen.dart';
 
@@ -138,6 +139,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
       body: Stack(
         children: [
@@ -435,12 +438,15 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                             const SizedBox(height: 30),
                             RichText(
                               text: TextSpan(
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 14,
-                                  fontFamily: 'Inter',
-                                  fontWeight: FontWeight.w300,
-                                ),
+                                style:
+                                    (textTheme.bodyMedium ??
+                                            const TextStyle())
+                                        .copyWith(
+                                          color: colors.onSurface,
+                                          fontSize: 14,
+                                          fontFamily: 'Inter',
+                                          fontWeight: FontWeight.w300,
+                                        ),
                                 children: [
                                   const TextSpan(
                                     text: "Already have an account? ",
@@ -448,7 +454,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                   TextSpan(
                                     text: "Sign in",
                                     style: const TextStyle(
-                                      color: Color(0xFF2563EB),
+                                      color: AppColors.lightButtonBackground,
                                       fontWeight: FontWeight.bold,
                                     ),
                                     recognizer: _signUpRecognizer,
