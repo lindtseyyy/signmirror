@@ -391,9 +391,9 @@ class _SigninScreenState extends State<SigninScreen> {
               ),
             ),
           ),
-          if (_isLoading) LoadingScreenWidget(label: "Logging in..."),
+          if (_isLoading) LoadingScreenWidget(label: "Logging in"),
           if (_isLoginValid)
-            LoadingScreenWidget(label: "Preparing your dashboard..."),
+            LoadingScreenWidget(label: "Preparing your Dashboard"),
         ],
       ),
     );
