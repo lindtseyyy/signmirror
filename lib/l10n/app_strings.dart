@@ -39,8 +39,9 @@ class AppStrings {
   String get dailyChallengeButton => _t('dailyChallengeButton');
 
   /// Weekday labels ordered Monday → Sunday.
-  List<String> get weekdayLabelsMonToSun =>
-      isFilipino ? const ['Lun', 'Mar', 'Miy', 'Huw', 'Biy', 'Sab', 'Lin'] : const ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  List<String> get weekdayLabelsMonToSun => isFilipino
+      ? const ['Lun', 'Mar', 'Miy', 'Huw', 'Biy', 'Sab', 'Lin']
+      : const ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   // Weekly progress chart (DynamicBarChart)
   String get weeklyProgressTitle => _t('weeklyProgressTitle');
@@ -159,8 +160,8 @@ class AppStrings {
       'lastTooltipTag': '(Nakaraan)',
       'thisTooltipTag': '(Ngayon)',
 
-      'progressSignsLearnedLabel': 'Mga natutunang sign',
-      'progressAvgAccuracyLabel': 'Karaniwang katumpakan',
+      'progressSignsLearnedLabel': 'Natutunang Sign',
+      'progressAvgAccuracyLabel': 'Avg. katumpakan',
       'progressPracticeStreakLabel': 'Streak ng praktis',
       'progressTotalAttemptsLabel': 'Kabuuang pagsubok',
 
