@@ -1,6 +1,6 @@
 {
-    "name": "signmirror_flutter",
-    "short_name": "signmirror_flutter",
+    "name": "SignMirror",
+    "short_name": "SignMirror",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
