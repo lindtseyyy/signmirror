@@ -28,6 +28,10 @@ class _AdaptiveVideoPlayerState extends State<AdaptiveVideoPlayer> {
   // New state flag to track if the user has requested playback
   bool _userStarted = false;
 
+  bool _repeatEnabled = false;
+  double _playbackSpeed = 1.0;
+  bool _youtubeFinished = false;
+
   @override
   void initState() {
     super.initState();
@@ -55,14 +59,71 @@ class _AdaptiveVideoPlayerState extends State<AdaptiveVideoPlayer> {
     _isYoutube = false;
     _isInitialized = false;
     _hasError = false;
+    _youtubeFinished = false;
   }
 
   void _startPlayback() {
     setState(() {
       _userStarted = true;
       _hasError = false;
+      _youtubeFinished = false;
     });
     _initializePlayer();
+  }
+
+  Future<void> _toggleRepeat() async {
+    final newValue = !_repeatEnabled;
+    setState(() {
+      _repeatEnabled = newValue;
+    });
+
+    final videoController = _videoPlayerController;
+    if (!_isYoutube && videoController != null) {
+      try {
+        await videoController.setLooping(newValue);
+        final value = videoController.value;
+        final isFinished =
+            value.isInitialized &&
+            value.duration.inMilliseconds > 0 &&
+            value.position >= value.duration &&
+            !value.isPlaying;
+        if (newValue && isFinished) {
+          await videoController.seekTo(Duration.zero);
+          await videoController.play();
+        }
+      } catch (_) {
+        // Best-effort: ignore if controller is in a bad state.
+      }
+      return;
+    }
+
+    final youtubeController = _youtubePlayerController;
+    if (_isYoutube && youtubeController != null) {
+      if (newValue && _youtubeFinished) {
+        setState(() => _youtubeFinished = false);
+        try {
+          youtubeController.seekTo(Duration.zero);
+          youtubeController.play();
+        } catch (_) {
+          // Ignore; controller can be transient while initializing.
+        }
+      }
+    }
+  }
+
+  Future<void> _setPlaybackSpeed(double speed) async {
+    setState(() {
+      _playbackSpeed = speed;
+    });
+
+    final videoController = _videoPlayerController;
+    if (!_isYoutube && videoController != null) {
+      try {
+        await videoController.setPlaybackSpeed(speed);
+      } catch (_) {
+        // Ignore if controller is not ready.
+      }
+    }
   }
 
   void _initializePlayer() {
@@ -105,6 +166,8 @@ class _AdaptiveVideoPlayerState extends State<AdaptiveVideoPlayer> {
             setState(() {
               _isInitialized = true;
             });
+            _videoPlayerController!.setLooping(_repeatEnabled);
+            _videoPlayerController!.setPlaybackSpeed(_playbackSpeed);
             _videoPlayerController!.play();
           })
           .catchError((error) {
@@ -176,6 +239,8 @@ class _AdaptiveVideoPlayerState extends State<AdaptiveVideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     if (!_userStarted) {
       return _buildThumbnail();
     }
@@ -213,15 +278,57 @@ class _AdaptiveVideoPlayerState extends State<AdaptiveVideoPlayer> {
     }
 
     if (_isYoutube && _youtubePlayerController != null) {
-      return YoutubePlayer(
-        controller: _youtubePlayerController!,
-        showVideoProgressIndicator: true,
-        bottomActions: [
-          CurrentPosition(),
-          ProgressBar(isExpanded: true),
-          const SizedBox(width: 10),
-          RemainingDuration(),
-          const PlaybackSpeedButton(),
+      return Stack(
+        alignment: Alignment.center,
+        children: [
+          YoutubePlayer(
+            controller: _youtubePlayerController!,
+            showVideoProgressIndicator: true,
+            onEnded: (metaData) {
+              if (_repeatEnabled) {
+                try {
+                  _youtubePlayerController!.seekTo(Duration.zero);
+                  _youtubePlayerController!.play();
+                } catch (_) {}
+              } else {
+                if (mounted) setState(() => _youtubeFinished = true);
+              }
+            },
+            bottomActions: [
+              CurrentPosition(),
+              ProgressBar(isExpanded: true),
+              IconButton(
+                tooltip: _repeatEnabled ? 'Repeat on' : 'Repeat off',
+                onPressed: _toggleRepeat,
+                icon: Icon(
+                  _repeatEnabled ? Icons.repeat_one : Icons.repeat,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(width: 10),
+              RemainingDuration(),
+              const PlaybackSpeedButton(),
+            ],
+          ),
+          if (_youtubeFinished && !_repeatEnabled)
+            CircleAvatar(
+              radius: 30,
+              backgroundColor: colorScheme.scrim.withOpacity(0.6),
+              child: IconButton(
+                icon: Icon(
+                  Icons.replay,
+                  color: colorScheme.onSurface,
+                  size: 30,
+                ),
+                onPressed: () {
+                  setState(() => _youtubeFinished = false);
+                  try {
+                    _youtubePlayerController!.seekTo(Duration.zero);
+                    _youtubePlayerController!.play();
+                  } catch (_) {}
+                },
+              ),
+            ),
         ],
       );
     }
@@ -233,9 +340,16 @@ class _AdaptiveVideoPlayerState extends State<AdaptiveVideoPlayer> {
           final isFinished =
               value.isInitialized &&
               value.duration.inMilliseconds > 0 &&
-              value.position >= value.duration;
+              value.position >= value.duration &&
+              !value.isPlaying;
 
           final isPlaying = value.isPlaying;
+
+          final progressColors = VideoProgressColors(
+            playedColor: colorScheme.primary,
+            bufferedColor: colorScheme.primary.withOpacity(0.35),
+            backgroundColor: colorScheme.onSurface.withOpacity(0.2),
+          );
 
           return Stack(
             alignment: Alignment.center,
@@ -247,48 +361,147 @@ class _AdaptiveVideoPlayerState extends State<AdaptiveVideoPlayer> {
                 child: VideoPlayer(_videoPlayerController!),
               ),
 
-              if (isFinished)
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Colors.black54,
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.replay,
-                      color: Colors.white,
-                      size: 30,
-                    ),
-                    onPressed: () {
-                      _videoPlayerController!.seekTo(Duration.zero);
-                      _videoPlayerController!.play();
-                    },
-                  ),
-                )
-              else if (!isPlaying)
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Colors.black54,
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.play_arrow,
-                      color: Colors.white,
-                      size: 30,
-                    ),
-                    onPressed: () {
-                      _videoPlayerController!.play();
-                    },
-                  ),
-                ),
-
+              // Tap region (doesn't cover the progress bar area)
               Positioned.fill(
-                child: GestureDetector(
-                  onTap: () {
-                    if (isFinished) return;
-                    if (isPlaying) {
-                      _videoPlayerController!.pause();
-                    } else {
-                      _videoPlayerController!.play();
-                    }
-                  },
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Positioned.fill(
+                            child: GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () {
+                                if (isFinished && !_repeatEnabled) return;
+                                if (isPlaying) {
+                                  _videoPlayerController!.pause();
+                                } else {
+                                  _videoPlayerController!.play();
+                                }
+                              },
+                            ),
+                          ),
+                          if (isFinished && !_repeatEnabled)
+                            CircleAvatar(
+                              radius: 30,
+                              backgroundColor: colorScheme.scrim.withOpacity(
+                                0.6,
+                              ),
+                              child: IconButton(
+                                icon: Icon(
+                                  Icons.replay,
+                                  color: colorScheme.onSurface,
+                                  size: 30,
+                                ),
+                                onPressed: () {
+                                  _videoPlayerController!.seekTo(Duration.zero);
+                                  _videoPlayerController!.play();
+                                },
+                              ),
+                            )
+                          else if (!isPlaying)
+                            CircleAvatar(
+                              radius: 30,
+                              backgroundColor: colorScheme.scrim.withOpacity(
+                                0.6,
+                              ),
+                              child: IconButton(
+                                icon: Icon(
+                                  Icons.play_arrow,
+                                  color: colorScheme.onSurface,
+                                  size: 30,
+                                ),
+                                onPressed: () {
+                                  _videoPlayerController!.play();
+                                },
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    // Bottom controls (progress + repeat + speed)
+                    Container(
+                      color: colorScheme.surface.withOpacity(0.65),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          VideoProgressIndicator(
+                            _videoPlayerController!,
+                            allowScrubbing: true,
+                            colors: progressColors,
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                          ),
+                          Row(
+                            children: [
+                              IconButton(
+                                tooltip: _repeatEnabled
+                                    ? 'Repeat on'
+                                    : 'Repeat off',
+                                onPressed: _toggleRepeat,
+                                icon: Icon(
+                                  _repeatEnabled
+                                      ? Icons.repeat_one
+                                      : Icons.repeat,
+                                  color: colorScheme.onSurface,
+                                ),
+                              ),
+                              const Spacer(),
+                              PopupMenuButton<double>(
+                                tooltip: 'Playback speed',
+                                initialValue: _playbackSpeed,
+                                onSelected: (speed) => _setPlaybackSpeed(speed),
+                                itemBuilder: (context) {
+                                  const speeds = <double>[
+                                    0.5,
+                                    0.75,
+                                    1.0,
+                                    1.25,
+                                    1.5,
+                                    2.0,
+                                  ];
+                                  return speeds
+                                      .map(
+                                        (s) => PopupMenuItem<double>(
+                                          value: s,
+                                          child: Text(
+                                            '${s.toStringAsFixed(s == 1.0 ? 0 : 2)}x',
+                                          ),
+                                        ),
+                                      )
+                                      .toList();
+                                },
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.speed,
+                                      color: colorScheme.onSurface,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      '${_playbackSpeed.toStringAsFixed(_playbackSpeed == 1.0 ? 0 : 2)}x',
+                                      style: TextStyle(
+                                        color: colorScheme.onSurface,
+                                      ),
+                                    ),
+                                    Icon(
+                                      Icons.arrow_drop_down,
+                                      color: colorScheme.onSurface,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

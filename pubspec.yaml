@@ -104,6 +104,12 @@ flutter:
     - assets/videos/signs/alphabet/c.mp4
     - assets/videos/signs/alphabet/d.mp4
     - assets/videos/signs/alphabet/e.mp4
+    - assets/videos/signs/numbers/one.mp4
+    - assets/videos/signs/numbers/two.mp4
+    - assets/videos/signs/numbers/three.mp4
+    - assets/videos/signs/numbers/four.mp4
+    - assets/videos/signs/numbers/five.mp4
+    - assets/videos/signs/numbers/six.mp4
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
