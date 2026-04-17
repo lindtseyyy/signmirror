@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signmirror_flutter/constants/route_names.dart';
+import 'package:signmirror_flutter/notifications/notification_service.dart';
 import 'package:signmirror_flutter/providers/settings_provider.dart';
 import 'package:signmirror_flutter/routes/routes.dart';
 import 'package:signmirror_flutter/screens/personalization_screen.dart';
@@ -10,13 +12,214 @@ import 'package:signmirror_flutter/services/settings_service.dart';
 import 'package:signmirror_flutter/theme/app_theme.dart';
 import 'package:signmirror_flutter/theme/theme_settings.dart';
 
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+OverlayEntry? _foregroundBannerEntry;
+Timer? _foregroundBannerDismissTimer;
+
+StreamSubscription<DailyPracticeReminderEvent>? _foregroundReminderSubscription;
+
+void _hideForegroundReminderBanner() {
+  _foregroundBannerDismissTimer?.cancel();
+  _foregroundBannerDismissTimer = null;
+
+  _foregroundBannerEntry?.remove();
+  _foregroundBannerEntry = null;
+}
+
+void _showForegroundReminderBanner(DailyPracticeReminderEvent event) {
+  void showNow() {
+    final overlayState = navigatorKey.currentState?.overlay;
+    if (overlayState == null) return;
+
+    _hideForegroundReminderBanner();
+
+    final entry = OverlayEntry(
+      builder: (context) =>
+          _TopReminderBanner(title: event.title, body: event.body),
+    );
+
+    _foregroundBannerEntry = entry;
+    overlayState.insert(entry);
+
+    _foregroundBannerDismissTimer = Timer(
+      const Duration(seconds: 4),
+      _hideForegroundReminderBanner,
+    );
+  }
+
+  // If an event arrives before the overlay is ready, defer to the next frame.
+  if (navigatorKey.currentState?.overlay == null) {
+    WidgetsBinding.instance.addPostFrameCallback((_) => showNow());
+  } else {
+    showNow();
+  }
+}
+
+void _startForegroundReminderListener() {
+  if (_foregroundReminderSubscription != null) return;
+
+  final Stream<DailyPracticeReminderEvent> stream =
+      NotificationService.instance.foregroundReminderStream;
+
+  _foregroundReminderSubscription = stream.listen(
+    (event) {
+      _showForegroundReminderBanner(event);
+    },
+    onError: (e, st) {
+      debugPrint('main: foreground reminder stream error: $e');
+      debugPrint('$st');
+    },
+  );
+}
+
+class _TopReminderBanner extends StatelessWidget {
+  const _TopReminderBanner({required this.title, required this.body});
+
+  final String title;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: TweenAnimationBuilder<Offset>(
+            tween: Tween<Offset>(begin: const Offset(0, -1), end: Offset.zero),
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            builder: (context, offset, child) {
+              return FractionalTranslation(translation: offset, child: child);
+            },
+            child: Material(
+              color: colorScheme.inverseSurface,
+              elevation: 4,
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Icon(
+                        Icons.notifications_active_outlined,
+                        size: 18,
+                        color: colorScheme.onInverseSurface,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: DefaultTextStyle(
+                        style: (textTheme.bodyMedium ?? const TextStyle())
+                            .copyWith(color: colorScheme.onInverseSurface),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Daily Practice Reminder',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: (textTheme.labelSmall ?? const TextStyle())
+                                  .copyWith(
+                                    color: colorScheme.onInverseSurface,
+                                  ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: (textTheme.titleSmall ?? const TextStyle())
+                                  .copyWith(
+                                    color: colorScheme.onInverseSurface,
+                                  ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              body,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'Dismiss',
+                      onPressed: _hideForegroundReminderBanner,
+                      icon: Icon(
+                        Icons.close,
+                        size: 18,
+                        color: colorScheme.onInverseSurface,
+                      ),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 36,
+                        minHeight: 36,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+Future<void> _scheduleDailyPracticeReminderFromSettings(
+  SettingsService settingsService,
+) async {
+  final practiceTime = settingsService.practiceTime;
+
+  try {
+    // Ensure any previously scheduled reminder is aligned to the persisted time.
+    await NotificationService.instance.rescheduleDailyPracticeReminderAt(
+      practiceTime,
+    );
+  } catch (e, st) {
+    // Scheduling can fail (e.g., permission denied). Don't crash startup.
+    debugPrint(
+      'main: failed to schedule daily practice reminder at $practiceTime: $e',
+    );
+    debugPrint('$st');
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   ui.DartPluginRegistrant.ensureInitialized();
 
+  // Initialize notifications and settings before runApp.
+  await NotificationService.instance.init();
+
+  // Listen early so foreground reminders can surface immediately.
+  _startForegroundReminderListener();
+
   // 1. Initialize the service manually once
   final settingsService = SettingsService();
   await settingsService.init();
+
+  // Schedule the daily practice reminder using the currently saved practice time.
+  unawaited(_scheduleDailyPracticeReminderFromSettings(settingsService));
 
   runApp(
     ProviderScope(
@@ -44,6 +247,8 @@ class MyApp extends ConsumerWidget {
     return MaterialApp(
       title: 'SignMirror',
       debugShowCheckedModeBanner: false,
+      navigatorKey: navigatorKey,
+      scaffoldMessengerKey: scaffoldMessengerKey,
       initialRoute: RouteNames.login,
       routes: AppRoutes.getRoutes(),
       onUnknownRoute: (settings) => MaterialPageRoute(

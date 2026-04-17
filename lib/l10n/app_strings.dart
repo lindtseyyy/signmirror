@@ -81,6 +81,55 @@ class AppStrings {
       _t('signinErrorInvalidCredentials');
 
   // ---------------------------
+  // Sign up strings
+  // ---------------------------
+
+  String get signupCreateAccountTitle => _t('signupCreateAccountTitle');
+  String get signupCreateAccountSubtitle => _t('signupCreateAccountSubtitle');
+
+  String get signupNameLabel => _t('signupNameLabel');
+  String get signupNameHint => _t('signupNameHint');
+
+  String get signupEmailLabel => _t('signupEmailLabel');
+  String get signupEmailHint => _t('signupEmailHint');
+
+  String get signupPasswordLabel => _t('signupPasswordLabel');
+  String get signupPasswordHint => _t('signupPasswordHint');
+
+  String get signupPasswordRequirementMinChars =>
+      _t('signupPasswordRequirementMinChars');
+  String get signupPasswordRequirementComplexity =>
+      _t('signupPasswordRequirementComplexity');
+
+  String get signupCreateAccountButtonLabel =>
+      _t('signupCreateAccountButtonLabel');
+  String get signupDividerLabel => _t('signupDividerLabel');
+
+  String get signupSocialGoogleLabel => _t('signupSocialGoogleLabel');
+  String get signupSocialFacebookLabel => _t('signupSocialFacebookLabel');
+
+  String get signupFooterHaveAccountLabel => _t('signupFooterHaveAccountLabel');
+  String get signupFooterSignInLabel => _t('signupFooterSignInLabel');
+
+  String get signupLoadingCreatingAccountLabel =>
+      _t('signupLoadingCreatingAccountLabel');
+
+  String get signupSnackbarAccountCreatedSuccess =>
+      _t('signupSnackbarAccountCreatedSuccess');
+
+  String get signupErrorNameRequired => _t('signupErrorNameRequired');
+  String get signupErrorEmailRequired => _t('signupErrorEmailRequired');
+  String get signupErrorEmailInvalid => _t('signupErrorEmailInvalid');
+  String get signupErrorPasswordRequired => _t('signupErrorPasswordRequired');
+  String get signupErrorPasswordRequirementsNotMet =>
+      _t('signupErrorPasswordRequirementsNotMet');
+
+  String get signupErrorEmailAlreadyExists =>
+      _t('signupErrorEmailAlreadyExists');
+  String get signupErrorCreateAccountFailed =>
+      _t('signupErrorCreateAccountFailed');
+
+  // ---------------------------
   // Dashboard strings
   // ---------------------------
 
@@ -605,6 +654,8 @@ class AppStrings {
 
   String get profileDailyPracticeReminderLabel =>
       _t('profileDailyPracticeReminderLabel');
+  String get profileDailyPracticeReminderError =>
+      _t('profileDailyPracticeReminderError');
   String get profileLogoutLabel => _t('profileLogoutLabel');
 
   String get profileDefaultUserLabel => _t('profileDefaultUserLabel');
@@ -613,6 +664,7 @@ class AppStrings {
   String get profileSelectTimeTitle => _t('profileSelectTimeTitle');
   String get commonDoneLabel => _t('commonDoneLabel');
   String get commonNoneLabel => _t('commonNoneLabel');
+  String get commonSettingsLabel => _t('commonSettingsLabel');
 
   // ---------------------------
   // Edit Profile strings
@@ -778,6 +830,48 @@ class AppStrings {
       'signinErrorEmailInvalid': 'Enter a valid email address',
       'signinErrorPasswordRequired': 'Password is required',
       'signinErrorInvalidCredentials': 'Invalid credentials. Please try again.',
+
+      // Sign up
+      'signupCreateAccountTitle': 'Create Account',
+      'signupCreateAccountSubtitle': 'Start your Journey',
+
+      'signupNameLabel': 'Name',
+      'signupNameHint': 'Enter name',
+
+      'signupEmailLabel': 'Email Address',
+      'signupEmailHint': 'Enter email',
+
+      'signupPasswordLabel': 'Password',
+      'signupPasswordHint': 'Enter password',
+
+      'signupPasswordRequirementMinChars': 'Must be at least 6 characters',
+      'signupPasswordRequirementComplexity':
+          'Include uppercase, lowercase, and number',
+
+      'signupCreateAccountButtonLabel': 'Create Account',
+      'signupDividerLabel': 'or sign up with',
+
+      'signupSocialGoogleLabel': 'Google',
+      'signupSocialFacebookLabel': 'Facebook',
+
+      'signupFooterHaveAccountLabel': 'Already have an account?',
+      'signupFooterSignInLabel': 'Sign in',
+
+      'signupLoadingCreatingAccountLabel': 'Creating account...',
+
+      'signupSnackbarAccountCreatedSuccess': 'Account created successfully!',
+
+      'signupErrorNameRequired': 'Name is required',
+      'signupErrorEmailRequired': 'Email is required',
+      'signupErrorEmailInvalid': 'Enter a valid email address',
+      'signupErrorPasswordRequired': 'Password is required',
+      'signupErrorPasswordRequirementsNotMet':
+          'Password does not meet requirements',
+
+      'signupErrorEmailAlreadyExists':
+          'An account with that email already exists.',
+      'signupErrorCreateAccountFailed':
+          'Could not create account. Please try again.',
 
       // Dashboard
       'dashboardTitle': 'Dashboard',
@@ -994,12 +1088,15 @@ class AppStrings {
       'languageEnglishLabel': 'English',
       'languageFilipinoLabel': 'Filipino',
       'profileDailyPracticeReminderLabel': 'Daily Practice Reminder',
+      'profileDailyPracticeReminderError':
+          'Couldn\'t schedule the reminder. Check notification settings.',
       'profileLogoutLabel': 'Logout',
       'profileDefaultUserLabel': 'User',
       'profileNotSetLabel': 'Not set',
       'profileSelectTimeTitle': 'Select Time',
       'commonDoneLabel': 'Done',
       'commonNoneLabel': 'None',
+      'commonSettingsLabel': 'Settings',
 
       // Edit Profile
       'editProfileTitle': 'Edit Profile',
@@ -1085,6 +1182,50 @@ class AppStrings {
       'signinErrorPasswordRequired': 'Kailangan ang password',
       'signinErrorInvalidCredentials':
           'Maling email o password. Pakisubukan muli.',
+
+      // Sign up
+      'signupCreateAccountTitle': 'Gumawa ng Account',
+      'signupCreateAccountSubtitle': 'Simulan ang iyong paglalakbay',
+
+      'signupNameLabel': 'Pangalan',
+      'signupNameHint': 'Ilagay ang pangalan',
+
+      'signupEmailLabel': 'Email Address',
+      'signupEmailHint': 'Ilagay ang email',
+
+      'signupPasswordLabel': 'Password',
+      'signupPasswordHint': 'Ilagay ang password',
+
+      'signupPasswordRequirementMinChars':
+          'Dapat ay hindi bababa sa 6 na karakter',
+      'signupPasswordRequirementComplexity':
+          'Isama ang malaking titik, maliit na titik, at numero',
+
+      'signupCreateAccountButtonLabel': 'Gumawa ng Account',
+      'signupDividerLabel': 'o mag-sign up sa',
+
+      'signupSocialGoogleLabel': 'Google',
+      'signupSocialFacebookLabel': 'Facebook',
+
+      'signupFooterHaveAccountLabel': 'Mayroon ka nang account? ',
+      'signupFooterSignInLabel': 'Mag-sign in',
+
+      'signupLoadingCreatingAccountLabel': 'Ginagawa ang account...',
+
+      'signupSnackbarAccountCreatedSuccess':
+          'Matagumpay na nagawa ang account!',
+
+      'signupErrorNameRequired': 'Kailangan ang pangalan',
+      'signupErrorEmailRequired': 'Kailangan ang email',
+      'signupErrorEmailInvalid': 'Maglagay ng wastong email address',
+      'signupErrorPasswordRequired': 'Kailangan ang password',
+      'signupErrorPasswordRequirementsNotMet':
+          'Hindi natutugunan ng password ang mga kinakailangan.',
+
+      'signupErrorEmailAlreadyExists':
+          'Mayroon nang account gamit ang email na iyon.',
+      'signupErrorCreateAccountFailed':
+          'Hindi magawa ang account. Pakisubukan muli.',
 
       // Dashboard
       'dashboardTitle': 'Dashboard',
@@ -1305,12 +1446,15 @@ class AppStrings {
       'languageEnglishLabel': 'Ingles',
       'languageFilipinoLabel': 'Filipino',
       'profileDailyPracticeReminderLabel': 'Paalala sa Araw-araw na Praktis',
+      'profileDailyPracticeReminderError':
+          'Hindi ma-schedule ang paalala. Pakisuri ang settings ng notification.',
       'profileLogoutLabel': 'Mag-logout',
       'profileDefaultUserLabel': 'Gumagamit',
       'profileNotSetLabel': 'Hindi nakatakda',
       'profileSelectTimeTitle': 'Pumili ng Oras',
       'commonDoneLabel': 'Tapos',
       'commonNoneLabel': 'Wala',
+      'commonSettingsLabel': 'Mga Setting',
 
       // Edit Profile
       'editProfileTitle': 'I-edit ang Profile',

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signmirror_flutter/constants/route_names.dart';
 import 'package:signmirror_flutter/l10n/app_strings.dart';
 import 'package:signmirror_flutter/l10n/app_strings_provider.dart';
+import 'package:signmirror_flutter/notifications/notification_service.dart';
 import 'package:signmirror_flutter/providers/settings_provider.dart';
 import 'package:signmirror_flutter/theme/app_theme.dart';
 import 'package:signmirror_flutter/theme/theme_settings.dart';
@@ -652,19 +653,67 @@ void _showTimePicker(BuildContext context, WidgetRef ref, AppStrings strings) {
 
   showCupertinoModalPopup(
     context: context,
-    builder: (BuildContext context) => Container(
+    builder: (BuildContext popupContext) => Container(
       height: 300,
-      color: CupertinoColors.systemBackground.resolveFrom(context),
+      color: CupertinoColors.systemBackground.resolveFrom(popupContext),
       child: SafeArea(
         top: false,
         child: Column(
           children: [
             _buildPickerHeader(
               strings: strings,
-              onDone: () {
+              onDone: () async {
                 final pickedTime = TimeOfDay.fromDateTime(tempDateTime);
-                ref.read(practiceTimeProvider.notifier).setTime(pickedTime);
-                Navigator.pop(context);
+
+                Object? error;
+                try {
+                  await ref
+                      .read(practiceTimeProvider.notifier)
+                      .setTime(pickedTime);
+                } catch (e) {
+                  error = e;
+                }
+
+                Navigator.pop(popupContext);
+
+                if (error != null) {
+                  unawaited(
+                    NotificationService.instance
+                        .debugDumpDailyPracticeNotificationState(),
+                  );
+
+                  final rawErrorText = error.toString().trim();
+                  final cleanedErrorText = rawErrorText
+                      .replaceFirst(RegExp(r'^Exception:\s*'), '')
+                      .replaceFirst(RegExp(r'^StateError:\s*'), '')
+                      .replaceFirst(RegExp(r'^Bad state:\s*'), '')
+                      .trim();
+                  final snackBarText = cleanedErrorText.isNotEmpty
+                      ? cleanedErrorText
+                      : strings.profileDailyPracticeReminderError;
+
+                  final messenger = ScaffoldMessenger.maybeOf(context);
+                  messenger?.hideCurrentSnackBar();
+                  messenger?.showSnackBar(
+                    SnackBar(
+                      content: Text(snackBarText),
+                      action: SnackBarAction(
+                        label: strings.commonSettingsLabel,
+                        onPressed: () {
+                          unawaited(() async {
+                            try {
+                              await NotificationService.instance
+                                  .openAndroidChannelSettingsBestEffort();
+                            } catch (_) {
+                              await NotificationService.instance
+                                  .openAndroidNotificationSettingsBestEffort();
+                            }
+                          }());
+                        },
+                      ),
+                    ),
+                  );
+                }
               },
             ),
             Expanded(

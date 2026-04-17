@@ -2,6 +2,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signmirror_flutter/constants/app_colors.dart';
+import 'package:signmirror_flutter/l10n/app_strings.dart';
+import 'package:signmirror_flutter/l10n/app_strings_provider.dart';
 import 'package:signmirror_flutter/providers/providers.dart';
 import 'package:signmirror_flutter/providers/settings_provider.dart';
 import 'package:signmirror_flutter/services/isar_service.dart';
@@ -10,6 +12,62 @@ import 'package:signmirror_flutter/widgets/loading_screen.dart';
 import 'package:signmirror_flutter/widgets/signmirror_input_decoration.dart';
 
 import '../constants/route_names.dart';
+
+extension SignupStrings on AppStrings {
+  String get signupCreateAccountTitle =>
+      isFilipino ? 'Gumawa ng Account' : 'Create Account';
+
+  String get signupCreateAccountSubtitle =>
+      isFilipino ? 'Simulan ang iyong paglalakbay' : 'Start your Journey';
+
+  String get signupNameLabel => isFilipino ? 'Pangalan' : 'Name';
+  String get signupNameHint =>
+      isFilipino ? 'Ilagay ang pangalan' : 'Enter name';
+
+  String get signupCreateAccountButtonLabel =>
+      isFilipino ? 'Gumawa ng Account' : 'Create Account';
+
+  String get signupPasswordHelperMinChars => isFilipino
+      ? 'Dapat hindi bababa sa 6 na karakter'
+      : 'Must be at least 6 characters';
+
+  String get signupPasswordHelperComposition => isFilipino
+      ? 'Dapat may malaking titik, maliit na titik, at numero'
+      : 'Include uppercase, lowercase, and number';
+
+  String get signupFooterHaveAccountLabel =>
+      isFilipino ? 'Mayroon ka nang account? ' : 'Already have an account? ';
+
+  String get signupFooterSignInLabel => isFilipino ? 'Mag-sign in' : 'Sign in';
+
+  String get signupLoadingCreatingAccountLabel =>
+      isFilipino ? 'Ginagawa ang account...' : 'Creating account...';
+
+  // Validation errors
+  String get signupErrorNameRequired =>
+      isFilipino ? 'Kailangan ang pangalan' : 'Name is required';
+
+  String get signupErrorPasswordRequirements => isFilipino
+      ? 'Hindi pumapasa ang password sa mga kinakailangan'
+      : 'Password does not meet requirements';
+
+  // Snackbars
+  String get signupSnackbarAccountCreated => isFilipino
+      ? 'Matagumpay na nagawa ang account!'
+      : 'Account created successfully!';
+
+  String get signupSnackbarEmailAlreadyExists => isFilipino
+      ? 'Mayroon nang account gamit ang email na iyon.'
+      : 'An account with that email already exists.';
+
+  String get signupSnackbarCreateFailed => isFilipino
+      ? 'Hindi makagawa ng account. Pakisubukan muli.'
+      : 'Could not create account. Please try again.';
+
+  // Social providers
+  String get signupSocialGoogleLabel => 'Google';
+  String get signupSocialFacebookLabel => 'Facebook';
+}
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -55,6 +113,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
   // 3. The Validation Logic
   bool _validateAndSubmit() {
+    final strings = ref.read(appStringsProvider);
     bool isValid = true;
 
     setState(() {
@@ -68,17 +127,17 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       String password = _passwordController.text.trim();
 
       if (name.isEmpty) {
-        _nameError = "Name is required";
+        _nameError = strings.signupErrorNameRequired;
         isValid = false;
       }
 
       // Basic Email Regex check
       final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
       if (email.isEmpty) {
-        _emailError = "Email is required";
+        _emailError = strings.signinErrorEmailRequired;
         isValid = false;
       } else if (!emailRegex.hasMatch(email)) {
-        _emailError = "Enter a valid email address";
+        _emailError = strings.signinErrorEmailInvalid;
         isValid = false;
       }
 
@@ -86,10 +145,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       final passwordRegex = RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$');
 
       if (password.isEmpty) {
-        _passwordError = "Password is required";
+        _passwordError = strings.signinErrorPasswordRequired;
         isValid = false;
       } else if (!passwordRegex.hasMatch(password)) {
-        _passwordError = "Password does not meet requirements";
+        _passwordError = strings.signupErrorPasswordRequirements;
         isValid = false;
       }
     });
@@ -100,6 +159,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   void _handleCreateAccount() async {
     if (!_validateAndSubmit()) return;
 
+    final strings = ref.read(appStringsProvider);
+    final isarService = ref.read(isarServiceProvider);
+
     setState(() {
       _isLoading = true; // Start loading
     });
@@ -109,7 +171,18 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     final password = _passwordController.text.trim();
 
     try {
-      final isarService = ref.read(isarServiceProvider);
+      // Ensure email is unique before attempting registration.
+      // IsarService normalizes for case/trim; we pass trimmed email.
+      final existingUser = await isarService.getUserByEmail(email);
+      if (existingUser != null) {
+        if (!mounted) return;
+        setState(() {
+          _isLoading = false;
+          _emailError = strings.signupSnackbarEmailAlreadyExists;
+        });
+        return;
+      }
+
       final createdUser = await isarService.registerUser(name, email, password);
 
       if (!mounted) return;
@@ -120,7 +193,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       // Show success message
       SnackBarUtils.show(
         context,
-        message: "Account created successfully!",
+        message: strings.signupSnackbarAccountCreated,
         isError: false,
         position: SnackBarPosition.top,
       );
@@ -141,11 +214,12 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
+        _emailError = strings.signupSnackbarEmailAlreadyExists;
       });
 
       SnackBarUtils.show(
         context,
-        message: "An account with that email already exists.",
+        message: strings.signupSnackbarEmailAlreadyExists,
         isError: true,
         position: SnackBarPosition.top,
       );
@@ -157,7 +231,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
       SnackBarUtils.show(
         context,
-        message: "Could not create account. Please try again.",
+        message: strings.signupSnackbarCreateFailed,
         isError: true,
         position: SnackBarPosition.top,
       );
@@ -173,6 +247,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final strings = ref.watch(appStringsProvider);
+    final langCode = ref.watch(languageProvider);
+    final langBadge = langCode == 'fil' ? 'FIL' : 'EN';
 
     return Scaffold(
       body: Stack(
@@ -204,6 +281,50 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                               ),
                             ),
                           ),
+                          Positioned(
+                            top: 12,
+                            right: 12,
+                            child: PopupMenuButton<String>(
+                              initialValue: langCode,
+                              onSelected: (value) {
+                                ref
+                                    .read(languageProvider.notifier)
+                                    .setLanguage(value);
+                              },
+                              itemBuilder: (context) => [
+                                PopupMenuItem(
+                                  value: 'en',
+                                  child: Text(strings.languageEnglishLabel),
+                                ),
+                                PopupMenuItem(
+                                  value: 'fil',
+                                  child: Text(strings.languageFilipinoLabel),
+                                ),
+                              ],
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.18),
+                                  borderRadius: BorderRadius.circular(999),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.35),
+                                  ),
+                                ),
+                                child: Text(
+                                  langBadge,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -216,7 +337,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Create Account',
+                                      strings.signupCreateAccountTitle,
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontFamily: 'Inter',
@@ -225,7 +346,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                       ),
                                     ),
                                     Text(
-                                      "Start your Journey",
+                                      strings.signupCreateAccountSubtitle,
                                       style: TextStyle(
                                         color: Colors.white.withValues(
                                           alpha: 0.6,
@@ -257,8 +378,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                 }
                               },
                               decoration: signMirrorInputDecoration(
-                                label: 'Name',
-                                hint: 'Enter name',
+                                label: strings.signupNameLabel,
+                                hint: strings.signupNameHint,
                                 colors: colors,
                                 errorText: _nameError,
                               ),
@@ -278,8 +399,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                               },
                               keyboardType: TextInputType.emailAddress,
                               decoration: signMirrorInputDecoration(
-                                label: 'Email Address',
-                                hint: 'Enter email',
+                                label: strings.signinEmailLabel,
+                                hint: strings.signinEmailHint,
                                 colors: colors,
                                 errorText: _emailError,
                               ),
@@ -299,8 +420,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                 }
                               },
                               decoration: signMirrorInputDecoration(
-                                label: 'Password',
-                                hint: 'Enter password',
+                                label: strings.signinPasswordLabel,
+                                hint: strings.signinPasswordHint,
                                 colors: colors,
                                 errorText: _passwordError,
                                 suffixIcon: IconButton(
@@ -329,7 +450,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                       ),
                                       const SizedBox(width: 6),
                                       Text(
-                                        "Must be at least 6 characters",
+                                        strings.signupPasswordHelperMinChars,
                                         style: TextStyle(
                                           color: Colors.grey[600],
                                           fontSize: 12,
@@ -351,7 +472,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                       ),
                                       const SizedBox(width: 6),
                                       Text(
-                                        "Include uppercase, lowercase, and number",
+                                        strings.signupPasswordHelperComposition,
                                         style: TextStyle(
                                           color: Colors.grey[600],
                                           fontSize: 12,
@@ -377,9 +498,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                 ),
                                 minimumSize: const Size(double.infinity, 50),
                               ),
-                              child: const Text(
-                                "Create Account",
-                                style: TextStyle(
+                              child: Text(
+                                strings.signupCreateAccountButtonLabel,
+                                style: const TextStyle(
                                   fontFamily: 'Inter',
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: 1.0,
@@ -398,9 +519,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
-                                const Text(
-                                  "or sign up with",
-                                  style: TextStyle(fontFamily: 'Inter'),
+                                Text(
+                                  strings.signinDividerLabel,
+                                  style: const TextStyle(fontFamily: 'Inter'),
                                 ),
                                 Container(
                                   width: 100,
@@ -437,7 +558,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                         ),
                                       ),
                                       const SizedBox(width: 10),
-                                      const Text("Google"),
+                                      Text(strings.signupSocialGoogleLabel),
                                     ],
                                   ),
                                 ),
@@ -462,7 +583,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                         ),
                                       ),
                                       const SizedBox(width: 10),
-                                      const Text("Facebook"),
+                                      Text(strings.signupSocialFacebookLabel),
                                     ],
                                   ),
                                 ),
@@ -480,11 +601,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                           fontWeight: FontWeight.w300,
                                         ),
                                 children: [
-                                  const TextSpan(
-                                    text: "Already have an account? ",
+                                  TextSpan(
+                                    text: strings.signupFooterHaveAccountLabel,
                                   ),
                                   TextSpan(
-                                    text: "Sign in",
+                                    text: strings.signupFooterSignInLabel,
                                     style: const TextStyle(
                                       color: AppColors.lightButtonBackground,
                                       fontWeight: FontWeight.bold,
@@ -503,7 +624,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               ),
             ),
           ), // 2. The Loading Overlay
-          if (_isLoading) LoadingScreenWidget(label: "Creating account..."),
+          if (_isLoading)
+            LoadingScreenWidget(
+              label: strings.signupLoadingCreatingAccountLabel,
+            ),
         ],
       ),
     );

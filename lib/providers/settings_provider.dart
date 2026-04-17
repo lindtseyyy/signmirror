@@ -4,6 +4,7 @@ import 'package:intl/intl.dart'; //
 import 'package:signmirror_flutter/l10n/app_strings.dart';
 import 'package:signmirror_flutter/theme/theme_settings.dart';
 
+import '../notifications/notification_service.dart';
 import '../services/settings_service.dart';
 
 // This provider gives you access to the service anywhere
@@ -223,10 +224,40 @@ class PracticeTimeNotifier extends StateNotifier<String> {
   }
 
   // UPDATER called by the "Done" button
-  void setTime(TimeOfDay picked) async {
+  Future<void> setTime(TimeOfDay picked) async {
     final new24hTime =
         "${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}";
+
+    if (state == new24hTime) return;
+
     state = new24hTime;
     await _service.setPracticeTime(new24hTime);
+
+    // Keep the daily practice reminder in sync with the saved practice time.
+    try {
+      await NotificationService.instance.rescheduleDailyPracticeReminderAt(
+        new24hTime,
+      );
+    } catch (e, st) {
+      // The time preference has already been persisted. Surface scheduling
+      // failures to the UI so it can prompt the user to enable notifications.
+      debugPrint(
+        'PracticeTimeNotifier: failed to reschedule daily practice reminder: $e',
+      );
+      debugPrint('$st');
+      throw PracticeTimeScheduleException(e, st);
+    }
   }
+}
+
+/// Thrown when we successfully persist a new practice time, but fail to
+/// schedule/reschedule the daily practice reminder notification.
+class PracticeTimeScheduleException implements Exception {
+  PracticeTimeScheduleException(this.cause, [this.stackTrace]);
+
+  final Object cause;
+  final StackTrace? stackTrace;
+
+  @override
+  String toString() => 'PracticeTimeScheduleException: $cause';
 }
