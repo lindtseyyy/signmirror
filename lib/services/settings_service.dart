@@ -112,6 +112,14 @@ class SettingsService {
     await _prefsSync.setString('userPersonalization', value);
   }
 
+  // --- LOCATION-BASED SIGN SUGGESTIONS ---
+  bool get locationSuggestionsEnabled =>
+      _prefsSync.getBool('locationSuggestionsEnabled') ?? false;
+
+  Future<void> setLocationSuggestionsEnabled(bool value) async {
+    await _prefsSync.setBool('locationSuggestionsEnabled', value);
+  }
+
   // --- SESSION ---
   /// Clears the authenticated user session from local storage.
   ///

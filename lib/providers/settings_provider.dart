@@ -261,3 +261,28 @@ class PracticeTimeScheduleException implements Exception {
   @override
   String toString() => 'PracticeTimeScheduleException: $cause';
 }
+
+// 8. Location-based Sign Suggestions Provider (FR-LC-06 Phase 2 Task 2.3)
+final locationSuggestionsEnabledProvider =
+    StateNotifierProvider<LocationSuggestionsEnabledNotifier, bool>((ref) {
+      return LocationSuggestionsEnabledNotifier(
+        ref.watch(settingsServiceProvider),
+      );
+    });
+
+class LocationSuggestionsEnabledNotifier extends StateNotifier<bool> {
+  LocationSuggestionsEnabledNotifier(this._service)
+    : super(_service.locationSuggestionsEnabled);
+
+  final SettingsService _service;
+
+  Future<void> setEnabled(bool enabled) async {
+    if (state == enabled) return;
+    state = enabled;
+    await _service.setLocationSuggestionsEnabled(enabled);
+  }
+
+  Future<void> toggle() async {
+    await setEnabled(!state);
+  }
+}

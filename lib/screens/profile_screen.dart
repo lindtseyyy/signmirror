@@ -3,6 +3,7 @@ import 'dart:async' show unawaited;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:signmirror_flutter/constants/route_names.dart';
 import 'package:signmirror_flutter/l10n/app_strings.dart';
 import 'package:signmirror_flutter/l10n/app_strings_provider.dart';
@@ -19,6 +20,119 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  void _showBriefSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+    );
+  }
+
+  Future<bool> _showLocationSuggestionsConsentDialog(
+    BuildContext context,
+    AppStrings strings,
+  ) async {
+    final result =
+        await showDialog<bool>(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text(strings.profileLocationSuggestionsConsentTitle),
+              content: Text(strings.profileLocationSuggestionsConsentBody),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text(strings.profileLocationSuggestionsConsentCancel),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: Text(strings.profileLocationSuggestionsConsentAgree),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+
+    return result;
+  }
+
+  Future<void> _handleLocationSuggestionsToggle(
+    BuildContext context,
+    AppStrings strings,
+    bool nextValue,
+  ) async {
+    final notifier = ref.read(locationSuggestionsEnabledProvider.notifier);
+    void forceRebuild() {
+      if (!mounted) return;
+      setState(() {});
+    }
+
+    if (!nextValue) {
+      unawaited(notifier.setEnabled(false));
+      return;
+    }
+
+    final consented = await _showLocationSuggestionsConsentDialog(
+      context,
+      strings,
+    );
+    if (!mounted) return;
+
+    if (!consented) {
+      _showBriefSnackBar(
+        context,
+        strings.profileLocationSuggestionsConsentDeclinedSnackbar,
+      );
+      forceRebuild();
+      return;
+    }
+
+    LocationPermission permission;
+    try {
+      permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+    } catch (_) {
+      _showBriefSnackBar(
+        context,
+        strings.profileLocationSuggestionsPermissionDeniedSnackbar,
+      );
+      forceRebuild();
+      return;
+    }
+    if (!mounted) return;
+
+    final permissionGranted =
+        permission == LocationPermission.whileInUse ||
+        permission == LocationPermission.always;
+
+    if (!permissionGranted) {
+      _showBriefSnackBar(
+        context,
+        permission == LocationPermission.deniedForever
+            ? strings
+                  .profileLocationSuggestionsPermissionPermanentlyDeniedSnackbar
+            : strings.profileLocationSuggestionsPermissionDeniedSnackbar,
+      );
+      forceRebuild();
+      return;
+    }
+
+    final servicesEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!mounted) return;
+
+    if (!servicesEnabled) {
+      _showBriefSnackBar(
+        context,
+        strings.profileLocationSuggestionsServicesDisabledSnackbar,
+      );
+      forceRebuild();
+      return;
+    }
+
+    await notifier.setEnabled(true);
+  }
+
   @override
   Widget build(BuildContext context) {
     final strings = ref.watch(appStringsProvider);
@@ -27,6 +141,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final isDarkMode = themeSettings.mode == AppThemeMode.dark;
     final isOfflineDownloading = ref.watch(offlineDownloadProvider);
     final isHighContrastSetting = themeSettings.highContrast;
+    final locationSuggestionsEnabled = ref.watch(
+      locationSuggestionsEnabledProvider,
+    );
 
     final platformHighContrast = MediaQuery.of(context).highContrast;
     final effectiveHighContrast = isHighContrastSetting || platformHighContrast;
@@ -424,6 +541,57 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                             .setHighContrast(value),
                                       );
                                     },
+                                  ),
+                                  const SizedBox(height: 10),
+                                  SwitchListTile(
+                                    contentPadding: EdgeInsets
+                                        .zero, // 1. Removes the outer 16px gap
+                                    visualDensity: const VisualDensity(
+                                      horizontal: -4,
+                                      vertical: -4,
+                                    ), // 2. Squeezes the internal space
+                                    title: Text(
+                                      strings.profileLocationSuggestionsLabel,
+                                    ),
+                                    secondary: Icon(
+                                      locationSuggestionsEnabled
+                                          ? Icons.location_on
+                                          : Icons.location_off_outlined,
+                                    ),
+                                    value: locationSuggestionsEnabled,
+
+                                    trackOutlineColor:
+                                        MaterialStateProperty.all(
+                                          locationSuggestionsEnabled
+                                              ? Colors.transparent
+                                              : inactiveSwitchOutlineColor,
+                                        ),
+
+                                    thumbIcon:
+                                        MaterialStateProperty.resolveWith<
+                                          Icon?
+                                        >((states) {
+                                          if (states.contains(
+                                            MaterialState.selected,
+                                          )) {
+                                            return const Icon(
+                                              Icons.check,
+                                              color: Color(0xff2D68FF),
+                                            );
+                                          }
+                                          return const Icon(
+                                            Icons.close,
+                                            color: Colors.white,
+                                          );
+                                        }),
+
+                                    onChanged: (value) => unawaited(
+                                      _handleLocationSuggestionsToggle(
+                                        context,
+                                        strings,
+                                        value,
+                                      ),
+                                    ),
                                   ),
                                   ListTile(
                                     contentPadding: EdgeInsets.zero,

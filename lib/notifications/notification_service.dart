@@ -30,10 +30,18 @@ class NotificationService {
   static const String _androidChannelDescription =
       'Daily reminders to practice in SignMirror.';
 
+  static const String _androidLocationSuggestionsChannelId =
+      'location_suggestions';
+  static const String _androidLocationSuggestionsChannelName =
+      'Location Suggestions';
+  static const String _androidLocationSuggestionsChannelDescription =
+      'Immediate notifications suggesting nearby locations.';
+
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
 
   bool _initialized = false;
+  Future<void>? _initFuture;
 
   bool get _isAndroid =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
@@ -56,31 +64,98 @@ class NotificationService {
   /// Initializes the notifications plugin and timezone database.
   ///
   /// Safe to call multiple times.
-  Future<void> init() async {
+  Future<void> init() {
+    if (_initialized) return Future<void>.value();
+
+    // Prevent concurrent duplicate initialization.
+    final existing = _initFuture;
+    if (existing != null) return existing;
+
+    final created = _initOnce();
+    _initFuture = created;
+    return created;
+  }
+
+  Future<void> _initOnce() async {
     if (_initialized) return;
 
-    // Timezone init must happen before scheduling with zonedSchedule.
-    await _configureLocalTimeZone();
+    try {
+      // Timezone init must happen before scheduling with zonedSchedule.
+      await _configureLocalTimeZone();
 
-    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const darwinInit = DarwinInitializationSettings(
-      requestAlertPermission: false,
-      requestBadgePermission: false,
-      requestSoundPermission: false,
+      const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+      const darwinInit = DarwinInitializationSettings(
+        requestAlertPermission: false,
+        requestBadgePermission: false,
+        requestSoundPermission: false,
+      );
+
+      const initSettings = InitializationSettings(
+        android: androidInit,
+        iOS: darwinInit,
+        macOS: darwinInit,
+      );
+
+      await _plugin.initialize(settings: initSettings);
+
+      // Create / ensure the Android channels exist.
+      await _createAndroidChannelIfNeeded();
+      await _createAndroidLocationSuggestionsChannelIfNeeded();
+
+      _initialized = true;
+    } catch (_) {
+      // Allow a future retry if initialization fails.
+      _initFuture = null;
+      rethrow;
+    }
+  }
+
+  /// Shows an immediate high-importance notification suggesting a location.
+  ///
+  /// This uses a separate Android notification channel so users can configure
+  /// it independently from daily reminders.
+  Future<void> showLocationSuggestion({
+    String title = 'Location suggestion',
+    required String body,
+  }) async {
+    await init();
+    await _requestPermissionsIfNeeded();
+
+    if (_isAndroid) {
+      await _createAndroidLocationSuggestionsChannelIfNeeded();
+    }
+
+    final id = DateTime.now().millisecondsSinceEpoch.remainder(1 << 31);
+
+    final details = NotificationDetails(
+      android: AndroidNotificationDetails(
+        _androidLocationSuggestionsChannelId,
+        _androidLocationSuggestionsChannelName,
+        channelDescription: _androidLocationSuggestionsChannelDescription,
+        importance: Importance.high,
+        priority: Priority.high,
+        visibility: NotificationVisibility.public,
+        playSound: true,
+        enableVibration: true,
+      ),
+      iOS: const DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
+      macOS: const DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
     );
 
-    const initSettings = InitializationSettings(
-      android: androidInit,
-      iOS: darwinInit,
-      macOS: darwinInit,
+    await _plugin.show(
+      id: id,
+      title: title,
+      body: body,
+      notificationDetails: details,
     );
-
-    await _plugin.initialize(settings: initSettings);
-
-    // Create / ensure the Android channel exists.
-    await _createAndroidChannelIfNeeded();
-
-    _initialized = true;
   }
 
   /// Best-effort check for whether notifications are enabled for this app on
@@ -487,6 +562,26 @@ class NotificationService {
     );
   }
 
+  Future<void> _createAndroidLocationSuggestionsChannelIfNeeded() async {
+    final android = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    if (android == null) return;
+
+    await android.createNotificationChannel(
+      const AndroidNotificationChannel(
+        _androidLocationSuggestionsChannelId,
+        _androidLocationSuggestionsChannelName,
+        description: _androidLocationSuggestionsChannelDescription,
+        importance: Importance.high,
+        playSound: true,
+        enableVibration: true,
+        showBadge: true,
+      ),
+    );
+  }
+
   Future<void> _requestPermissionsIfNeeded() async {
     if (kIsWeb) return;
 
@@ -498,7 +593,7 @@ class NotificationService {
     final requested = await Permission.notification.request();
     if (!requested.isGranted) {
       throw StateError(
-        'Notification permission is required to schedule reminders. '
+        'Notification permission is required to show notifications. '
         'Current status: $requested',
       );
     }

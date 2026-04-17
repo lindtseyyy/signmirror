@@ -647,6 +647,25 @@ class AppStrings {
       _t('profileOfflineDownloadingLabel');
   String get profileHighContrastLabel => _t('profileHighContrastLabel');
 
+  String get profileLocationSuggestionsLabel =>
+      _t('profileLocationSuggestionsLabel');
+  String get profileLocationSuggestionsConsentTitle =>
+      _t('profileLocationSuggestionsConsentTitle');
+  String get profileLocationSuggestionsConsentBody =>
+      _t('profileLocationSuggestionsConsentBody');
+  String get profileLocationSuggestionsConsentCancel =>
+      _t('profileLocationSuggestionsConsentCancel');
+  String get profileLocationSuggestionsConsentAgree =>
+      _t('profileLocationSuggestionsConsentAgree');
+  String get profileLocationSuggestionsConsentDeclinedSnackbar =>
+      _t('profileLocationSuggestionsConsentDeclinedSnackbar');
+  String get profileLocationSuggestionsPermissionDeniedSnackbar =>
+      _t('profileLocationSuggestionsPermissionDeniedSnackbar');
+  String get profileLocationSuggestionsPermissionPermanentlyDeniedSnackbar =>
+      _t('profileLocationSuggestionsPermissionPermanentlyDeniedSnackbar');
+  String get profileLocationSuggestionsServicesDisabledSnackbar =>
+      _t('profileLocationSuggestionsServicesDisabledSnackbar');
+
   String get profileLanguageLabel => _t('profileLanguageLabel');
   String get profileSelectLanguageTitle => _t('profileSelectLanguageTitle');
   String get languageEnglishLabel => _t('languageEnglishLabel');
@@ -1083,6 +1102,21 @@ class AppStrings {
       'profileDarkModeLabel': 'Dark Mode',
       'profileOfflineDownloadingLabel': 'Offline Downloading',
       'profileHighContrastLabel': 'High Contrast',
+      'profileLocationSuggestionsLabel': 'Location-based suggestions',
+      'profileLocationSuggestionsConsentTitle':
+          'Enable location-based suggestions?',
+      'profileLocationSuggestionsConsentBody':
+          'We\'ll use your location (while the app is in use) to suggest FSL signs that may be helpful near hospitals, markets, schools, and public transport.',
+      'profileLocationSuggestionsConsentCancel': 'Cancel',
+      'profileLocationSuggestionsConsentAgree': 'Agree',
+      'profileLocationSuggestionsConsentDeclinedSnackbar':
+          'Location-based suggestions not enabled.',
+      'profileLocationSuggestionsPermissionDeniedSnackbar':
+          'Location permission denied.',
+      'profileLocationSuggestionsPermissionPermanentlyDeniedSnackbar':
+          'Location permission permanently denied. Enable it in device settings.',
+      'profileLocationSuggestionsServicesDisabledSnackbar':
+          'Location services are turned off.',
       'profileLanguageLabel': 'Language',
       'profileSelectLanguageTitle': 'Select Language',
       'languageEnglishLabel': 'English',
@@ -1441,6 +1475,21 @@ class AppStrings {
       'profileDarkModeLabel': 'Madilim na Mode',
       'profileOfflineDownloadingLabel': 'Pag-download offline',
       'profileHighContrastLabel': 'Mataas na Kontrast',
+      'profileLocationSuggestionsLabel': 'Mga mungkahi batay sa lokasyon',
+      'profileLocationSuggestionsConsentTitle':
+          'I-enable ang mga mungkahi batay sa lokasyon?',
+      'profileLocationSuggestionsConsentBody':
+          'Gagamitin namin ang iyong lokasyon (habang ginagamit ang app) para magmungkahi ng mga FSL sign na maaaring kapaki-pakinabang malapit sa mga ospital, palengke, paaralan, at pampublikong transportasyon.',
+      'profileLocationSuggestionsConsentCancel': 'Kanselahin',
+      'profileLocationSuggestionsConsentAgree': 'Payagan',
+      'profileLocationSuggestionsConsentDeclinedSnackbar':
+          'Hindi na-enable ang mga mungkahi batay sa lokasyon.',
+      'profileLocationSuggestionsPermissionDeniedSnackbar':
+          'Tinanggihan ang pahintulot sa lokasyon.',
+      'profileLocationSuggestionsPermissionPermanentlyDeniedSnackbar':
+          'Permanente nang tinanggihan ang pahintulot sa lokasyon. I-enable sa settings ng device.',
+      'profileLocationSuggestionsServicesDisabledSnackbar':
+          'Naka-off ang location services.',
       'profileLanguageLabel': 'Wika',
       'profileSelectLanguageTitle': 'Pumili ng Wika',
       'languageEnglishLabel': 'Ingles',

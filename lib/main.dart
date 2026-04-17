@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signmirror_flutter/constants/route_names.dart';
+import 'package:signmirror_flutter/features/location_suggestions/providers/location_suggestion_controller.dart';
 import 'package:signmirror_flutter/notifications/notification_service.dart';
 import 'package:signmirror_flutter/providers/settings_provider.dart';
 import 'package:signmirror_flutter/routes/routes.dart';
@@ -237,6 +238,7 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(locationSuggestionControllerProvider);
     final themeSettings = ref.watch(themeSettingsProvider);
 
     final themeMode = switch (themeSettings.mode) {

@@ -26,6 +26,8 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>NSCameraUsageDescription</key>
 	<string>This app uses the camera for practice mode live feedback.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We use your location while you use the app to enable location-based features.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>
