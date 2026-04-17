@@ -392,7 +392,7 @@ Widget _buildListView(
               Row(
                 children: [
                   Text(
-                    strings.lessonCountLabel(lesson.count),
+                    strings.signCountLabel(lesson.count),
                     style: TextStyle(color: countColor),
                   ),
                 ],
@@ -557,7 +557,7 @@ Widget _buildGridView(
                 softWrap: false,
               ),
               Text(
-                strings.lessonCountLabel(lesson.count),
+                strings.signCountLabel(lesson.count),
                 style: TextStyle(color: countColor),
                 overflow: TextOverflow.ellipsis, // Adds the "..."
                 maxLines: 1, // Limits to a single line

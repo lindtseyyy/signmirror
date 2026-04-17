@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signmirror_flutter/models/community_video.dart';
+import 'package:signmirror_flutter/models/lesson.dart';
 import 'package:signmirror_flutter/models/practice_stats.dart';
 import 'package:signmirror_flutter/models/sign.dart';
 import 'package:signmirror_flutter/state/lesson/lesson_state.dart';
@@ -86,8 +87,27 @@ class LessonsNotifier extends StateNotifier<LessonsState> {
     loadAll(); // Load initial data
   }
 
+  String _normalizeLessonTitleKey(String value) {
+    return value.trim().toLowerCase();
+  }
+
+  Future<List<Lesson>> _withComputedCounts(List<Lesson> lessons) async {
+    if (lessons.isEmpty) return lessons;
+
+    final titles = lessons.map((l) => l.title);
+    final countsByCategory = await _service.getSignCountsByCategories(titles);
+
+    for (final lesson in lessons) {
+      final key = _normalizeLessonTitleKey(lesson.title);
+      lesson.count = countsByCategory[key] ?? 0;
+    }
+
+    return lessons;
+  }
+
   Future<void> loadAll() async {
-    state = state.copyWith(lessons: await _service.getAllLessons());
+    final lessons = await _service.getAllLessons();
+    state = state.copyWith(lessons: await _withComputedCounts(lessons));
   }
 
   // The Master Filter Function
@@ -96,7 +116,7 @@ class LessonsNotifier extends StateNotifier<LessonsState> {
       query: state.query,
       category: state.difficulty,
     );
-    state = state.copyWith(lessons: results);
+    state = state.copyWith(lessons: await _withComputedCounts(results));
   }
 
   void updateSearch(String newQuery) {

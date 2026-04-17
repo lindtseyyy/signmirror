@@ -192,8 +192,7 @@ class IsarService {
           'titleFil': 'Letrang A',
           'category': 'Alphabet',
           'imagePath': 'assets/images/lessons/daily_conversation.png',
-          'videoUrl': 'https://youtu.be/iYpTJ5cEl9Y?si=B1WP_YUBMsjEdRMr',
-          'videoId': 'iYpTJ5cEl9Y',
+          'videoUrl': 'assets/videos/signs/alphabet/a.mp4',
         },
         {
           'id': 2,
@@ -201,8 +200,31 @@ class IsarService {
           'titleFil': 'Letrang B',
           'category': 'Alphabet',
           'imagePath': 'assets/images/lessons/daily_conversation.png',
-          'videoUrl': 'https://youtu.be/e6MYgcbUKqQ?si=PUcl1r4duqdTzSA8',
-          'videoId': 'e6MYgcbUKqQ',
+          'videoUrl': 'assets/videos/signs/alphabet/b.mp4',
+        },
+        {
+          'id': 21,
+          'title': 'Letter C',
+          'titleFil': 'Letrang C',
+          'category': 'Alphabet',
+          'imagePath': 'assets/images/lessons/daily_conversation.png',
+          'videoUrl': 'assets/videos/signs/alphabet/c.mp4',
+        },
+        {
+          'id': 22,
+          'title': 'Letter D',
+          'titleFil': 'Letrang D',
+          'category': 'Alphabet',
+          'imagePath': 'assets/images/lessons/daily_conversation.png',
+          'videoUrl': 'assets/videos/signs/alphabet/d.mp4',
+        },
+        {
+          'id': 23,
+          'title': 'Letter E',
+          'titleFil': 'Letrang E',
+          'category': 'Alphabet',
+          'imagePath': 'assets/images/lessons/daily_conversation.png',
+          'videoUrl': 'assets/videos/signs/alphabet/e.mp4',
         },
         {
           'id': 3,
@@ -240,6 +262,54 @@ class IsarService {
           'titleFil': 'Pakiusap',
           'category': 'Basic Gestures',
           'imagePath': 'assets/images/lessons/daily_conversation.png',
+        },
+        {
+          'id': 8,
+          'title': 'Hello',
+          'titleFil': 'Kumusta',
+          'category': 'Basic Gestures',
+          'imagePath': 'assets/images/lessons/daily_conversation.png',
+          'videoUrl': 'assets/videos/signs/basics/hello.mp4',
+        },
+        {
+          'id': 9,
+          'title': 'How are you?',
+          'titleFil': 'Kumusta ka?',
+          'category': 'Basic Gestures',
+          'imagePath': 'assets/images/lessons/daily_conversation.png',
+          'videoUrl': 'assets/videos/signs/basics/howareyou.mp4',
+        },
+        {
+          'id': 10,
+          'title': 'Nice to meet you',
+          'titleFil': 'Ikinagagalak kitang makilala?',
+          'category': 'Basic Gestures',
+          'imagePath': 'assets/images/lessons/daily_conversation.png',
+          'videoUrl': 'assets/videos/signs/basics/nicetomeetyou.mp4',
+        },
+        {
+          'id': 11,
+          'title': 'No',
+          'titleFil': 'Hindi',
+          'category': 'Basic Gestures',
+          'imagePath': 'assets/images/lessons/daily_conversation.png',
+          'videoUrl': 'assets/videos/signs/basics/no.mp4',
+        },
+        {
+          'id': 12,
+          'title': 'Yes',
+          'titleFil': 'Oo',
+          'category': 'Basic Gestures',
+          'imagePath': 'assets/images/lessons/daily_conversation.png',
+          'videoUrl': 'assets/videos/signs/basics/yes.mp4',
+        },
+        {
+          'id': 12,
+          'title': 'What is your name?',
+          'titleFil': 'Ano ang pangalan mo?',
+          'category': 'Basic Gestures',
+          'imagePath': 'assets/images/lessons/daily_conversation.png',
+          'videoUrl': 'assets/videos/signs/basics/whatisyourname.mp4',
         },
       ];
 
@@ -633,6 +703,50 @@ class IsarService {
         .filter()
         .categoryEqualTo(category, caseSensitive: false)
         .findAll();
+  }
+
+  String _normalizeCategoryKey(String value) {
+    return value.trim().toLowerCase();
+  }
+
+  /// Returns sign counts keyed by *normalized* category.
+  ///
+  /// Normalization: `trim().toLowerCase()`.
+  ///
+  /// Notes:
+  /// - Counts are case-insensitive and whitespace-tolerant for both the input
+  ///   categories and the stored `Sign.category` values.
+  /// - Empty/blank category strings in [categories] are ignored.
+  /// - This method returns an entry for every non-empty requested category,
+  ///   defaulting to `0` when there are no matching signs.
+  Future<Map<String, int>> getSignCountsByCategories(
+    Iterable<String> categories,
+  ) async {
+    final normalizedRequested = <String>[];
+    final seen = <String>{};
+
+    for (final category in categories) {
+      final key = _normalizeCategoryKey(category);
+      if (key.isEmpty) continue;
+      if (seen.add(key)) {
+        normalizedRequested.add(key);
+      }
+    }
+
+    final counts = <String, int>{for (final key in normalizedRequested) key: 0};
+    if (counts.isEmpty) return counts;
+
+    final isar = await db;
+    final signs = await isar.signs.where().findAll();
+
+    for (final sign in signs) {
+      final key = _normalizeCategoryKey(sign.category);
+      final current = counts[key];
+      if (current == null) continue;
+      counts[key] = current + 1;
+    }
+
+    return counts;
   }
 
   Future<List<Lesson>> filterLessons({String? query, String? category}) async {

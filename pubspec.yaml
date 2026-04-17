@@ -93,6 +93,18 @@ flutter:
     - assets/images/profile/
     - assets/videos/sample_portrait_video.mp4
     - assets/videos/sample_landscape_video.mp4
+    - assets/videos/signs/basics/hello.mp4
+    - assets/videos/signs/basics/howareyou.mp4
+    - assets/videos/signs/basics/nicetomeetyou.mp4
+    - assets/videos/signs/basics/no.mp4
+    - assets/videos/signs/basics/whatisyourname.mp4
+    - assets/videos/signs/basics/yes.mp4
+    - assets/videos/signs/alphabet/a.mp4
+    - assets/videos/signs/alphabet/b.mp4
+    - assets/videos/signs/alphabet/c.mp4
+    - assets/videos/signs/alphabet/d.mp4
+    - assets/videos/signs/alphabet/e.mp4
+
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

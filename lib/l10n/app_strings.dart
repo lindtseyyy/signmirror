@@ -244,6 +244,18 @@ class AppStrings {
     return _template(key, {'count': _formatNumber(n)});
   }
 
+  /// Builds a localized sign count label.
+  ///
+  /// Examples (EN): "1 sign", "12 signs".
+  /// Example (FIL): "12 senyas".
+  String signCountLabel(num count) {
+    final n = count is int ? count : count.round();
+    final key = (langCode == _en && n == 1)
+        ? 'signCountLabelOne'
+        : 'signCountLabelOther';
+    return _template(key, {'count': _formatNumber(n)});
+  }
+
   // Lesson details / signs
   String get lessonFallbackTitle => _t('lessonFallbackTitle');
   String get lessonNoSignsMessage => _t('lessonNoSignsMessage');
@@ -946,6 +958,10 @@ class AppStrings {
       'lessonCountLabelOne': '{count} Lesson',
       'lessonCountLabelOther': '{count} Lessons',
 
+      // Sign count (used by signCountLabel(count))
+      'signCountLabelOne': '{count} sign',
+      'signCountLabelOther': '{count} signs',
+
       'lessonFallbackTitle': 'Lesson',
       'lessonNoSignsMessage': 'No signs available for this lesson.',
       'lessonDefaultInstructions':
@@ -1315,6 +1331,10 @@ class AppStrings {
       // Lesson count (used by lessonCountLabel(count))
       'lessonCountLabelOne': '{count} Aralin',
       'lessonCountLabelOther': '{count} Aralin',
+
+      // Sign count (used by signCountLabel(count))
+      'signCountLabelOne': '{count} senyas',
+      'signCountLabelOther': '{count} senyas',
 
       'lessonFallbackTitle': 'Aralin',
       'lessonNoSignsMessage':
