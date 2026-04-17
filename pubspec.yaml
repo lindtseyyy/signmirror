@@ -88,6 +88,7 @@ flutter:
     - assets/images/lessons/
     - assets/images/achievements/
     - assets/images/community/
+    - assets/images/profile/
     - assets/videos/sample_portrait_video.mp4
     - assets/videos/sample_landscape_video.mp4
 

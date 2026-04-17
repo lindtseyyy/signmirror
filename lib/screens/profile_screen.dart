@@ -7,10 +7,26 @@ import 'package:geolocator/geolocator.dart';
 import 'package:signmirror_flutter/constants/route_names.dart';
 import 'package:signmirror_flutter/l10n/app_strings.dart';
 import 'package:signmirror_flutter/l10n/app_strings_provider.dart';
+import 'package:signmirror_flutter/models/user.dart';
 import 'package:signmirror_flutter/notifications/notification_service.dart';
+import 'package:signmirror_flutter/providers/providers.dart';
 import 'package:signmirror_flutter/providers/settings_provider.dart';
 import 'package:signmirror_flutter/theme/app_theme.dart';
 import 'package:signmirror_flutter/theme/theme_settings.dart';
+
+const String _fallbackProfileAvatarAssetPath =
+    'assets/images/profile_picture.jpeg';
+
+final _currentUserProvider = FutureProvider<User?>((ref) async {
+  final email = ref.watch(userEmailProvider);
+  final service = ref.watch(isarServiceProvider);
+
+  try {
+    return await service.getUserByEmail(email);
+  } catch (_) {
+    return null;
+  }
+});
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -164,6 +180,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final userName = ref.watch(userNameProvider);
     final personalization = ref.watch(personalizationProvider);
 
+    final currentUser = ref.watch(_currentUserProvider);
+    final avatarAssetPath = currentUser.maybeWhen(
+      data: (user) {
+        final assetPath = user?.profilePictureUrl.trim() ?? '';
+        return assetPath.isNotEmpty
+            ? assetPath
+            : _fallbackProfileAvatarAssetPath;
+      },
+      orElse: () => _fallbackProfileAvatarAssetPath,
+    );
+
     return Theme(
       data: resolvedTheme,
       child: Builder(
@@ -266,10 +293,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   CircleAvatar(
                                     radius: 51,
                                     backgroundColor: avatarBorderColor,
-                                    child: const CircleAvatar(
+                                    child: CircleAvatar(
                                       radius: 50,
                                       backgroundImage: AssetImage(
-                                        'assets/images/profile_picture.jpeg',
+                                        avatarAssetPath,
                                       ),
                                     ),
                                   ),

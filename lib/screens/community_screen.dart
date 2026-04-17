@@ -928,11 +928,11 @@ Widget _buildCommunityPost(
             uploaderName,
             style: const TextStyle(fontWeight: FontWeight.w700),
           ),
-          subtitle: Text(
-            video.title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
+          // subtitle: Text(
+          //   video.title,
+          //   maxLines: 1,
+          //   overflow: TextOverflow.ellipsis,
+          // ),
           trailing: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
@@ -1015,13 +1015,13 @@ Widget _buildCommunityPost(
                           borderRadius: BorderRadius.circular(10),
                         ),
                         backgroundColor: const Color(0xff69B85E),
-                        fixedSize: const Size(150, 40),
+                        fixedSize: const Size(145, 40),
                       )
                     : FilledButton.styleFrom(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        fixedSize: const Size(150, 40),
+                        fixedSize: const Size(145, 40),
                       ),
                 child: Text(
                   video.isApprovedByCurrentUser

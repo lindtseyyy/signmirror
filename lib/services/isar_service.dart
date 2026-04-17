@@ -7,6 +7,7 @@ import 'package:signmirror_flutter/models/user.dart';
 import 'package:signmirror_flutter/models/community_video.dart';
 import 'package:signmirror_flutter/models/lesson.dart';
 import 'package:signmirror_flutter/models/sign.dart';
+import 'package:signmirror_flutter/utils/profile_placeholder.dart';
 
 /// Thrown when attempting to register with an email that already exists.
 class EmailAlreadyExistsException implements Exception {
@@ -21,6 +22,9 @@ class EmailAlreadyExistsException implements Exception {
 
 class IsarService {
   late Future<Isar> db;
+
+  static const String _legacyProfilePictureUrl =
+      'assets/images/profile_picture.jpeg';
 
   IsarService() {
     db = openDB();
@@ -51,7 +55,51 @@ class IsarService {
     // Idempotent migration/backfill: populate Filipino titles for known seeded signs.
     await _backfillSignFilipinoTitles(isar);
 
+    // Idempotent migration/backfill: populate profile picture placeholders for users
+    // that still have legacy/missing values.
+    await _backfillUserProfilePictureUrls(isar);
+
     return isar;
+  }
+
+  bool _needsProfilePictureBackfill(User user) {
+    final current = user.profilePictureUrl.trim();
+    if (current.isEmpty) return true;
+    if (current == _legacyProfilePictureUrl) return true;
+    return false;
+  }
+
+  Future<void> _backfillUserProfilePictureUrls(Isar isar) async {
+    final all = await isar.users.where().findAll();
+    if (all.isEmpty) return;
+
+    final toUpdate = <User>[];
+    for (final user in all) {
+      if (!_needsProfilePictureBackfill(user)) continue;
+
+      final stableKey = user.email.trim().isNotEmpty
+          ? user.email.trim().toLowerCase()
+          : 'user:${user.id}';
+
+      final placeholder = await pickRandomProfilePlaceholderAssetPath(
+        stableKey: stableKey,
+      );
+
+      // Avoid an endless loop if we can only resolve to the legacy path.
+      if (placeholder.trim().isEmpty) continue;
+      if (placeholder == _legacyProfilePictureUrl) {
+        continue;
+      }
+
+      user.profilePictureUrl = placeholder;
+      toUpdate.add(user);
+    }
+
+    if (toUpdate.isEmpty) return;
+
+    await isar.writeTxn(() async {
+      await isar.users.putAll(toUpdate);
+    });
   }
 
   // --- Sign title translations (seed + migration/backfill) ---
@@ -304,63 +352,75 @@ class IsarService {
           ..id = 2
           ..name = 'Uploader Two'
           ..email = 'uploader2@example.com'
-          ..password = 'password123',
+          ..password = 'password123'
+          ..profilePictureUrl = 'assets/images/profile/profile_picture.jpg',
         User()
           ..id = 3
           ..name = 'Uploader Three'
           ..email = 'uploader3@example.com'
-          ..password = 'password123',
+          ..password = 'password123'
+          ..profilePictureUrl = 'assets/images/profile/profile_picture.jpg',
         User()
           ..id = 101
           ..name = 'Alice'
           ..email = 'alice@example.com'
-          ..password = 'password123',
+          ..password = 'password123'
+          ..profilePictureUrl = 'assets/images/profile/profile_picture.jpg',
         User()
           ..id = 102
           ..name = 'Bob'
           ..email = 'bob@example.com'
-          ..password = 'password123',
+          ..password = 'password123'
+          ..profilePictureUrl = 'assets/images/profile/profile_picture.jpg',
         User()
           ..id = 103
           ..name = 'Charlie'
           ..email = 'charlie@example.com'
-          ..password = 'password123',
+          ..password = 'password123'
+          ..profilePictureUrl = 'assets/images/profile/profile_picture.jpg',
         User()
           ..id = 104
           ..name = 'David'
           ..email = 'david@example.com'
-          ..password = 'password123',
+          ..password = 'password123'
+          ..profilePictureUrl = 'assets/images/profile/profile_picture.jpg',
         User()
           ..id = 105
           ..name = 'Eve'
           ..email = 'eve@example.com'
-          ..password = 'password123',
+          ..password = 'password123'
+          ..profilePictureUrl = 'assets/images/profile/profile_picture.jpg',
         User()
           ..id = 106
           ..name = 'Frank'
           ..email = 'frank@example.com'
-          ..password = 'password123',
+          ..password = 'password123'
+          ..profilePictureUrl = 'assets/images/profile/profile_picture.jpg',
         User()
           ..id = 107
           ..name = 'Grace'
           ..email = 'grace@example.com'
-          ..password = 'password123',
+          ..password = 'password123'
+          ..profilePictureUrl = 'assets/images/profile/profile_picture.jpg',
         User()
           ..id = 108
           ..name = 'Heidi'
           ..email = 'heidi@example.com'
-          ..password = 'password123',
+          ..password = 'password123'
+          ..profilePictureUrl = 'assets/images/profile/profile_picture.jpg',
         User()
           ..id = 109
           ..name = 'Ivan'
           ..email = 'ivan@example.com'
-          ..password = 'password123',
+          ..password = 'password123'
+          ..profilePictureUrl = 'assets/images/profile/profile_picture.jpg',
         // Current user
         User()
           ..id = 1
           ..name = 'Current User'
           ..email = 'user@example.com'
-          ..password = 'password123',
+          ..password = 'password123'
+          ..profilePictureUrl = 'assets/images/profile/profile_picture.jpg',
       ];
 
       await isar.writeTxn(() async {
@@ -811,7 +871,10 @@ class IsarService {
       final user = User()
         ..name = normalizedName
         ..email = normalizedEmail
-        ..password = password;
+        ..password = password
+        ..profilePictureUrl = await pickRandomProfilePlaceholderAssetPath(
+          stableKey: normalizedEmail,
+        );
 
       await isar.users.put(user);
       return user;
