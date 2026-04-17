@@ -28,6 +28,10 @@ class _AdaptiveVideoPlayerState extends State<AdaptiveVideoPlayer> {
   // New state flag to track if the user has requested playback
   bool _userStarted = false;
 
+  // Bottom controls should be hidden during playback unless the user requests
+  // them (by tapping while playing) or playback has finished.
+  bool _controlsVisible = false;
+
   bool _repeatEnabled = false;
   double _playbackSpeed = 1.0;
   bool _youtubeFinished = false;
@@ -60,6 +64,7 @@ class _AdaptiveVideoPlayerState extends State<AdaptiveVideoPlayer> {
     _isInitialized = false;
     _hasError = false;
     _youtubeFinished = false;
+    _controlsVisible = false;
   }
 
   void _startPlayback() {
@@ -67,6 +72,7 @@ class _AdaptiveVideoPlayerState extends State<AdaptiveVideoPlayer> {
       _userStarted = true;
       _hasError = false;
       _youtubeFinished = false;
+      _controlsVisible = false;
     });
     _initializePlayer();
   }
@@ -88,6 +94,9 @@ class _AdaptiveVideoPlayerState extends State<AdaptiveVideoPlayer> {
             value.position >= value.duration &&
             !value.isPlaying;
         if (newValue && isFinished) {
+          if (mounted) {
+            setState(() => _controlsVisible = false);
+          }
           await videoController.seekTo(Duration.zero);
           await videoController.play();
         }
@@ -134,10 +143,12 @@ class _AdaptiveVideoPlayerState extends State<AdaptiveVideoPlayer> {
           YoutubePlayerController(
             initialVideoId: videoId,
             flags: const YoutubePlayerFlags(
-              autoPlay:
-                  true, // Auto-play is true because we only initialize when user taps play
+              // Auto-play is true because we only initialize when user taps play
+              autoPlay: true,
               loop: false,
+              // Keep controls available on tap, but hidden by default during playback.
               hideControls: false,
+              controlsVisibleAtStart: false,
             ),
           )..addListener(() {
             if (_youtubePlayerController?.value.hasError ?? false) {
@@ -283,7 +294,8 @@ class _AdaptiveVideoPlayerState extends State<AdaptiveVideoPlayer> {
         children: [
           YoutubePlayer(
             controller: _youtubePlayerController!,
-            showVideoProgressIndicator: true,
+            // Hide progress/controls by default; YouTube controls will appear on tap.
+            showVideoProgressIndicator: false,
             onEnded: (metaData) {
               if (_repeatEnabled) {
                 try {
@@ -345,6 +357,9 @@ class _AdaptiveVideoPlayerState extends State<AdaptiveVideoPlayer> {
 
           final isPlaying = value.isPlaying;
 
+          final shouldShowBottomControls =
+              isFinished || (!isPlaying) || (isPlaying && _controlsVisible);
+
           final progressColors = VideoProgressColors(
             playedColor: colorScheme.primary,
             bufferedColor: colorScheme.primary.withOpacity(0.35),
@@ -375,10 +390,17 @@ class _AdaptiveVideoPlayerState extends State<AdaptiveVideoPlayer> {
                               onTap: () {
                                 if (isFinished && !_repeatEnabled) return;
                                 if (isPlaying) {
-                                  _videoPlayerController!.pause();
-                                } else {
-                                  _videoPlayerController!.play();
+                                  // YouTube-like: a tap toggles controls visibility without
+                                  // interrupting playback.
+                                  setState(
+                                    () => _controlsVisible = !_controlsVisible,
+                                  );
+                                  return;
                                 }
+
+                                // When paused, allow a tap to resume and return to a clean view.
+                                setState(() => _controlsVisible = false);
+                                _videoPlayerController!.play();
                               },
                             ),
                           ),
@@ -395,6 +417,7 @@ class _AdaptiveVideoPlayerState extends State<AdaptiveVideoPlayer> {
                                   size: 30,
                                 ),
                                 onPressed: () {
+                                  setState(() => _controlsVisible = false);
                                   _videoPlayerController!.seekTo(Duration.zero);
                                   _videoPlayerController!.play();
                                 },
@@ -413,7 +436,26 @@ class _AdaptiveVideoPlayerState extends State<AdaptiveVideoPlayer> {
                                   size: 30,
                                 ),
                                 onPressed: () {
+                                  setState(() => _controlsVisible = false);
                                   _videoPlayerController!.play();
+                                },
+                              ),
+                            )
+                          else if (isPlaying && _controlsVisible)
+                            CircleAvatar(
+                              radius: 30,
+                              backgroundColor: colorScheme.scrim.withOpacity(
+                                0.6,
+                              ),
+                              child: IconButton(
+                                icon: Icon(
+                                  Icons.pause,
+                                  color: colorScheme.onSurface,
+                                  size: 30,
+                                ),
+                                onPressed: () {
+                                  setState(() => _controlsVisible = true);
+                                  _videoPlayerController!.pause();
                                 },
                               ),
                             ),
@@ -421,86 +463,88 @@ class _AdaptiveVideoPlayerState extends State<AdaptiveVideoPlayer> {
                       ),
                     ),
                     // Bottom controls (progress + repeat + speed)
-                    Container(
-                      color: colorScheme.surface.withOpacity(0.65),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          VideoProgressIndicator(
-                            _videoPlayerController!,
-                            allowScrubbing: true,
-                            colors: progressColors,
-                            padding: const EdgeInsets.symmetric(vertical: 6),
-                          ),
-                          Row(
-                            children: [
-                              IconButton(
-                                tooltip: _repeatEnabled
-                                    ? 'Repeat on'
-                                    : 'Repeat off',
-                                onPressed: _toggleRepeat,
-                                icon: Icon(
-                                  _repeatEnabled
-                                      ? Icons.repeat_one
-                                      : Icons.repeat,
-                                  color: colorScheme.onSurface,
+                    if (shouldShowBottomControls)
+                      Container(
+                        color: colorScheme.surface.withOpacity(0.65),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            VideoProgressIndicator(
+                              _videoPlayerController!,
+                              allowScrubbing: true,
+                              colors: progressColors,
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                            ),
+                            Row(
+                              children: [
+                                IconButton(
+                                  tooltip: _repeatEnabled
+                                      ? 'Repeat on'
+                                      : 'Repeat off',
+                                  onPressed: _toggleRepeat,
+                                  icon: Icon(
+                                    _repeatEnabled
+                                        ? Icons.repeat_one
+                                        : Icons.repeat,
+                                    color: colorScheme.onSurface,
+                                  ),
                                 ),
-                              ),
-                              const Spacer(),
-                              PopupMenuButton<double>(
-                                tooltip: 'Playback speed',
-                                initialValue: _playbackSpeed,
-                                onSelected: (speed) => _setPlaybackSpeed(speed),
-                                itemBuilder: (context) {
-                                  const speeds = <double>[
-                                    0.5,
-                                    0.75,
-                                    1.0,
-                                    1.25,
-                                    1.5,
-                                    2.0,
-                                  ];
-                                  return speeds
-                                      .map(
-                                        (s) => PopupMenuItem<double>(
-                                          value: s,
-                                          child: Text(
-                                            '${s.toStringAsFixed(s == 1.0 ? 0 : 2)}x',
+                                const Spacer(),
+                                PopupMenuButton<double>(
+                                  tooltip: 'Playback speed',
+                                  initialValue: _playbackSpeed,
+                                  onSelected: (speed) =>
+                                      _setPlaybackSpeed(speed),
+                                  itemBuilder: (context) {
+                                    const speeds = <double>[
+                                      0.5,
+                                      0.75,
+                                      1.0,
+                                      1.25,
+                                      1.5,
+                                      2.0,
+                                    ];
+                                    return speeds
+                                        .map(
+                                          (s) => PopupMenuItem<double>(
+                                            value: s,
+                                            child: Text(
+                                              '${s.toStringAsFixed(s == 1.0 ? 0 : 2)}x',
+                                            ),
                                           ),
-                                        ),
-                                      )
-                                      .toList();
-                                },
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.speed,
-                                      color: colorScheme.onSurface,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      '${_playbackSpeed.toStringAsFixed(_playbackSpeed == 1.0 ? 0 : 2)}x',
-                                      style: TextStyle(
+                                        )
+                                        .toList();
+                                  },
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.speed,
                                         color: colorScheme.onSurface,
                                       ),
-                                    ),
-                                    Icon(
-                                      Icons.arrow_drop_down,
-                                      color: colorScheme.onSurface,
-                                    ),
-                                  ],
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        '${_playbackSpeed.toStringAsFixed(_playbackSpeed == 1.0 ? 0 : 2)}x',
+                                        style: TextStyle(
+                                          color: colorScheme.onSurface,
+                                        ),
+                                      ),
+                                      Icon(
+                                        Icons.arrow_drop_down,
+                                        color: colorScheme.onSurface,
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
