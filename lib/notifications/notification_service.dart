@@ -24,6 +24,7 @@ class NotificationService {
   static final NotificationService instance = NotificationService._();
 
   static const int _dailyPracticeReminderId = 10001;
+  static const int _dailyPracticeReminderForegroundId = 10002;
 
   static const String _androidChannelId = 'daily_practice_reminders';
   static const String _androidChannelName = 'Daily Practice Reminders';
@@ -54,6 +55,11 @@ class NotificationService {
   int? _foregroundReminderMinute;
   String? _foregroundReminderTitle;
   String? _foregroundReminderBody;
+
+  static const Duration _dailyPracticeReminderNowDebounce = Duration(
+    seconds: 30,
+  );
+  DateTime? _lastDailyPracticeReminderNowShownAt;
 
   /// Fires while the app is in the foreground at the scheduled reminder time.
   ///
@@ -449,6 +455,69 @@ class NotificationService {
     _foregroundReminderTitle = title;
     _foregroundReminderBody = body;
     _scheduleForegroundReminderTimer(scheduledFor: scheduled);
+  }
+
+  /// Shows the daily practice reminder notification immediately.
+  ///
+  /// Uses the same Android channel as the scheduled daily reminder.
+  ///
+  /// Includes a small in-memory debounce to avoid repeated shows.
+  Future<void> showDailyPracticeReminderNow({
+    required String title,
+    required String body,
+  }) async {
+    await init();
+    await _requestPermissionsIfNeeded();
+
+    if (_isAndroid) {
+      await _createAndroidChannelIfNeeded();
+    }
+
+    final now = DateTime.now();
+    final lastShownAt = _lastDailyPracticeReminderNowShownAt;
+    if (lastShownAt != null &&
+        now.difference(lastShownAt) < _dailyPracticeReminderNowDebounce) {
+      return;
+    }
+
+    final previousShownAt = _lastDailyPracticeReminderNowShownAt;
+    _lastDailyPracticeReminderNowShownAt = now;
+
+    final details = NotificationDetails(
+      android: AndroidNotificationDetails(
+        _androidChannelId,
+        _androidChannelName,
+        channelDescription: _androidChannelDescription,
+        importance: Importance.high,
+        priority: Priority.high,
+        category: AndroidNotificationCategory.reminder,
+        visibility: NotificationVisibility.public,
+        playSound: true,
+        enableVibration: true,
+      ),
+      iOS: const DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
+      macOS: const DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
+    );
+
+    try {
+      await _plugin.show(
+        id: _dailyPracticeReminderForegroundId,
+        title: title,
+        body: body,
+        notificationDetails: details,
+      );
+    } catch (_) {
+      _lastDailyPracticeReminderNowShownAt = previousShownAt;
+      rethrow;
+    }
   }
 
   /// Best-effort check for whether the daily practice reminder channel is

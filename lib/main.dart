@@ -32,36 +32,41 @@ void _hideForegroundReminderBanner() {
 }
 
 void _showForegroundReminderBanner(DailyPracticeReminderEvent event) {
-  void showNow() {
-    final overlayState = navigatorKey.currentState?.overlay;
-    if (overlayState == null) return;
+  // Intentionally no in-app banner/overlay: show a system notification instead.
+  _hideForegroundReminderBanner();
 
-    _hideForegroundReminderBanner();
-
-    final entry = OverlayEntry(
-      builder: (context) =>
-          _TopReminderBanner(title: event.title, body: event.body),
-    );
-
-    _foregroundBannerEntry = entry;
-    overlayState.insert(entry);
-
-    _foregroundBannerDismissTimer = Timer(
-      const Duration(seconds: 4),
-      _hideForegroundReminderBanner,
-    );
-  }
-
-  // If an event arrives before the overlay is ready, defer to the next frame.
-  if (navigatorKey.currentState?.overlay == null) {
-    WidgetsBinding.instance.addPostFrameCallback((_) => showNow());
-  } else {
-    showNow();
-  }
+  unawaited(() async {
+    try {
+      await NotificationService.instance.showDailyPracticeReminderNow(
+        title: event.title,
+        body: event.body,
+      );
+    } catch (e, st) {
+      debugPrint(
+        'main: failed to show daily practice reminder notification: $e',
+      );
+      debugPrint('$st');
+    }
+  }());
 }
 
 void _startForegroundReminderListener() {
-  if (_foregroundReminderSubscription != null) return;
+  // Hot reload resilience: if we already have a listener, restart it.
+  final existingSubscription = _foregroundReminderSubscription;
+  if (existingSubscription != null) {
+    _foregroundReminderSubscription = null;
+    try {
+      unawaited(
+        existingSubscription.cancel().catchError((e, st) {
+          debugPrint('main: failed to cancel foreground reminder listener: $e');
+          debugPrint('$st');
+        }),
+      );
+    } catch (e, st) {
+      debugPrint('main: failed to cancel foreground reminder listener: $e');
+      debugPrint('$st');
+    }
+  }
 
   final Stream<DailyPracticeReminderEvent> stream =
       NotificationService.instance.foregroundReminderStream;

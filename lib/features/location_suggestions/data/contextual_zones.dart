@@ -4,8 +4,8 @@ import '../domain/contextual_zone.dart';
 ///
 /// The coordinates below are intentionally *placeholder values* (not real-world
 /// locations). They’re named to make that explicit.
-const double _placeholderLatitudeA = 37.00010;
-const double _placeholderLongitudeA = -122.00010;
+const double _placeholderLatitudeA = 14.589194;
+const double _placeholderLongitudeA = 121.113016;
 
 const double _placeholderLatitudeB = 37.00020;
 const double _placeholderLongitudeB = -122.00020;
