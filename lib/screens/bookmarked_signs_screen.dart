@@ -118,15 +118,27 @@ class _BookmarkedSignsList extends ConsumerWidget {
             width: effectiveHighContrast ? 2 : 1,
           );
 
-    return ListView.builder(
-      itemCount: signs.length,
-      itemBuilder: (context, index) {
-        final sign = signs[index];
+    String displayTitleFor(Sign sign) {
+      return (strings.isFilipino && (sign.titleFil?.trim().isNotEmpty ?? false))
+          ? sign.titleFil!.trim()
+          : sign.title;
+    }
 
-        final displayTitle =
-            (strings.isFilipino && (sign.titleFil?.trim().isNotEmpty ?? false))
-            ? sign.titleFil!.trim()
-            : sign.title;
+    String sortKeyFor(Sign sign) => displayTitleFor(sign).trim().toLowerCase();
+
+    final sortedSigns = List<Sign>.of(signs)
+      ..sort((a, b) {
+        final titleCompare = sortKeyFor(a).compareTo(sortKeyFor(b));
+        if (titleCompare != 0) return titleCompare;
+        return a.id.compareTo(b.id);
+      });
+
+    return ListView.builder(
+      itemCount: sortedSigns.length,
+      itemBuilder: (context, index) {
+        final sign = sortedSigns[index];
+
+        final displayTitle = displayTitleFor(sign);
 
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
