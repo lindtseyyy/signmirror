@@ -26,9 +26,7 @@ class LoadingScreenWidget extends StatelessWidget {
 
     final BorderSide side = highContrast
         ? BorderSide(color: colors.outline, width: 1.5)
-        : (isDark
-              ? BorderSide.none
-              : BorderSide(color: colors.outlineVariant, width: 1));
+        : BorderSide.none;
 
     return Stack(
       children: [

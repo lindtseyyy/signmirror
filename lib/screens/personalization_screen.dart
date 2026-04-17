@@ -156,6 +156,7 @@ class PersonalizationChoice extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final highContrast = MediaQuery.of(context).highContrast;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
@@ -167,10 +168,11 @@ class PersonalizationChoice extends StatelessWidget {
         foregroundColor: colors.onSurface,
         // Border Radius (Rounded Corners)
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        side: BorderSide(
-          color: highContrast ? colors.onSurface : colors.outline,
-          width: highContrast ? 2.0 : 1.0,
-        ),
+        side: highContrast
+            ? BorderSide(color: colors.onSurface, width: 2.0)
+            : (isDarkMode
+                  ? BorderSide(color: colors.outline, width: 1.0)
+                  : BorderSide.none),
         elevation: 5, // Higher number = larger shadow
         shadowColor: colors.shadow,
       ),
