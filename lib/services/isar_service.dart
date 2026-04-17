@@ -536,10 +536,22 @@ class IsarService {
 
   // --- CRUD OPERATIONS ---
 
+  String _normalizeTitleForSort(String title) => title.trim().toLowerCase();
+
+  int _compareSignsByTitle(Sign a, Sign b) {
+    final cmp = _normalizeTitleForSort(
+      a.title,
+    ).compareTo(_normalizeTitleForSort(b.title));
+    if (cmp != 0) return cmp;
+    return a.id.compareTo(b.id);
+  }
+
   // Get all signs
   Future<List<Sign>> getAllSigns() async {
     final isar = await db;
-    return await isar.signs.where().findAll();
+    final signs = await isar.signs.where().findAll();
+    signs.sort(_compareSignsByTitle);
+    return signs;
   }
 
   // Get all lessons
@@ -676,7 +688,7 @@ class IsarService {
     final isar = await db;
     if (query.isEmpty) return getAllSigns();
 
-    return await isar.signs
+    final results = await isar.signs
         .filter()
         .titleContains(query, caseSensitive: false)
         .or()
@@ -684,6 +696,9 @@ class IsarService {
         .or()
         .categoryContains(query, caseSensitive: false)
         .findAll();
+
+    results.sort(_compareSignsByTitle);
+    return results;
   }
 
   // Get bookmarked signs

@@ -186,6 +186,23 @@ Widget _buildListView(
 }) {
   final strings = AppStrings(ref.watch(languageProvider));
 
+  String _sortTitleForDisplay(Sign sign) {
+    final titleFil = (sign.titleFil ?? '').trim();
+    final displayTitle = strings.isFilipino && titleFil.isNotEmpty
+        ? titleFil
+        : sign.title;
+    return displayTitle.trim().toLowerCase();
+  }
+
+  final sortedSigns = List<Sign>.from(signs)
+    ..sort((a, b) {
+      final byTitle = _sortTitleForDisplay(
+        a,
+      ).compareTo(_sortTitleForDisplay(b));
+      if (byTitle != 0) return byTitle;
+      return a.id.compareTo(b.id);
+    });
+
   final colorScheme = theme.colorScheme;
 
   final tileBackground = useLegacyLightColors
@@ -204,9 +221,9 @@ Widget _buildListView(
       : colorScheme.onSurface.withOpacity(0.7);
 
   return ListView.builder(
-    itemCount: signs.length,
+    itemCount: sortedSigns.length,
     itemBuilder: (context, index) {
-      final sign = signs[index];
+      final sign = sortedSigns[index];
 
       final titleFil = (sign.titleFil ?? '').trim();
       final displayTitle = strings.isFilipino && titleFil.isNotEmpty
